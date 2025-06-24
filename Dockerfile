@@ -32,7 +32,7 @@ COPY --from=builder /app/static ./static
 COPY --from=builder /app/data.json ./data.json
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8081
 
 # Run the binary
 CMD ["./main"] 
