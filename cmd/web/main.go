@@ -102,31 +102,34 @@ func main() {
 	// Her sayfa için ayrı template setleri oluştur
 	templates := map[string]*template.Template{}
 	
+	// Template engine'i basitleştir - Render uyumluluğu için
 	templateFiles := map[string][]string{
-		"home.html":           {"templates/home.html", "templates/base.html"},
-		"products.html":       {"templates/products.html", "templates/base.html"},
-		"about.html":          {"templates/about.html", "templates/base.html"},
-		"contact.html":        {"templates/contact.html", "templates/base.html"},
-		"admin.html":          {"templates/admin.html", "templates/base.html"},
-		"admin_login.html":    {"templates/admin_login.html", "templates/base.html"},
-		"login.html":          {"templates/login.html", "templates/base.html"},
-		"register.html":       {"templates/register.html", "templates/base.html"},
-		"profile.html":        {"templates/profile.html", "templates/base.html"},
-		"forgot_password.html": {"templates/forgot_password.html", "templates/base.html"},
-		"reset_password.html":  {"templates/reset_password.html", "templates/base.html"},
-		"cart.html":           {"templates/cart.html", "templates/base.html"},
-		"checkout.html":       {"templates/checkout.html", "templates/base.html"},
-		"order_success.html":  {"templates/order_success.html", "templates/base.html"},
-		"orders.html":         {"templates/orders.html", "templates/base.html"},
-		"order_tracking.html": {"templates/order_tracking.html", "templates/base.html"},
-		"support_chat.html":   {"templates/support_chat.html", "templates/base.html"},
-		"admin_support.html":  {"templates/admin_support.html", "templates/base.html"},
+		"home.html":           {"templates/base.html", "templates/home.html"},
+		"products.html":       {"templates/base.html", "templates/products.html"},
+		"about.html":          {"templates/base.html", "templates/about.html"},
+		"contact.html":        {"templates/base.html", "templates/contact.html"},
+		"admin.html":          {"templates/base.html", "templates/admin.html"},
+		"admin_login.html":    {"templates/base.html", "templates/admin_login.html"},
+		"login.html":          {"templates/base.html", "templates/login.html"},
+		"register.html":       {"templates/base.html", "templates/register.html"},
+		"profile.html":        {"templates/base.html", "templates/profile.html"},
+		"forgot_password.html": {"templates/base.html", "templates/forgot_password.html"},
+		"reset_password.html":  {"templates/base.html", "templates/reset_password.html"},
+		"cart.html":           {"templates/base.html", "templates/cart.html"},
+		"checkout.html":       {"templates/base.html", "templates/checkout.html"},
+		"order_success.html":  {"templates/base.html", "templates/order_success.html"},
+		"orders.html":         {"templates/base.html", "templates/orders.html"},
+		"order_tracking.html": {"templates/base.html", "templates/order_tracking.html"},
+		"support_chat.html":   {"templates/base.html", "templates/support_chat.html"},
+		"admin_support.html":  {"templates/base.html", "templates/admin_support.html"},
 	}
 	
 	for name, files := range templateFiles {
-		tmpl, err := template.ParseFiles(files...)
+		tmpl, err := template.New(name).ParseFiles(files...)
 		if err != nil {
-			log.Fatalf("Template yüklenemedi %s: %v", name, err)
+			log.Printf("Template yüklenemedi %s: %v", name, err)
+			// Template yüklenemezse devam et, sadece log'la
+			continue
 		}
 		templates[name] = tmpl
 		log.Printf("Template yüklendi: %s", name)

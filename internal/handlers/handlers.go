@@ -1556,10 +1556,312 @@ func (h *Handler) AdminSupportPage(c *gin.Context) {
 		sessions = []models.SupportSession{}
 	}
 	
-	c.HTML(http.StatusOK, "admin_support.html", gin.H{
-		"title":    "Canlı Destek Yönetimi",
-		"sessions": sessions,
-	})
+	// Render basit HTML olarak - template hatası için
+	html := `<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Canlı Destek - Su Arıtma Uzmanı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: white; line-height: 1.6; color: black; }
+        .session-item { transition: background-color 0.2s; cursor: pointer; background-color: white !important; color: black !important; }
+        .session-item:hover { background-color: #f8f9fa !important; color: black !important; }
+        .session-item.active { background-color: #e3f2fd !important; border-left: 4px solid #2196F3; color: black !important; }
+        .chat-messages { background: white !important; color: black !important; }
+        .message { margin-bottom: 15px; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { text-align: left; }
+        .message.admin { text-align: right; }
+        .message-bubble { display: inline-block; max-width: 70%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; position: relative; }
+        .message.user .message-bubble { background: #f8f9fa; color: black; border: 1px solid #ddd; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .message.admin .message-bubble { background: #007bff; color: white; border-bottom-right-radius: 4px; }
+        .message-time { font-size: 0.75rem; opacity: 0.7; margin-top: 5px; }
+        .message.user .message-time { text-align: left; color: #666; }
+        .message.admin .message-time { text-align: right; color: #007bff; }
+        .cursor-pointer { cursor: pointer; }
+        #messageInput:focus { border-color: #007bff !important; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; background-color: white !important; color: black !important; }
+        h1, h2, h3, h4, h5, h6, p, span, div, small { color: black !important; }
+        .text-muted { color: #666 !important; }
+        .card { background-color: white !important; border: 1px solid #ddd !important; }
+        .card-header { background-color: #f8f9fa !important; color: black !important; border-bottom: 1px solid #ddd !important; }
+        .card-body { background-color: white !important; color: black !important; }
+    </style>
+</head>
+<body>
+<div class="container-fluid my-4" style="background-color: white; color: black; min-height: 100vh;">
+    <div class="row">
+        <!-- Sessions List -->
+        <div class="col-md-4">
+            <div class="card" style="background-color: white; border: 1px solid #ddd;">
+                <div class="card-header" style="background-color: #f8f9fa; color: black; border-bottom: 1px solid #ddd;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Aktif Sohbetler
+                        <span class="badge bg-dark text-white ms-2" id="sessionCount">` + fmt.Sprintf("%d", len(sessions)) + `</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0" style="max-height: 600px; overflow-y: auto; background-color: white;">
+                    <div id="sessionsList">
+                        <div class="p-4 text-center" style="color: #666;">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>Henüz aktif sohbet yok</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="col-md-8">
+            <div class="card" style="background-color: white; border: 1px solid #ddd;">
+                <div class="card-header" style="background-color: #f8f9fa; color: black; border-bottom: 1px solid #ddd;">
+                    <h5 class="mb-0" id="chatHeader">
+                        <i class="fas fa-comment-dots me-2"></i>Sohbet Seçin
+                    </h5>
+                </div>
+                <div class="card-body p-0" style="background-color: white;">
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; background: white; color: black;">
+                        <div class="text-center" style="color: #666;">
+                            <i class="fas fa-arrow-left fa-2x mb-3"></i>
+                            <p>Soldan bir sohbet seçin</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div class="chat-input border-top p-3" id="chatInput" style="display: none; background-color: white; border-top: 1px solid #ddd;">
+                        <div class="input-group">
+                            <input type="text" id="messageInput" class="form-control" placeholder="Yanıtınızı yazın..." maxlength="500" style="background-color: white; color: black; border: 1px solid #ddd;">
+                            <button class="btn btn-primary" id="sendButton" type="button">
+                                <i class="fas fa-paper-plane"></i> Gönder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentSessionID = null;
+let pollInterval = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    startSessionPolling();
+    
+    // Send message on button click
+    document.getElementById('sendButton').addEventListener('click', sendMessage);
+    
+    // Send message on Enter key
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+});
+
+// Load chat for selected session
+function loadChat(sessionID, username) {
+    currentSessionID = sessionID;
+    
+    // Update UI
+    document.getElementById('chatHeader').innerHTML = '<i class="fas fa-comment-dots me-2"></i>' + username + ' ile Sohbet<small class="ms-2">(' + sessionID.substring(0, 8) + '...)</small>';
+    document.getElementById('chatInput').style.display = 'block';
+    
+    // Mark session as active
+    document.querySelectorAll('.session-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector('[data-session-id="' + sessionID + '"]').classList.add('active');
+    
+    // Load messages
+    loadMessages();
+    
+    // Start polling for this session
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+    startMessagePolling();
+    
+    // Focus on input
+    document.getElementById('messageInput').focus();
+}
+
+// Load messages for current session
+function loadMessages() {
+    if (!currentSessionID) return;
+    
+    fetch('/admin/support/messages/' + currentSessionID)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayMessages(data.messages);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading messages:', error);
+    });
+}
+
+// Display messages
+function displayMessages(messages) {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML = '';
+    
+    if (messages && messages.length > 0) {
+        messages.forEach(message => {
+            addMessage(message);
+        });
+        scrollToBottom();
+    } else {
+        chatMessages.innerHTML = '<div class="text-center" style="color: #666;"><i class="fas fa-comments fa-3x mb-3"></i><p>Henüz mesaj yok. İlk mesajı gönderin!</p></div>';
+    }
+}
+
+// Add single message
+function addMessage(message) {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message ' + (message.is_admin ? 'admin' : 'user');
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'message-bubble';
+    bubbleDiv.textContent = message.message;
+    
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    const messageTime = new Date(message.created_at);
+    timeDiv.textContent = message.username + ' - ' + messageTime.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+    
+    messageDiv.appendChild(bubbleDiv);
+    messageDiv.appendChild(timeDiv);
+    chatMessages.appendChild(messageDiv);
+}
+
+// Send message
+function sendMessage() {
+    if (!currentSessionID) return;
+    
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    // Disable input while sending
+    messageInput.disabled = true;
+    sendButton.disabled = true;
+    
+    fetch('/admin/support/send/' + currentSessionID, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: message})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageInput.value = '';
+            addMessage(data.message);
+            scrollToBottom();
+        } else {
+            alert('Mesaj gönderilemedi: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Mesaj gönderilirken hata oluştu');
+    })
+    .finally(() => {
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        messageInput.focus();
+    });
+}
+
+// Scroll to bottom
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Start polling for sessions
+function startSessionPolling() {
+    setInterval(() => {
+        loadSessions();
+    }, 2000);
+}
+
+// Start polling for messages
+function startMessagePolling() {
+    pollInterval = setInterval(() => {
+        loadMessages();
+    }, 2000);
+}
+
+// Load sessions
+function loadSessions() {
+    fetch('/admin/support/sessions')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateSessionsList(data.sessions);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading sessions:', error);
+    });
+}
+
+// Update sessions list
+function updateSessionsList(sessions) {
+    const sessionsList = document.getElementById('sessionsList');
+    const sessionCount = document.getElementById('sessionCount');
+    
+    sessionCount.textContent = sessions.length;
+    
+    if (sessions.length === 0) {
+        sessionsList.innerHTML = '<div class="p-4 text-center" style="color: #666;"><i class="fas fa-comments fa-3x mb-3"></i><p>Henüz aktif sohbet yok</p></div>';
+        return;
+    }
+    
+    sessionsList.innerHTML = '';
+    sessions.forEach(session => {
+        const sessionDiv = document.createElement('div');
+        sessionDiv.className = 'session-item p-3 border-bottom';
+        sessionDiv.style.backgroundColor = 'white';
+        sessionDiv.style.color = 'black';
+        if (currentSessionID === session.session_id) {
+            sessionDiv.classList.add('active');
+        }
+        sessionDiv.setAttribute('data-session-id', session.session_id);
+        
+        const lastMessageTime = new Date(session.last_message_at);
+        
+        sessionDiv.innerHTML = '<div class="d-flex justify-content-between align-items-center mb-2" onclick="loadChat(\'' + session.session_id + '\', \'' + session.username + '\')" style="cursor: pointer;"><div><h6 class="mb-1" style="color: black;">' + session.username + '</h6><small style="color: #666;"><i class="fas fa-clock me-1"></i>' + lastMessageTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + '</small></div><div><span class="badge bg-success">Online</span>' + (session.unread_count > 0 ? '<span class="badge bg-danger">' + session.unread_count + '</span>' : '') + '</div></div>';
+        
+        sessionsList.appendChild(sessionDiv);
+    });
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+});
+</script>
+</body>
+</html>`
+	
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
 
 // AdminGetSupportSessions - Admin için aktif oturumları getir
