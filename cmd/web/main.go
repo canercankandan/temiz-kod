@@ -11,7 +11,6 @@ import (
 	"log"
 	"math/big"
 	"net"
-	"net/http"
 	"os"
 	"time"
 
