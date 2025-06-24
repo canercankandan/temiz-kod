@@ -562,20 +562,15 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	defer db.mu.RUnlock()
 	
 	var sessions []models.SupportSession
-	// Son 30 dakika içinde mesaj alışverişi olan sessionları göster
-	thirtyMinutesAgo := time.Now().Add(-30 * time.Minute)
-	
 	for _, session := range db.data.SupportSessions {
-		if session.Status == "active" && session.LastMessageAt.After(thirtyMinutesAgo) {
+		if session.Status == "active" {
 			sessions = append(sessions, session)
 		}
 	}
-	
-	// Sort by last_message_at DESC
+	// Son mesaj zamanına göre sırala
 	sort.Slice(sessions, func(i, j int) bool {
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
-	
 	return sessions, nil
 }
 
