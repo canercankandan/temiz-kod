@@ -26,8 +26,8 @@ Türkiye'nin en güvenilir su arıtma sistemleri e-ticaret platformu.
 
 1. Repository'yi klonlayın:
 ```bash
-git clone https://github.com/username/suaritamauzumani.git
-cd suaritamauzumani
+git clone https://github.com/canercankandan/su-aritma-uzmani.git
+cd su-aritma-uzmani
 ```
 
 2. Bağımlılıkları yükleyin:
@@ -83,4 +83,4 @@ docker run -p 8080:8080 suaritamauzumani
 
 ## 📄 Lisans
 
-Bu proje MIT lisansı altında lisanslanmıştır. 
+Bu proje MIT lisansı altında lisanslanmıştır.
