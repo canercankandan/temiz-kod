@@ -1,0 +1,555 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="contact-hero text-center py-5 mb-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-4 fw-bold text-primary mb-3">
+                    <i class="fas fa-headset me-3"></i>İletişim
+                </h1>
+                <p class="lead mb-4" style="color: #1e3a8a;">
+                    Su arıtma konusunda uzman ekibimiz size yardımcı olmak için burada. 
+                    Sorularınız için bize ulaşın, size en uygun çözümü birlikte bulalım.
+                </p>
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="contact-feature bg-white p-4 rounded-4 shadow-sm h-100">
+                            <i class="fas fa-phone text-success mb-3" style="font-size: 2.5rem;"></i>
+                            <h6 class="fw-bold mb-2" style="color: #1e3a8a;">7/24 Destek</h6>
+                            <p class="mb-0" style="color: #1e3a8a;">Her zaman yanınızdayız</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="contact-feature bg-white p-4 rounded-4 shadow-sm h-100">
+                            <i class="fas fa-user-tie text-primary mb-3" style="font-size: 2.5rem;"></i>
+                            <h6 class="fw-bold mb-2" style="color: #1e3a8a;">Uzman Danışman</h6>
+                            <p class="mb-0" style="color: #1e3a8a;">Profesyonel rehberlik</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="contact-feature bg-white p-4 rounded-4 shadow-sm h-100">
+                            <i class="fas fa-gift text-warning mb-3" style="font-size: 2.5rem;"></i>
+                            <h6 class="fw-bold mb-2" style="color: #1e3a8a;">Ücretsiz Keşif</h6>
+                            <p class="mb-0" style="color: #1e3a8a;">Ev ziyareti ve analiz</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Contact Buttons -->
+    <section class="quick-contact mb-5">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="tel:+902125928591" class="quick-contact-btn d-block text-decoration-none">
+                    <div class="bg-success text-white p-4 rounded-4 text-center">
+                        <i class="fas fa-phone mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="fw-bold mb-1">Hemen Ara</h6>
+                        <p class="mb-0">0212 592 85 91</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="https://wa.me/905448113105" target="_blank" class="quick-contact-btn d-block text-decoration-none">
+                    <div class="bg-success text-white p-4 rounded-4 text-center" style="background: #25D366 !important;">
+                        <i class="fab fa-whatsapp mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="fw-bold mb-1">WhatsApp</h6>
+                        <p class="mb-0">0544 811 31 05</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="mailto:irmaksuaritmam@gmail.com" class="quick-contact-btn d-block text-decoration-none">
+                    <div class="bg-primary text-white p-4 rounded-4 text-center">
+                        <i class="fas fa-envelope mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="fw-bold mb-1">E-posta Gönder</h6>
+                        <p class="mb-0">irmaksuaritmam@gmail.com</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="row">
+        <!-- Contact Form -->
+        <div class="col-lg-8 mb-5">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-primary text-white border-0">
+                    <h4 class="mb-0">
+                        <i class="fas fa-paper-plane me-2"></i>Bize Mesaj Gönderin
+                    </h4>
+                    <p class="mb-0 mt-2 opacity-75">Uzman ekibimiz en kısa sürede size dönüş yapacaktır</p>
+                </div>
+                <div class="card-body p-4">
+                    <form id="contactForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="name" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-1"></i>Adınız Soyadınız *
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="name" required>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="email" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-1"></i>E-posta Adresiniz *
+                                </label>
+                                <input type="email" class="form-control form-control-lg" id="email" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="phone" class="form-label fw-semibold">
+                                    <i class="fas fa-phone me-1"></i>Telefon Numaranız
+                                </label>
+                                <input type="tel" class="form-control form-control-lg" id="phone">
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="subject" class="form-label fw-semibold">
+                                    <i class="fas fa-tag me-1"></i>Konu *
+                                </label>
+                                <select class="form-select form-select-lg" id="subject" required>
+                                    <option value="">Konu seçiniz</option>
+                                    <option value="Ürün Bilgisi">Ürün Bilgisi</option>
+                                    <option value="Fiyat Teklifi">Fiyat Teklifi</option>
+                                    <option value="Teknik Destek">Teknik Destek</option>
+                                    <option value="Kurulum">Kurulum</option>
+                                    <option value="Bakım/Servis">Bakım/Servis</option>
+                                    <option value="Şikayet">Şikayet</option>
+                                    <option value="Diğer">Diğer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="message" class="form-label fw-semibold">
+                                <i class="fas fa-comment me-1"></i>Mesajınız *
+                            </label>
+                            <textarea class="form-control" id="message" rows="6" 
+                                    placeholder="Lütfen ihtiyacınızı detaylı bir şekilde açıklayın..." required></textarea>
+                        </div>
+                        
+                        <!-- Service Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-list-check me-1"></i>İlgilendiğiniz Hizmetler
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="service1" value="Su Arıtma Cihazı">
+                                        <label class="form-check-label" for="service1">
+                                            Su Arıtma Cihazı
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="service2" value="Filtre Değişimi">
+                                        <label class="form-check-label" for="service2">
+                                            Filtre Değişimi
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="service3" value="Bakım Hizmeti">
+                                        <label class="form-check-label" for="service3">
+                                            Bakım Hizmeti
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="service4" value="Su Analizi">
+                                        <label class="form-check-label" for="service4">
+                                            Su Analizi
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="service5" value="Teknik Destek">
+                                        <label class="form-check-label" for="service5">
+                                            Teknik Destek
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="service6" value="Fiyat Teklifi">
+                                        <label class="form-check-label" for="service6">
+                                            Fiyat Teklifi
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Mesaj Gönder
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Info Sidebar -->
+        <div class="col-lg-4">
+            <!-- Contact Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>İletişim Bilgileri
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="contact-info-item mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="contact-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Adresimiz</h6>
+                                <p class="text-muted mb-0">
+                                                                    Cennet Mahallesi Hürriyet Caddesi No 11/A Dükkan 1<br>
+                                Küçükçekmece/İSTANBUL<br>
+                                34000 Türkiye
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="contact-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Telefon</h6>
+                                <p class="mb-1">
+                                    <a href="tel:+902125928591" class="text-decoration-none text-success fw-semibold">
+                                        0212 592 85 91
+                                    </a>
+                                </p>
+                                <small class="text-muted">7/24 Destek Hattı</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="contact-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">E-posta</h6>
+                                <p class="mb-1">
+                                    <a href="mailto:irmaksuaritmam@gmail.com" class="text-decoration-none text-info fw-semibold">
+                                        irmaksuaritmam@gmail.com
+                                    </a>
+                                </p>
+                                <small class="text-muted">24 saat içinde yanıt</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info-item">
+                        <div class="d-flex align-items-start">
+                            <div class="contact-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Çalışma Saatleri</h6>
+                                <p class="mb-0 small">
+                                    <strong>Pazartesi - Cuma:</strong> 09:00 - 18:00<br>
+                                    <strong>Cumartesi:</strong> 09:00 - 14:00<br>
+                                    <strong>Pazar:</strong> Kapalı<br>
+                                    <span class="text-success"><strong>Acil Durum:</strong> 7/24</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Media -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-share-alt me-2 text-primary"></i>Sosyal Medya
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <a href="#" class="social-link d-block text-decoration-none">
+                                <div class="bg-primary text-white p-3 rounded-3 text-center">
+                                    <i class="fab fa-facebook fa-2x mb-2"></i>
+                                    <h6 class="mb-0">Facebook</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="social-link d-block text-decoration-none">
+                                <div class="text-white p-3 rounded-3 text-center" style="background: #1DA1F2;">
+                                    <i class="fab fa-twitter fa-2x mb-2"></i>
+                                    <h6 class="mb-0">Twitter</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="social-link d-block text-decoration-none">
+                                <div class="text-white p-3 rounded-3 text-center" style="background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);">
+                                    <i class="fab fa-instagram fa-2x mb-2"></i>
+                                    <h6 class="mb-0">Instagram</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="social-link d-block text-decoration-none">
+                                <div class="text-white p-3 rounded-3 text-center" style="background: #0077B5;">
+                                    <i class="fab fa-linkedin fa-2x mb-2"></i>
+                                    <h6 class="mb-0">LinkedIn</h6>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Quick Links -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-question-circle me-2 text-primary"></i>Sık Sorulan Sorular
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action border-0 px-0">
+                            <i class="fas fa-chevron-right me-2 text-primary"></i>
+                            Hangi su arıtma cihazını seçmeliyim?
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 px-0">
+                            <i class="fas fa-chevron-right me-2 text-primary"></i>
+                            Filtreler ne sıklıkla değiştirilmeli?
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 px-0">
+                            <i class="fas fa-chevron-right me-2 text-primary"></i>
+                            Kurulum ücretsiz mi?
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 px-0">
+                            <i class="fas fa-chevron-right me-2 text-primary"></i>
+                            Garanti süresi ne kadar?
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Section -->
+    <section class="map-section mt-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-map-marked-alt me-2"></i>Konum
+                </h4>
+                <p class="mb-0 mt-2 opacity-75">Showroom ve ofisimizi ziyaret edebilirsiniz</p>
+            </div>
+            <div class="card-body p-0">
+                <!-- Google Maps Embed -->
+                <div class="map-container" style="height: 400px; background: #f8f9fa; position: relative;">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3010.2442240855067!2d28.978359315345!3d41.008238879307!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14cab9bd6570f4e1%3A0x8dc0c7f8a3e4c7e!2sBeyoğlu%2C%20İstanbul!5e0!3m2!1str!2str!4v1635784234567!5m2!1str!2str"
+                        width="100%" 
+                        height="400" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.contact-hero {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    margin-bottom: 3rem;
+}
+
+.contact-feature {
+    transition: all 0.3s ease;
+}
+
+.contact-feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.quick-contact-btn {
+    transition: all 0.3s ease;
+}
+
+.quick-contact-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.quick-contact-btn:hover div {
+    transform: scale(1.05);
+}
+
+.contact-info-item {
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 10px;
+}
+
+.contact-info-item:hover {
+    background: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.contact-icon {
+    flex-shrink: 0;
+}
+
+.social-link {
+    transition: all 0.3s ease;
+}
+
+.social-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.map-container iframe {
+    border-radius: 0 0 10px 10px;
+}
+
+@media (max-width: 768px) {
+    .contact-hero {
+        padding: 2rem 0;
+    }
+    
+    .quick-contact .col-md-4 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Form Animation */
+.form-control,
+.form-select {
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    transform: translateY(-2px);
+}
+
+/* Loading Animation */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Get form data
+    const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value,
+        services: []
+    };
+    
+    // Get selected services
+    const serviceCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    serviceCheckboxes.forEach(checkbox => {
+        formData.services.push(checkbox.value);
+    });
+    
+    // Show loading state
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="loading-spinner me-2"></span>Gönderiliyor...';
+    submitBtn.disabled = true;
+    
+    // Simulate form submission
+    fetch('/contact/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        if (data.success) {
+            // Show success message
+            showToast('success', 'Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.');
+            
+            // Reset form
+            document.getElementById('contactForm').reset();
+        } else {
+            showToast('error', data.message || 'Bir hata oluştu, lütfen tekrar deneyin.');
+        }
+    })
+    .catch(error => {
+        // Reset button
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
+        showToast('error', 'Bir hata oluştu, lütfen tekrar deneyin.');
+        console.error('Error:', error);
+    });
+});
+
+// Show toast notification
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+</script>
+{{end}} 

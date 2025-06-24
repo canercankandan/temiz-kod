@@ -1,0 +1,571 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<style>
+.tracking-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 80vh;
+    padding: 40px 0;
+}
+
+.tracking-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.tracking-header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+.tracking-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.tracking-tab {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.tracking-tab.active {
+    background: white;
+    color: #4facfe;
+    border-bottom: 3px solid #4facfe;
+}
+
+.tracking-tab:hover {
+    background: #e9ecef;
+}
+
+.tracking-content {
+    padding: 30px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+}
+
+.btn-track {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-track:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+}
+
+.order-result {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #4facfe;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending { background: #fff3cd; color: #856404; }
+.status-confirmed { background: #d1ecf1; color: #0c5460; }
+.status-shipped { background: #d4edda; color: #155724; }
+.status-delivered { background: #d1ecf1; color: #0c5460; }
+.status-cancelled { background: #f8d7da; color: #721c24; }
+
+.order-timeline {
+    margin: 20px 0;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.timeline-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 18px;
+}
+
+.timeline-icon.completed {
+    background: #28a745;
+    color: white;
+}
+
+.timeline-icon.current {
+    background: #ffc107;
+    color: white;
+}
+
+.timeline-icon.pending {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.session-orders {
+    display: grid;
+    gap: 20px;
+}
+
+.session-order-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid #4facfe;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4facfe;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Modal içindeki yazıları siyah yap */
+#orderDetailModal .modal-body {
+    color: #000 !important;
+}
+
+#orderDetailModal .modal-body * {
+    color: #000 !important;
+}
+
+#orderDetailModal .modal-body .badge {
+    color: white !important;
+}
+
+#orderDetailModal .modal-body .text-success {
+    color: #198754 !important;
+}
+
+#orderDetailModal .modal-body .text-danger {
+    color: #dc3545 !important;
+}
+
+#orderDetailModal .modal-body .text-warning {
+    color: #ffc107 !important;
+}
+
+#orderDetailModal .modal-body .text-info {
+    color: #0dcaf0 !important;
+}
+
+#orderDetailModal .modal-body .text-primary {
+    color: #0d6efd !important;
+}
+
+/* Sipariş detayları için özel siyah text */
+.order-detail-text {
+    color: #000 !important;
+}
+
+.order-info-table th,
+.order-info-table td {
+    color: #000 !important;
+}
+</style>
+
+<div class="tracking-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="tracking-card">
+                    <div class="tracking-header">
+                        <h1><i class="fas fa-search me-3"></i>Sipariş Takip</h1>
+                        <p class="mb-0">Siparişinizin durumunu kontrol edin</p>
+                    </div>
+
+                    <div class="tracking-tabs">
+                        <button class="tracking-tab active" onclick="switchTab('guest')">
+                            <i class="fas fa-search me-2"></i>Sipariş Numarası ile
+                        </button>
+                        {{if .isLoggedIn}}
+                        <button class="tracking-tab" onclick="switchTab('user')">
+                            <i class="fas fa-user me-2"></i>Siparişlerim
+                        </button>
+                        {{else}}
+                        <button class="tracking-tab" onclick="switchTab('session')">
+                            <i class="fas fa-clock me-2"></i>Bu Oturumdaki Siparişler
+                        </button>
+                        {{end}}
+                    </div>
+
+                    <div class="tracking-content">
+                        <!-- Guest Tracking -->
+                        <div id="guest-tab" class="tab-content active">
+                            <h5 class="mb-4">Sipariş Numarası ile Takip</h5>
+                            <form id="guestTrackingForm">
+                                <div class="form-group">
+                                    <label class="form-label">Sipariş Numarası</label>
+                                    <input type="text" class="form-control" id="orderNumber" placeholder="Örn: ORD-20250622" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">E-posta Adresi</label>
+                                    <input type="email" class="form-control" id="orderEmail" placeholder="siparisverdiginiz@email.com" required>
+                                </div>
+                                <button type="submit" class="btn-track">
+                                    <i class="fas fa-search me-2"></i>Siparişi Takip Et
+                                </button>
+                            </form>
+                            <div id="guestResult"></div>
+                        </div>
+
+                        <!-- Session Orders -->
+                        {{if not .isLoggedIn}}
+                        <div id="session-tab" class="tab-content">
+                            <h5 class="mb-4">Bu Oturumdaki Siparişler</h5>
+                            <div id="sessionOrders">
+                                <div class="loading-spinner">
+                                    <div class="spinner"></div>
+                                    <p class="mt-3">Siparişleriniz yükleniyor...</p>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+
+                        <!-- User Orders -->
+                        {{if .isLoggedIn}}
+                        <div id="user-tab" class="tab-content">
+                            <h5 class="mb-4">Tüm Siparişlerim</h5>
+                            <div class="text-center">
+                                <a href="/orders" class="btn-track">
+                                    <i class="fas fa-list me-2"></i>Siparişlerimi Görüntüle
+                                </a>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt me-2"></i>Sipariş Detayı
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-danger" id="cancelOrderBtn" style="display: none;">
+                    <i class="fas fa-times me-1"></i>Siparişi İptal Et
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tabName) {
+    // Update tab buttons
+    const tabs = document.querySelectorAll('.tracking-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // Update content
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.remove('active'));
+    document.getElementById(tabName + '-tab').classList.add('active');
+
+    // Load data for the active tab
+    if (tabName === 'session') {
+        loadSessionOrders();
+    }
+}
+
+async function trackByNumber() {
+    const orderNumber = document.getElementById('orderNumber').value.trim();
+    const email = document.getElementById('orderEmail').value.trim();
+    const resultDiv = document.getElementById('guestResult');
+
+    if (!orderNumber || !email) {
+        resultDiv.innerHTML = '<div class="alert alert-danger">Lütfen sipariş numarası ve e-posta adresini girin.</div>';
+        return;
+    }
+
+    resultDiv.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p class="mt-3">Sipariş aranıyor...</p></div>';
+
+    try {
+        const formData = new FormData();
+        formData.append('order_number', orderNumber);
+        formData.append('email', email);
+
+        const response = await fetch('/track-order', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            resultDiv.innerHTML = renderOrderResult(data.order);
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+        }
+    } catch (error) {
+        resultDiv.innerHTML = '<div class="alert alert-danger">Sipariş takip edilirken hata oluştu.</div>';
+    }
+}
+
+async function loadSessionOrders() {
+    const container = document.getElementById('sessionOrders');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/track-session-orders');
+        const data = await response.json();
+
+        if (data.success && data.orders && data.orders.length > 0) {
+            container.innerHTML = renderSessionOrders(data.orders);
+        } else {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;"></i><p>Bu oturumda henüz sipariş vermediniz.</p><a href="/products" class="btn-track mt-3">Alışverişe Başla</a></div>';
+        }
+    } catch (error) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;"></i><p>Siparişler yüklenirken hata oluştu.</p></div>';
+    }
+}
+
+function renderOrderResult(order) {
+    const statusClass = getStatusClass(order.status);
+    const statusText = getStatusText(order.status);
+
+    let html = '<div class="order-result">';
+    html += '<div class="d-flex justify-content-between align-items-start mb-3">';
+    html += '<div><h6 class="mb-1">Sipariş #' + order.order_number + '</h6>';
+    html += '<small class="text-muted">' + new Date(order.created_at).toLocaleDateString('tr-TR') + '</small></div>';
+    html += '<span class="order-status ' + statusClass + '">' + statusText + '</span>';
+    html += '</div>';
+    
+    html += '<div class="row mb-3">';
+    html += '<div class="col-md-6">';
+    html += '<strong>Müşteri:</strong> ' + order.customer_name + '<br>';
+    html += '<strong>E-posta:</strong> ' + order.email + '<br>';
+    html += '<strong>Telefon:</strong> ' + order.phone;
+    html += '</div>';
+    html += '<div class="col-md-6">';
+    html += '<strong>Toplam:</strong> <span class="text-success">' + order.total_price + ' ₺</span><br>';
+    html += '<strong>Ödeme:</strong> ' + (order.payment_method || 'Belirtilmemiş');
+    if (order.updated_at) {
+        html += '<br><strong>Son Güncelleme:</strong> ' + new Date(order.updated_at).toLocaleDateString('tr-TR');
+    }
+    html += '</div>';
+    html += '</div>';
+
+    if (order.admin_notes) {
+        html += '<div class="alert alert-info mt-3">';
+        html += '<i class="fas fa-user-shield me-2"></i><strong>Yönetici Notu:</strong><br>';
+        html += order.admin_notes;
+        html += '</div>';
+    }
+
+    if (order.status === 'pending') {
+        html += '<button class="btn btn-outline-danger mt-3" onclick="cancelOrder(' + order.id + ')">İptal Et</button>';
+    }
+
+    html += '</div>';
+    return html;
+}
+
+function renderSessionOrders(orders) {
+    let html = '<div class="session-orders">';
+    
+    orders.forEach(order => {
+        const statusClass = getStatusClass(order.status);
+        const statusText = getStatusText(order.status);
+        
+        html += '<div class="session-order-card">';
+        html += '<div class="d-flex justify-content-between align-items-start mb-2">';
+        html += '<h6 class="mb-0">Sipariş #' + order.order_number + '</h6>';
+        html += '<span class="order-status ' + statusClass + '">' + statusText + '</span>';
+        html += '</div>';
+        html += '<p class="text-muted mb-2">' + new Date(order.created_at).toLocaleDateString('tr-TR') + '</p>';
+        html += '<p class="mb-2"><strong>Toplam:</strong> <span class="text-success">' + order.total_price + ' ₺</span></p>';
+        
+        if (order.status === 'pending') {
+            html += '<button class="btn btn-sm btn-outline-danger" onclick="cancelOrder(' + order.id + ')">İptal Et</button>';
+        }
+        
+        html += '</div>';
+    });
+    
+    html += '</div>';
+    return html;
+}
+
+async function cancelOrder(orderId) {
+    if (!confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?')) return;
+
+    try {
+        const response = await fetch('/cancel-order/' + orderId, {
+            method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('Sipariş başarıyla iptal edildi.');
+            
+            // Refresh the current view
+            {{if not .isLoggedIn}}
+            loadSessionOrders();
+            {{end}}
+            
+            // Clear guest form result if visible
+            const guestResult = document.getElementById('guestResult');
+            if (guestResult) guestResult.innerHTML = '';
+        } else {
+            alert('Hata: ' + data.error);
+        }
+    } catch (error) {
+        alert('Sipariş iptal edilirken hata oluştu.');
+    }
+}
+
+function getStatusClass(status) {
+    const statusMap = {
+        'pending': 'status-pending',
+        'confirmed': 'status-confirmed',
+        'shipped': 'status-shipped',
+        'delivered': 'status-delivered',
+        'cancelled': 'status-cancelled'
+    };
+    return statusMap[status] || 'status-pending';
+}
+
+function getStatusText(status) {
+    const statusMap = {
+        'pending': 'Beklemede',
+        'confirmed': 'Onaylandı',
+        'shipped': 'Kargoda',
+        'delivered': 'Teslim Edildi',
+        'cancelled': 'İptal Edildi'
+    };
+    return statusMap[status] || status;
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('guestTrackingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        trackByNumber();
+    });
+
+    {{if not .isLoggedIn}}
+    loadSessionOrders();
+    {{end}}
+});
+</script>
+
+{{end}} 

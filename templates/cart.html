@@ -1,0 +1,230 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-shopping-cart me-2"></i>Alışveriş Sepeti
+            </h1>
+        </div>
+    </div>
+
+    {{if .cart.Items}}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Fiyat</th>
+                                    <th>Adet</th>
+                                    <th>Toplam</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .cart.Items}}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {{if .Image}}
+                                            <img src="{{.Image}}" alt="{{.Name}}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" class="me-3">
+                                            {{else}}
+                                            <div class="bg-light d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; border-radius: 8px;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
+                                            {{end}}
+                                            <div>
+                                                <h6 class="mb-0" style="color: #1e3a8a;">{{.Name}}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{.Price}} ₺</td>
+                                    <td>
+                                        <div class="input-group" style="width: 120px;">
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity({{.ProductID}}, -1, this)">-</button>
+                                            <input type="number" class="form-control form-control-sm text-center" value="{{.Quantity}}" min="1" onchange="updateQuantity({{.ProductID}}, this.value, this)" style="border-left: 0; border-right: 0;">
+                                            <button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity({{.ProductID}}, 1, this)">+</button>
+                                        </div>
+                                    </td>
+                                    <td><strong>{{.TotalPrice}} ₺</strong></td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" onclick="removeFromCart({{.ProductID}})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Sipariş Özeti</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Toplam Ürün:</span>
+                        <span>{{.cart.TotalItems}} adet</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-bold">Toplam Tutar:</span>
+                        <span class="fw-bold fs-5 text-success">{{.cart.TotalPrice}} ₺</span>
+                    </div>
+                    <hr>
+                    {{if .isLoggedIn}}
+                    <!-- Giriş yapmış kullanıcı için -->
+                    <button class="btn btn-success w-100 mb-2" onclick="proceedToCheckout()">
+                        <i class="fas fa-credit-card me-2"></i>Ödemeye Geç
+                    </button>
+                    {{else}}
+                    <!-- Giriş yapmamış kullanıcı için -->
+                    <button class="btn btn-success w-100 mb-2" onclick="proceedToCheckout()">
+                        <i class="fas fa-shopping-cart me-2"></i>Kayıt Olmadan Sipariş Ver
+                    </button>
+                    <a href="/register" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-user-plus me-2"></i>Kayıt Ol ve Sipariş Ver
+                    </a>
+                    <a href="/login" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap ve Sipariş Ver
+                    </a>
+                    {{end}}
+                    <a href="/products" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left me-2"></i>Alışverişe Devam Et
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{else}}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-shopping-cart text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="text-muted">Sepetiniz Boş</h3>
+                    <p class="text-muted">Henüz sepetinize ürün eklemediniz.</p>
+                    <a href="/products" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{end}}
+</div>
+
+<script>
+function updateQuantity(productId, change, buttonElement) {
+    let quantity;
+    
+    if (typeof change === 'string') {
+        // Input değeri değiştiğinde
+        quantity = parseInt(change);
+    } else {
+        // +/- butonlarına tıklandığında
+        const inputElement = buttonElement.parentNode.querySelector('input');
+        const currentValue = parseInt(inputElement.value) || 0;
+        quantity = currentValue + change;
+    }
+    
+    if (quantity < 1) quantity = 1;
+    
+    fetch('/cart/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: quantity
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu: ' + error.message);
+    });
+}
+
+function removeFromCart(productId) {
+    if (confirm('Bu ürünü sepetten kaldırmak istediğinizden emin misiniz?')) {
+        fetch('/cart/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu: ' + error.message);
+        });
+    }
+}
+
+function proceedToCheckout() {
+    window.location.href = '/checkout';
+}
+
+// Sayfa yüklendiğinde sepet sayısını güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCount();
+});
+
+function updateCartCount() {
+    fetch('/cart/count')
+    .then(response => response.json())
+    .then(data => {
+        const cartCountElement = document.getElementById('cartCount');
+        if (cartCountElement) {
+            if (data.count > 0) {
+                cartCountElement.textContent = data.count;
+                cartCountElement.style.display = 'inline';
+            } else {
+                cartCountElement.style.display = 'none';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Sepet sayısı alınamadı:', error);
+    });
+}
+</script>
+{{end}} 

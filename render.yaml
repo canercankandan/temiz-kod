@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: suaritamauzumani
+    env: go
+    region: frankfurt  # Türkiye'ye yakın region
+    plan: free
+    buildCommand: go mod download && go build -o main cmd/web/main.go
+    startCommand: ./main
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: GIN_MODE
+        value: release
+      - key: HOST
+        value: 0.0.0.0
+      - key: GOPROXY
+        value: direct
+      - key: GOSUMDB
+        value: "off"
+    disk:
+      name: data-disk
+      mountPath: /opt/render/project/src
+      sizeGB: 1 

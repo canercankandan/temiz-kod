@@ -1,0 +1,1298 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0">
+                                <i class="fas fa-comments me-2"></i>Canlı Destek
+                            </h4>
+                            <small>Sorularınız için 7/24 buradayız!</small>
+                        </div>
+                        <div>
+                            <button id="videoCallBtn" class="btn btn-light btn-sm me-2" title="Görüntülü Görüşmeye Geç">
+                                <i class="fas fa-video me-1"></i>Görüntülü Görüşme
+                            </button>
+                            <button id="endCallBtn" class="btn btn-danger btn-sm" style="display: none;" title="Görüşmeyi Sonlandır">
+                                <i class="fas fa-phone-slash me-1"></i>Sonlandır
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <!-- Video Call Area -->
+                    <div id="videoCallArea" class="video-call-area" style="display: none; height: 300px; background: #000; position: relative;">
+                        <video id="localVideo" autoplay muted style="width: 150px; height: 100px; position: absolute; top: 10px; right: 10px; border: 2px solid #fff; border-radius: 8px; z-index: 10;"></video>
+                        <video id="remoteVideo" autoplay style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <div class="video-controls" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10;">
+                            <button id="toggleMuteBtn" class="btn btn-secondary btn-sm me-2" title="Mikrofonu Aç/Kapat">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button id="toggleVideoBtn" class="btn btn-secondary btn-sm me-2" title="Kamerayı Aç/Kapat">
+                                <i class="fas fa-video"></i>
+                            </button>
+                            <button id="endCallBtnVideo" class="btn btn-danger btn-sm" onclick="endVideoCall()" title="Görüşmeyi Sonlandır">
+                                <i class="fas fa-phone-slash me-1"></i>Sonlandır
+                            </button>
+                        </div>
+                        <div class="call-status" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 15px; font-size: 12px;">
+                            <i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i>
+                            <span id="callStatusText">Bağlantı kuruluyor...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Messages Area -->
+                    <div id="chatMessages" class="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; background: #f8f9fa;">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>Merhaba! Size nasıl yardımcı olabiliriz?</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div class="chat-input border-top p-3">
+                        <div class="input-group">
+                            <input type="text" id="messageInput" class="form-control" placeholder="Mesajınızı yazın..." maxlength="500">
+                            <button class="btn btn-primary" id="sendButton" type="button">
+                                <i class="fas fa-paper-plane"></i> Gönder
+                            </button>
+                        </div>
+                        <small class="text-muted">Enter tuşuna basarak da mesaj gönderebilirsiniz</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support Info -->
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Destek Saatleri:</strong> 7/24 online destek hizmeti veriyoruz. 
+                Mesajlarınız en kısa sürede yanıtlanacaktır.
+            </div>
+            
+            <!-- Safari Compatibility Info -->
+            <div id="safariInfo" class="alert alert-warning mt-2" style="display: none;">
+                <i class="fas fa-safari me-2"></i>
+                <strong>Safari Kullanıcıları İçin:</strong>
+                <ul class="mb-0 mt-2">
+                    <li>iOS 11.3+ veya macOS High Sierra+ gereklidir</li>
+                    <li>Kamera ve mikrofon izni vermeniz gerekecek</li>
+                    <li>Yerel ağda test için: <code>http://192.168.1.133:9394</code></li>
+                    <li>Sorun yaşarsanız Chrome veya Firefox deneyebilirsiniz</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chat-messages {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.message {
+    margin-bottom: 15px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+    text-align: right;
+}
+
+.message.admin {
+    text-align: left;
+}
+
+.message-bubble {
+    display: inline-block;
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.message.user .message-bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message.admin .message-bubble {
+    background: white;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.message.user .message-time {
+    text-align: right;
+    color: #fff;
+}
+
+.message.admin .message-time {
+    text-align: left;
+    color: #666;
+}
+
+.typing-indicator {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.typing-bubble {
+    display: inline-block;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 18px;
+    padding: 12px 16px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.chat-input {
+    background: white;
+}
+
+#messageInput:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.online-status {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #4CAF50;
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+/* Video Call Styles */
+.video-call-area {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.video-controls button {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-controls button.muted {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.video-controls button.video-off {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#localVideo {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#localVideo:hover {
+    transform: scale(1.05);
+}
+
+.call-status {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+}
+
+/* Responsive video */
+@media (max-width: 768px) {
+    #localVideo {
+        width: 100px;
+        height: 75px;
+    }
+    
+    .video-controls button {
+        width: 35px;
+        height: 35px;
+    }
+    
+    /* Safari mobile specific */
+    .video-call-area {
+        height: 250px !important;
+    }
+    
+    .chat-messages {
+        height: 180px !important;
+    }
+}
+
+/* Safari-specific styles */
+@supports (-webkit-appearance: none) {
+    #localVideo, #remoteVideo {
+        -webkit-playsinline: true;
+        -webkit-transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+    
+    .video-call-area {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+    
+    #videoCallBtn {
+        -webkit-appearance: none;
+        border-radius: 6px;
+    }
+}
+
+/* iOS Safari specific */
+@supports (-webkit-touch-callout: none) {
+    .video-controls {
+        padding-bottom: 20px; /* Account for iOS home indicator */
+    }
+    
+    .chat-input {
+        padding-bottom: 25px; /* Account for iOS keyboard */
+    }
+    
+    #messageInput {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}
+</style>
+
+<script>
+let sessionID = '{{.sessionID}}';
+let lastMessageTime = null;
+let pollInterval;
+
+// Video Call Variables
+let localStream = null;
+let remoteStream = null;
+let peerConnection = null;
+let isCallActive = false;
+let isMuted = false;
+let isVideoOff = false;
+
+// DOM Elements
+const chatMessages = document.getElementById('chatMessages');
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+const videoCallBtn = document.getElementById('videoCallBtn');
+const endCallBtn = document.getElementById('endCallBtn');
+const videoCallArea = document.getElementById('videoCallArea');
+const localVideo = document.getElementById('localVideo');
+const remoteVideo = document.getElementById('remoteVideo');
+const toggleMuteBtn = document.getElementById('toggleMuteBtn');
+const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+const callStatusText = document.getElementById('callStatusText');
+
+// Initialize chat
+document.addEventListener('DOMContentLoaded', function() {
+    loadMessages();
+    startPolling();
+    
+    // Check video call permissions on load
+    updateVideoCallButton();
+    
+    // Show Safari info if using Safari
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isSafari) {
+        const safariInfo = document.getElementById('safariInfo');
+        if (safariInfo) {
+            safariInfo.style.display = 'block';
+        }
+    }
+    
+    // Send message on button click
+    sendButton.addEventListener('click', sendMessage);
+    
+    // Send message on Enter key
+    messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    // Focus on input
+    messageInput.focus();
+    
+    // Video call event listeners
+    videoCallBtn.addEventListener('click', startVideoCall);
+    endCallBtn.addEventListener('click', endVideoCall);
+    toggleMuteBtn.addEventListener('click', toggleMute);
+    toggleVideoBtn.addEventListener('click', toggleVideo);
+});
+
+// Load existing messages
+function loadMessages() {
+    fetch('/support/messages', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayMessages(data.messages);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading messages:', error);
+    });
+}
+
+// Send message
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
+    
+    // Disable input while sending
+    messageInput.disabled = true;
+    sendButton.disabled = true;
+    
+    fetch('/support/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageInput.value = '';
+            addMessage(data.message);
+            scrollToBottom();
+        } else {
+            alert('Mesaj gönderilemedi: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Mesaj gönderilirken hata oluştu');
+    })
+    .finally(() => {
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        messageInput.focus();
+    });
+}
+
+// Display messages
+function displayMessages(messages) {
+    // Clear loading message
+    chatMessages.innerHTML = '';
+    
+    if (messages && messages.length > 0) {
+        messages.forEach(message => {
+            addMessage(message);
+        });
+        scrollToBottom();
+    } else {
+        showWelcomeMessage();
+    }
+}
+
+// Add single message
+function addMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${message.is_admin ? 'admin' : 'user'}`;
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'message-bubble';
+    bubbleDiv.textContent = message.message;
+    
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    const messageTime = new Date(message.created_at);
+    timeDiv.textContent = messageTime.toLocaleTimeString('tr-TR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    messageDiv.appendChild(bubbleDiv);
+    messageDiv.appendChild(timeDiv);
+    chatMessages.appendChild(messageDiv);
+    
+    // Update last message time
+    lastMessageTime = message.created_at;
+}
+
+// Show welcome message
+function showWelcomeMessage() {
+    chatMessages.innerHTML = `
+        <div class="text-center text-muted">
+            <i class="fas fa-comments fa-3x mb-3"></i>
+            <p>Merhaba! Size nasıl yardımcı olabiliriz?</p>
+            <div class="online-status"></div>
+            <small>Destek ekibimiz online</small>
+        </div>
+    `;
+}
+
+// Scroll to bottom
+function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Start polling for new messages
+function startPolling() {
+    pollInterval = setInterval(() => {
+        loadMessages();
+    }, 3000); // Poll every 3 seconds
+}
+
+// Stop polling when page is hidden
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        clearInterval(pollInterval);
+    } else {
+        startPolling();
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    clearInterval(pollInterval);
+    if (isCallActive) {
+        endVideoCall();
+    }
+});
+
+// Video Call Functions
+async function startVideoCall() {
+    try {
+        // Check permissions first
+        const permissions = await checkMediaPermissions();
+        
+        if (!permissions.supported) {
+            showPermissionDialog(permissions.message);
+            callStatusText.textContent = 'Desteklenmiyor';
+            return;
+        }
+        
+        if (!permissions.granted && permissions.message) {
+            showPermissionDialog(permissions.message);
+            callStatusText.textContent = 'İzin gerekli';
+            return;
+        }
+        
+        // Detect mobile device and browser
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
+        // Safari and mobile-friendly constraints
+        const constraints = {
+            video: isSafari ? {
+                facingMode: isMobile ? 'user' : 'environment',
+                width: { ideal: isMobile ? 640 : 1280, max: 1920 },
+                height: { ideal: isMobile ? 480 : 720, max: 1080 },
+                frameRate: { ideal: 30, max: 30 }
+            } : (isMobile ? {
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            } : {
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }),
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: isSafari ? 44100 : undefined
+            }
+        };
+        
+        // Request camera and microphone access with Safari-specific handling
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+            } else {
+                // Fallback for older browsers
+                const getUserMedia = navigator.getUserMedia || 
+                                   navigator.webkitGetUserMedia || 
+                                   navigator.mozGetUserMedia ||
+                                   navigator.msGetUserMedia;
+                
+                if (!getUserMedia) {
+                    throw new Error('getUserMedia not supported');
+                }
+                
+                localStream = await new Promise((resolve, reject) => {
+                    getUserMedia.call(navigator, constraints, resolve, reject);
+                });
+            }
+        } catch (error) {
+            // Safari fallback with simpler constraints
+            if (isSafari) {
+                console.log('Safari: Trying simpler constraints...');
+                try {
+                    const simpleConstraints = { 
+                        video: isMobile ? { facingMode: 'user' } : true, 
+                        audio: true 
+                    };
+                    
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                        localStream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
+                    } else {
+                        const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+                        localStream = await new Promise((resolve, reject) => {
+                            getUserMedia.call(navigator, simpleConstraints, resolve, reject);
+                        });
+                    }
+                    
+                    console.log('Safari: Simple constraints worked!');
+                } catch (simpleError) {
+                    throw simpleError; // Re-throw the simpler error
+                }
+            } else {
+                throw error; // Re-throw original error for non-Safari browsers
+            }
+        }
+        
+        // Set video source
+        localVideo.srcObject = localStream;
+        
+        // Safari-specific video handling
+        if (isSafari) {
+            localVideo.playsInline = true; // Prevent fullscreen on iOS
+            localVideo.setAttribute('playsinline', ''); // Additional attribute for iOS
+            localVideo.muted = true; // Ensure local video is muted
+        }
+        
+        // Show video call area
+        videoCallArea.style.display = 'block';
+        videoCallBtn.style.display = 'none';
+        endCallBtn.style.display = 'inline-block';
+        
+        // Adjust chat area height for mobile
+        if (isMobile) {
+            chatMessages.style.height = '200px';
+        } else {
+            chatMessages.style.height = '300px';
+        }
+        
+        isCallActive = true;
+        callStatusText.textContent = isSafari ? 'Safari görüntülü görüşme aktif' : 'Görüntülü görüşme başlatıldı';
+        
+        // Send video call request to admin
+        await sendVideoCallRequest();
+        
+        // Initialize WebRTC peer connection
+        await initializePeerConnection();
+        
+        // Start signaling polling
+        startSignalingPolling();
+        
+        // Add system message
+        addSystemMessage(`Görüntülü görüşme başlatıldı${isSafari ? ' (Safari)' : ''}. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...`);
+        
+    } catch (error) {
+        console.error('Video call başlatılamadı:', error);
+        
+        // Use Safari-specific or general error message
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
+        const errorMessage = isSafari ? 
+            getSafariErrorMessage(error.name, isIOS) : 
+            getErrorMessage(error.name, isMobile);
+        
+        // Show detailed error message
+        showPermissionDialog(errorMessage);
+        callStatusText.textContent = 'Hata oluştu';
+    }
+}
+
+async function endVideoCall() {
+    try {
+        // Stop local stream
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        
+        // Close peer connection
+        if (peerConnection) {
+            peerConnection.close();
+            peerConnection = null;
+        }
+        
+        // Hide video call area
+        videoCallArea.style.display = 'none';
+        videoCallBtn.style.display = 'inline-block';
+        endCallBtn.style.display = 'none';
+        
+        // Reset chat area height
+        chatMessages.style.height = '400px';
+        
+        // Reset video elements
+        localVideo.srcObject = null;
+        remoteVideo.srcObject = null;
+        
+        // Reset states
+        isCallActive = false;
+        isMuted = false;
+        isVideoOff = false;
+        
+        // Stop signaling polling
+        stopSignalingPolling();
+        
+        // Reset button states
+        toggleMuteBtn.classList.remove('muted');
+        toggleVideoBtn.classList.remove('video-off');
+        toggleMuteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        toggleVideoBtn.innerHTML = '<i class="fas fa-video"></i>';
+        
+        // Send end call notification
+        await sendVideoCallEnd();
+        
+        // Add system message
+        addSystemMessage('Görüntülü görüşme sonlandırıldı.');
+        
+    } catch (error) {
+        console.error('Video call sonlandırma hatası:', error);
+    }
+}
+
+function toggleMute() {
+    if (localStream) {
+        const audioTrack = localStream.getAudioTracks()[0];
+        if (audioTrack) {
+            audioTrack.enabled = !audioTrack.enabled;
+            isMuted = !audioTrack.enabled;
+            
+            if (isMuted) {
+                toggleMuteBtn.classList.add('muted');
+                toggleMuteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+            } else {
+                toggleMuteBtn.classList.remove('muted');
+                toggleMuteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            }
+        }
+    }
+}
+
+function toggleVideo() {
+    if (localStream) {
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            isVideoOff = !videoTrack.enabled;
+            
+            if (isVideoOff) {
+                toggleVideoBtn.classList.add('video-off');
+                toggleVideoBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+            } else {
+                toggleVideoBtn.classList.remove('video-off');
+                toggleVideoBtn.innerHTML = '<i class="fas fa-video"></i>';
+            }
+        }
+    }
+}
+
+// Initialize WebRTC Peer Connection
+async function initializePeerConnection() {
+    try {
+        // Create peer connection with STUN servers
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+        
+        peerConnection = new RTCPeerConnection(configuration);
+        
+        // Add local stream to peer connection
+        if (localStream) {
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+        }
+        
+        // Handle remote stream
+        peerConnection.ontrack = (event) => {
+            console.log('Remote stream received');
+            remoteStream = event.streams[0];
+            remoteVideo.srcObject = remoteStream;
+            callStatusText.textContent = 'Bağlantı kuruldu';
+        };
+        
+        // Handle ICE candidates
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                sendSignalingMessage({
+                    type: 'ice-candidate',
+                    candidate: event.candidate
+                });
+            }
+        };
+        
+        // Handle connection state changes
+        peerConnection.onconnectionstatechange = () => {
+            console.log('Connection state:', peerConnection.connectionState);
+            switch (peerConnection.connectionState) {
+                case 'connected':
+                    callStatusText.textContent = 'Bağlandı';
+                    break;
+                case 'disconnected':
+                    callStatusText.textContent = 'Bağlantı kesildi';
+                    break;
+                case 'failed':
+                    callStatusText.textContent = 'Bağlantı başarısız';
+                    break;
+            }
+        };
+        
+        console.log('Peer connection initialized');
+        
+    } catch (error) {
+        console.error('Peer connection initialization failed:', error);
+    }
+}
+
+// Send signaling message to admin
+async function sendSignalingMessage(message) {
+    try {
+        const response = await fetch('/support/webrtc-signal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionID,
+                message: message
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Signaling message failed:', data.error);
+        }
+    } catch (error) {
+        console.error('Error sending signaling message:', error);
+    }
+}
+
+// Handle incoming signaling messages
+async function handleSignalingMessage(message) {
+    try {
+        console.log('Handling signaling message:', message);
+        switch (message.type) {
+            case 'offer':
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                sendSignalingMessage({
+                    type: 'answer',
+                    answer: answer
+                });
+                break;
+                
+            case 'answer':
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                break;
+                
+            case 'ice-candidate':
+                await peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+                break;
+                
+            case 'call-accepted':
+                // Admin accepted the call, now create and send offer
+                console.log('Call accepted by admin, creating offer...');
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                sendSignalingMessage({
+                    type: 'offer',
+                    offer: offer
+                });
+                addSystemMessage('Admin görüşmeyi kabul etti. Bağlantı kuruluyor...');
+                break;
+        }
+    } catch (error) {
+        console.error('Error handling signaling message:', error);
+    }
+}
+
+async function sendVideoCallRequest() {
+    try {
+        const response = await fetch('/support/video-call-request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionID,
+                action: 'start'
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Video call request failed:', data.error);
+        }
+    } catch (error) {
+        console.error('Error sending video call request:', error);
+    }
+}
+
+async function sendVideoCallEnd() {
+    try {
+        const response = await fetch('/support/video-call-request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionID,
+                action: 'end'
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Video call end failed:', data.error);
+        }
+    } catch (error) {
+        console.error('Error sending video call end:', error);
+    }
+}
+
+function addSystemMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message system';
+    messageDiv.style.textAlign = 'center';
+    messageDiv.style.marginBottom = '15px';
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.style.display = 'inline-block';
+    bubbleDiv.style.background = '#17a2b8';
+    bubbleDiv.style.color = 'white';
+    bubbleDiv.style.padding = '8px 16px';
+    bubbleDiv.style.borderRadius = '15px';
+    bubbleDiv.style.fontSize = '0.9em';
+    bubbleDiv.innerHTML = '<i class="fas fa-info-circle me-2"></i>' + message;
+    
+    messageDiv.appendChild(bubbleDiv);
+    chatMessages.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Show permission dialog with detailed instructions
+function showPermissionDialog(message) {
+    // Create modal backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    `;
+    
+    // Create modal content
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    `;
+    
+    modal.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f39c12; margin-bottom: 15px;"></i>
+            <h4 style="color: #333; margin: 0;">Kamera ve Mikrofon İzni Gerekli</h4>
+        </div>
+        <div style="white-space: pre-line; line-height: 1.6; color: #666; margin-bottom: 20px;">
+            ${message}
+        </div>
+        <div style="text-align: center;">
+            <button onclick="closePermissionDialog()" style="
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-right: 10px;
+            ">Anladım</button>
+            <button onclick="retryVideoCall()" style="
+                background: #28a745;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+            ">Tekrar Dene</button>
+        </div>
+    `;
+    
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+    
+    // Store reference for closing
+    window.permissionDialog = backdrop;
+}
+
+// Close permission dialog
+function closePermissionDialog() {
+    if (window.permissionDialog) {
+        document.body.removeChild(window.permissionDialog);
+        window.permissionDialog = null;
+    }
+}
+
+// Retry video call
+function retryVideoCall() {
+    closePermissionDialog();
+    startVideoCall();
+}
+
+// Check camera and microphone permissions
+async function checkMediaPermissions() {
+    try {
+        // Detect mobile device and browser
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
+        // Enhanced WebRTC support check for Safari
+        const hasWebRTC = !!(window.RTCPeerConnection || 
+                           window.webkitRTCPeerConnection || 
+                           window.mozRTCPeerConnection ||
+                           window.RTCPeerConnection);
+        
+        if (!hasWebRTC) {
+            return {
+                supported: false,
+                message: `Bu tarayıcı WebRTC video görüşme teknolojisini desteklemiyor.\n\n${isSafari ? '🍎 Safari için:\n• Safari 11+ sürümü gereklidir\n• iOS 11+ veya macOS High Sierra+\n• Tarayıcınızı güncelleyin' : '• Chrome, Firefox veya Edge kullanmayı deneyin'}`
+            };
+        }
+        
+        // Enhanced getUserMedia support check with Safari-specific fallbacks
+        const hasGetUserMedia = !!(
+            (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) || 
+            navigator.getUserMedia || 
+            navigator.webkitGetUserMedia || 
+            navigator.mozGetUserMedia ||
+            navigator.msGetUserMedia
+        );
+        
+        if (!hasGetUserMedia) {
+            return {
+                supported: false,
+                message: `Bu tarayıcı kamera ve mikrofon erişimini desteklemiyor.\n\n${isSafari ? '🍎 Safari güncellemesi gerekli:\n• Safari 11+ sürümü kullanın\n• iOS ayarlarından Safari\'yi güncelleyin' : '• Tarayıcınızı güncelleyin veya farklı tarayıcı deneyin'}`
+            };
+        }
+        
+        // Check if site is secure (HTTPS or localhost or local IP)
+        const isSecure = location.protocol === 'https:' || 
+                        location.hostname === 'localhost' || 
+                        location.hostname === '127.0.0.1' ||
+                        location.hostname.startsWith('192.168.') ||
+                        location.hostname.startsWith('10.') ||
+                        location.hostname.startsWith('172.') ||
+                        location.hostname.endsWith('.local');
+        
+        // HTTPS requirement - more lenient for local network
+        if (!isSecure && !location.hostname.startsWith('192.168.')) {
+            return {
+                supported: false,
+                message: `Güvenli bağlantı gerekli.\n\n${isIOS ? '📱 iOS Safari için:\n• HTTPS bağlantısı zorunludur\n• Yerel test için: http://192.168.x.x:9394 kullanın' : '🔒 Güvenlik gereksinimleri:\n• HTTPS bağlantısı gereklidir\n• Yerel ağ IP\'si ile test edebilirsiniz'}`
+            };
+        }
+        
+        // Safari-specific constraints
+        const constraints = {
+            video: isSafari ? {
+                facingMode: isMobile ? 'user' : 'environment',
+                width: { ideal: isMobile ? 640 : 1280, max: 1920 },
+                height: { ideal: isMobile ? 480 : 720, max: 1080 },
+                frameRate: { ideal: 30, max: 30 }
+            } : (isMobile ? { 
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            } : true),
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 44100
+            }
+        };
+        
+        // Try modern API first with Safari-specific handling
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                stream.getTracks().forEach(track => track.stop());
+                return { supported: true, granted: true };
+            } catch (error) {
+                // Safari sometimes needs simpler constraints
+                if (isSafari) {
+                    try {
+                        const simpleConstraints = { video: true, audio: true };
+                        const stream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
+                        stream.getTracks().forEach(track => track.stop());
+                        return { supported: true, granted: true };
+                    } catch (simpleError) {
+                        return {
+                            supported: true,
+                            granted: false,
+                            error: simpleError.name,
+                            message: getSafariErrorMessage(simpleError.name, isIOS)
+                        };
+                    }
+                } else {
+                    return {
+                        supported: true,
+                        granted: false,
+                        error: error.name,
+                        message: getErrorMessage(error.name, isMobile)
+                    };
+                }
+            }
+        }
+        
+        // Fallback for older browsers with Promise wrapper
+        return new Promise((resolve) => {
+            const getUserMedia = navigator.getUserMedia || 
+                               navigator.webkitGetUserMedia || 
+                               navigator.mozGetUserMedia ||
+                               navigator.msGetUserMedia;
+            
+            if (!getUserMedia) {
+                resolve({
+                    supported: false,
+                    message: 'getUserMedia desteklenmiyor'
+                });
+                return;
+            }
+            
+            getUserMedia.call(navigator, constraints,
+                (stream) => {
+                    stream.getTracks().forEach(track => track.stop());
+                    resolve({ supported: true, granted: true });
+                },
+                (error) => {
+                    resolve({ 
+                        supported: true, 
+                        granted: false, 
+                        error: error.name,
+                        message: isSafari ? getSafariErrorMessage(error.name, isIOS) : getErrorMessage(error.name, isMobile)
+                    });
+                }
+            );
+        });
+        
+    } catch (error) {
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        
+        return {
+            supported: true,
+            granted: false,
+            error: error.name,
+            message: isSafari ? getSafariErrorMessage(error.name, isIOS) : getErrorMessage(error.name, false)
+        };
+    }
+}
+
+// Safari-specific error messages
+function getSafariErrorMessage(errorName, isIOS) {
+    const deviceInfo = isIOS ? 'iOS Safari' : 'Safari';
+    
+    switch (errorName) {
+        case 'NotAllowedError':
+            return `${deviceInfo} izinleri reddedildi.\n\n` +
+                   `${isIOS ? 
+                     '📱 iPhone/iPad için:\n• Safari ayarlarına gidin\n• "Kamera" ve "Mikrofon" bölümünden bu siteye izin verin\n• Sayfa adresinin yanındaki "AA" simgesine tıklayın\n• "Website Ayarları" > "Kamera ve Mikrofon" > "İzin Ver"\n• Sayfayı yenileyin ve tekrar deneyin' :
+                     '🖥️ Mac Safari için:\n• Adres çubuğundaki kamera simgesine tıklayın\n• "İzin ver" seçeneğini seçin\n• Safari > Tercihler > Web Siteleri > Kamera/Mikrofon\n• Bu siteye izin verin'
+                   }`;
+        case 'NotFoundError':
+            return `Kamera veya mikrofon bulunamadı.\n\n• ${isIOS ? 'iPhone/iPad' : 'Mac'} cihazında kamera ve mikrofon olduğundan emin olun\n• Başka bir uygulama tarafından kullanılmıyor olabilir\n• ${isIOS ? 'iOS ayarlarından kamera/mikrofon izinlerini kontrol edin' : 'Sistem tercihlerinden kamera/mikrofon izinlerini kontrol edin'}`;
+        case 'NotReadableError':
+            return `Kamera veya mikrofon kullanımda.\n\n• Başka bir Safari sekmesi veya uygulama kullanıyor olabilir\n• ${isIOS ? 'Uygulamayı kapatıp tekrar açın' : 'Safari\'yi yeniden başlatın'}\n• Cihazı yeniden başlatmayı deneyin`;
+        case 'OverconstrainedError':
+            return `Kamera ayarları desteklenmiyor.\n\n• Safari\'nin kamera kısıtlamaları nedeniyle\n• Farklı bir kamera kullanmayı deneyin\n• Basit video ayarları deneniyor...`;
+        case 'SecurityError':
+            return `Safari güvenlik hatası.\n\n• HTTPS bağlantısı gerekli\n• ${isIOS ? 'iOS 11.3+ gerekli' : 'macOS High Sierra+ gerekli'}\n• Safari sürümünüzü güncelleyin\n• Yerel test için: http://192.168.x.x:9394`;
+        case 'AbortError':
+            return `İşlem iptal edildi.\n\n• Safari tarafından durduruldu\n• Tekrar deneyiniz\n• Sayfayı yenileyin`;
+        default:
+            return `Safari hatası: ${errorName}\n\n• Safari sürümünüzü güncelleyin\n• Sayfayı yenileyin ve tekrar deneyin\n• ${isIOS ? 'iOS 11.3+' : 'macOS High Sierra+'} gerekli\n• Chrome veya Firefox deneyebilirsiniz`;
+    }
+}
+
+// Get user-friendly error message
+function getErrorMessage(errorName, isMobile) {
+    const deviceType = isMobile ? 'Mobil cihaz' : 'Tarayıcı';
+    
+    switch (errorName) {
+        case 'NotAllowedError':
+            return `${deviceType} izinleri reddedildi.\n\n` +
+                   `${isMobile ? 
+                     '📱 Mobil için:\n• Tarayıcı ayarlarından siteye kamera/mikrofon izni verin\n• Sayfa adresinin yanındaki kilit simgesine tıklayın\n• "Kamera" ve "Mikrofon" seçeneklerini "İzin ver" yapın' :
+                     '🖥️ Masaüstü için:\n• Adres çubuğundaki kamera simgesine tıklayın\n• "İzin ver" seçeneğini seçin\n• Sayfayı yenileyin'
+                   }`;
+        case 'NotFoundError':
+            return `Kamera veya mikrofon bulunamadı.\n\n• Cihazınızda kamera ve mikrofon olduğundan emin olun\n• Başka bir uygulama tarafından kullanılmıyor olabilir`;
+        case 'NotReadableError':
+            return `Kamera veya mikrofon kullanımda.\n\n• Başka bir uygulama tarafından kullanılıyor olabilir\n• Cihazı yeniden başlatmayı deneyin`;
+        case 'OverconstrainedError':
+            return `Kamera ayarları desteklenmiyor.\n\n• Farklı bir kamera kullanmayı deneyin`;
+        case 'SecurityError':
+            return `Güvenlik hatası.\n\n• HTTPS bağlantısı gerekli olabilir\n• Tarayıcı ayarlarını kontrol edin`;
+        default:
+            return `Bilinmeyen hata: ${errorName}\n\n• Sayfayı yenileyin ve tekrar deneyin\n• Farklı bir tarayıcı kullanmayı deneyin`;
+    }
+}
+
+// Update video call button based on permissions
+async function updateVideoCallButton() {
+    const permissions = await checkMediaPermissions();
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (!permissions.supported) {
+        videoCallBtn.disabled = true;
+        videoCallBtn.innerHTML = '<i class="fas fa-times"></i> Desteklenmiyor';
+        videoCallBtn.title = permissions.message;
+        
+        // Add Safari-specific styling
+        if (isSafari) {
+            videoCallBtn.style.backgroundColor = '#ff6b6b';
+            videoCallBtn.style.borderColor = '#ff6b6b';
+        }
+    } else if (!permissions.granted) {
+        videoCallBtn.disabled = false;
+        videoCallBtn.innerHTML = isSafari ? 
+            `<i class="fas fa-video"></i> ${isIOS ? 'Safari İzin Ver' : 'Safari Görüşme'}` :
+            '<i class="fas fa-video"></i> İzin Ver & Görüntülü Görüşme';
+        videoCallBtn.title = permissions.message || 'Kamera ve mikrofon izni gerekli';
+        
+        // Add Safari-specific styling
+        if (isSafari) {
+            videoCallBtn.style.backgroundColor = '#007bff';
+            videoCallBtn.style.borderColor = '#007bff';
+            videoCallBtn.style.fontSize = '0.9em';
+        }
+    } else {
+        videoCallBtn.disabled = false;
+        videoCallBtn.innerHTML = isSafari ? 
+            `<i class="fas fa-video"></i> ${isIOS ? 'iOS Görüşme' : 'Safari Görüşme'}` :
+            '<i class="fas fa-video"></i> Görüntülü Görüşme';
+        videoCallBtn.title = 'Görüntülü görüşme başlat';
+        
+        // Add Safari success styling
+        if (isSafari) {
+            videoCallBtn.style.backgroundColor = '#28a745';
+            videoCallBtn.style.borderColor = '#28a745';
+        }
+    }
+    
+    // Add Safari compatibility info
+    if (isSafari && isIOS) {
+        const safariInfo = document.createElement('small');
+        safariInfo.style.display = 'block';
+        safariInfo.style.color = '#6c757d';
+        safariInfo.style.fontSize = '0.75em';
+        safariInfo.style.marginTop = '5px';
+        safariInfo.textContent = permissions.supported ? 
+            (permissions.granted ? 'iOS Safari ✓' : 'iOS Safari - İzin gerekli') :
+            'iOS Safari desteklenmiyor';
+        
+        // Add info if not already exists
+        const existingInfo = videoCallBtn.parentElement.querySelector('.safari-info');
+        if (!existingInfo) {
+            safariInfo.className = 'safari-info';
+            videoCallBtn.parentElement.appendChild(safariInfo);
+        }
+    }
+}
+
+// Signaling polling
+let signalingPollInterval;
+
+function startSignalingPolling() {
+    // Poll for signaling messages every 1 second
+    signalingPollInterval = setInterval(async () => {
+        if (isCallActive && sessionID) {
+            await pollSignalingMessages();
+        }
+    }, 1000);
+}
+
+function stopSignalingPolling() {
+    if (signalingPollInterval) {
+        clearInterval(signalingPollInterval);
+        signalingPollInterval = null;
+    }
+}
+
+async function pollSignalingMessages() {
+    try {
+        const response = await fetch(`/support/webrtc-signals/${sessionID}`);
+        const data = await response.json();
+        
+        if (data.success && data.messages && data.messages.length > 0) {
+            for (const message of data.messages) {
+                await handleSignalingMessage(message);
+            }
+        }
+    } catch (error) {
+        console.error('Error polling signaling messages:', error);
+    }
+}
+</script>
+{{end}} 

@@ -1,0 +1,667 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container mt-5">
+    <!-- Sayfa Başlığı -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">
+                    <i class="fas fa-shopping-bag me-2 text-primary"></i>Sipariş Takibim
+                </h1>
+                <button class="btn btn-outline-primary" onclick="refreshOrders()">
+                    <i class="fas fa-sync-alt me-2"></i>Yenile
+                </button>
+            </div>
+            <p class="text-dark mt-2">Siparişlerinizi buradan takip edebilir, detaylarını görüntüleyebilirsiniz.</p>
+        </div>
+    </div>
+
+    {{if .orders}}
+    <!-- Sipariş İstatistikleri -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock text-warning mb-2" style="font-size: 2rem;"></i>
+                    <h5 class="card-title text-warning" id="pendingCount">0</h5>
+                    <p class="card-text text-dark">Beklemede</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-info mb-2" style="font-size: 2rem;"></i>
+                    <h5 class="card-title text-info" id="confirmedCount">0</h5>
+                    <p class="card-text text-dark">Onaylandı</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-truck text-primary mb-2" style="font-size: 2rem;"></i>
+                    <h5 class="card-title text-primary" id="shippedCount">0</h5>
+                    <p class="card-text text-dark">Kargoda</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-home text-success mb-2" style="font-size: 2rem;"></i>
+                    <h5 class="card-title text-success" id="deliveredCount">0</h5>
+                    <p class="card-text text-dark">Teslim Edildi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sipariş Listesi -->
+    <div class="row">
+        <div class="col-12">
+            {{range .orders}}
+            <div class="card mb-4 shadow-sm order-card" data-status="{{.Status}}">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Sol Taraf - Sipariş Bilgileri -->
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="mb-1 text-dark">
+                                        <i class="fas fa-receipt me-2"></i>{{.OrderNumber}}
+                                    </h5>
+                                    <small class="text-dark">
+                                        <i class="fas fa-calendar me-1"></i>{{.CreatedAt.Format "02 Ocak 2006, 15:04"}}
+                                    </small>
+                                </div>
+                                <div class="order-status">
+                                    {{if eq .Status "pending"}}
+                                        <span class="badge bg-warning fs-6 px-3 py-2">
+                                            <i class="fas fa-clock me-1"></i>Beklemede
+                                        </span>
+                                    {{else if eq .Status "confirmed"}}
+                                        <span class="badge bg-info fs-6 px-3 py-2">
+                                            <i class="fas fa-check-circle me-1"></i>Onaylandı
+                                        </span>
+                                    {{else if eq .Status "shipped"}}
+                                        <span class="badge bg-primary fs-6 px-3 py-2">
+                                            <i class="fas fa-truck me-1"></i>Kargoda
+                                        </span>
+                                    {{else if eq .Status "delivered"}}
+                                        <span class="badge bg-success fs-6 px-3 py-2">
+                                            <i class="fas fa-home me-1"></i>Teslim Edildi
+                                        </span>
+                                    {{else if eq .Status "cancelled"}}
+                                        <span class="badge bg-danger fs-6 px-3 py-2 text-dark">
+                                            <i class="fas fa-times-circle me-1"></i>İptal Edildi
+                                        </span>
+                                    {{end}}
+                                </div>
+                            </div>
+
+                            <!-- Sipariş Durumu Timeline -->
+                            {{if eq .Status "cancelled"}}
+                            <div class="order-timeline mb-3">
+                                <div class="timeline-step completed">
+                                    <div class="timeline-icon timeline-cancelled">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <small>Sipariş Alındı</small>
+                                </div>
+                                <div class="timeline-step completed">
+                                    <div class="timeline-icon timeline-cancelled">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                    <small>İptal Edildi</small>
+                                </div>
+                                <div class="timeline-step">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-truck"></i>
+                                    </div>
+                                    <small>Kargoya Verildi</small>
+                                </div>
+                                <div class="timeline-step">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <small>Teslim Edildi</small>
+                                </div>
+                            </div>
+                            {{else}}
+                            <div class="order-timeline mb-3">
+                                <div class="timeline-step {{if ne .Status "pending"}}completed{{end}}">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <small>Sipariş Alındı</small>
+                                </div>
+                                <div class="timeline-step {{if eq .Status "confirmed" "shipped" "delivered"}}completed{{end}}">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <small>Onaylandı</small>
+                                </div>
+                                <div class="timeline-step {{if eq .Status "shipped" "delivered"}}completed{{end}}">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-truck"></i>
+                                    </div>
+                                    <small>Kargoya Verildi</small>
+                                </div>
+                                <div class="timeline-step {{if eq .Status "delivered"}}completed{{end}}">
+                                    <div class="timeline-icon">
+                                        <i class="fas fa-home"></i>
+                                    </div>
+                                    <small>Teslim Edildi</small>
+                                </div>
+                            </div>
+                            {{end}}
+
+                            <!-- Ürünler -->
+                            <div class="order-items">
+                                <h6 class="text-dark mb-2">
+                                    <i class="fas fa-box me-1"></i>Sipariş Edilen Ürünler ({{len .Items}} adet)
+                                </h6>
+                                <div class="row">
+                                    {{range .Items}}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex align-items-center p-2 bg-light rounded">
+                                            {{if .Image}}
+                                            <img src="{{.Image}}" alt="{{.Name}}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {{else}}
+                                            <div class="bg-secondary rounded me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-image text-white"></i>
+                                            </div>
+                                            {{end}}
+                                            <div class="flex-grow-1">
+                                                                                                    <div class="fw-bold text-dark">{{.Name}}</div>
+                                                <small class="text-dark">{{.Quantity}} x {{.Price}} ₺</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{end}}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sağ Taraf - Özet ve İşlemler -->
+                        <div class="col-md-4">
+                            <div class="border-start ps-4 h-100 d-flex flex-column">
+                                <div class="mb-3">
+                                    <h4 class="text-dark mb-1">{{.TotalPrice}} ₺</h4>
+                                    <small class="text-dark">Toplam Tutar</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6 class="text-dark mb-2">Teslimat Bilgileri</h6>
+                                    <p class="mb-1"><strong>{{.CustomerName}}</strong></p>
+                                    <p class="mb-1"><i class="fas fa-phone me-1"></i>{{.Phone}}</p>
+                                    <p class="mb-0 small text-dark">{{.Address}}</p>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <button class="btn btn-outline-primary w-100 mb-2" onclick="viewOrderDetails({{.ID}})">
+                                        <i class="fas fa-eye me-2"></i>Detaylı Görüntüle
+                                    </button>
+                                    {{if eq .Status "pending"}}
+                                    <button class="btn btn-outline-danger w-100" onclick="cancelOrder({{.ID}})">
+                                        <i class="fas fa-times me-2"></i>Siparişi İptal Et
+                                    </button>
+                                    {{end}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+    {{else}}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-shopping-bag text-muted" style="font-size: 5rem; opacity: 0.3;"></i>
+                    </div>
+                    <h3 class="text-muted mb-3">Henüz Siparişiniz Yok</h3>
+                    <p class="text-muted mb-4">İlk siparişinizi vermek için ürünlerimizi inceleyin ve sepete ekleyin.</p>
+                    <a href="/products" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-cart me-2"></i>Alışverişe Başla
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{end}}
+</div>
+
+<!-- Sipariş Detay Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt me-2"></i>Sipariş Detayı
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- İçerik JavaScript ile doldurulacak -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS Stilleri -->
+<style>
+.order-timeline {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin: 1rem 0;
+}
+
+.order-timeline::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    height: 2px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.timeline-step {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.timeline-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 5px;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.timeline-step.completed .timeline-icon {
+    background: #198754;
+    color: white;
+}
+
+.timeline-cancelled {
+    background: #dc3545 !important;
+    color: white !important;
+}
+
+.timeline-step.completed::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: -50%;
+    width: 100%;
+    height: 2px;
+    background: #198754;
+}
+
+.timeline-step:first-child::before {
+    display: none;
+}
+
+.order-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.order-items .bg-light {
+    transition: background-color 0.2s ease;
+}
+
+.order-items .bg-light:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Modal içindeki yazıları siyah yap */
+#orderDetailModal .modal-body {
+    color: #000 !important;
+}
+
+#orderDetailModal .modal-body th,
+#orderDetailModal .modal-body td {
+    color: #000 !important;
+}
+
+#orderDetailModal .modal-body .table {
+    color: #000 !important;
+}
+
+#orderDetailModal .modal-body .card-body {
+    color: #000 !important;
+}
+
+#orderDetailModal .modal-body .alert {
+    color: #000 !important;
+}
+
+/* Teslimat bilgileri ve sipariş bilgileri yazılarını siyah yap */
+#orderDetailModal .modal-body p,
+#orderDetailModal .modal-body span {
+    color: #000 !important;
+}
+
+#orderDetailModal .modal-body .badge {
+    color: white !important;
+}
+
+/* Genel modal text rengi */
+.modal-body * {
+    color: #000 !important;
+}
+
+.modal-body .text-success {
+    color: #198754 !important;
+}
+
+.modal-body .badge {
+    color: white !important;
+}
+
+/* Sipariş listesinde siyah yazılar */
+.order-card .text-dark {
+    color: #000 !important;
+}
+
+.order-card .badge.text-dark {
+    color: #000 !important;
+    background-color: #dc3545 !important;
+}
+
+/* Sipariş numarası, tarih ve toplam tutar siyah */
+.order-card h5.text-dark,
+.order-card h4.text-dark,
+.order-card small.text-dark {
+    color: #000 !important;
+}
+</style>
+
+<script>
+// Sayfa yüklendiğinde istatistikleri hesapla ve otomatik yenileme başlat
+document.addEventListener('DOMContentLoaded', function() {
+    calculateOrderStats();
+    
+    // Her 30 saniyede bir sipariş durumlarını kontrol et
+    setInterval(function() {
+        checkForOrderUpdates();
+    }, 30000); // 30 saniye
+});
+
+// Sipariş güncellemelerini kontrol et
+function checkForOrderUpdates() {
+    fetch('/orders', {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        // Yeni HTML'den sipariş durumlarını çıkar ve mevcut durumlarla karşılaştır
+        const parser = new DOMParser();
+        const newDoc = parser.parseFromString(html, 'text/html');
+        const newOrders = newDoc.querySelectorAll('.order-card');
+        const currentOrders = document.querySelectorAll('.order-card');
+        
+        let hasChanges = false;
+        
+        // Mevcut siparişlerin durumlarını kontrol et
+        currentOrders.forEach(function(currentOrder, index) {
+            const currentStatus = currentOrder.getAttribute('data-status');
+            if (newOrders[index]) {
+                const newStatus = newOrders[index].getAttribute('data-status');
+                if (currentStatus !== newStatus) {
+                    hasChanges = true;
+                }
+            }
+        });
+        
+        // Eğer değişiklik varsa sayfayı yenile
+        if (hasChanges) {
+            // Kullanıcıya bildirim göster
+            showUpdateNotification();
+            // 2 saniye sonra sayfayı yenile
+            setTimeout(function() {
+                location.reload();
+            }, 2000);
+        }
+    })
+    .catch(function(error) {
+        console.log('Sipariş durumu kontrolü yapılamadı:', error);
+    });
+}
+
+// Güncelleme bildirimi göster
+function showUpdateNotification() {
+    // Eğer zaten bildirim varsa, onu kaldır
+    const existingNotification = document.querySelector('.update-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Yeni bildirim oluştur
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show update-notification';
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.zIndex = '9999';
+    notification.style.minWidth = '300px';
+    notification.innerHTML = `
+        <i class="fas fa-sync-alt me-2"></i>
+        <strong>Sipariş durumunuz güncellendi!</strong>
+        <br><small>Sayfa otomatik olarak yenilenecek...</small>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+}
+
+function calculateOrderStats() {
+    const orders = document.querySelectorAll('.order-card');
+    const stats = {
+        pending: 0,
+        confirmed: 0,
+        shipped: 0,
+        delivered: 0
+    };
+    
+    orders.forEach(function(order) {
+        const status = order.getAttribute('data-status');
+        if (stats.hasOwnProperty(status)) {
+            stats[status]++;
+        }
+    });
+    
+    document.getElementById('pendingCount').textContent = stats.pending;
+    document.getElementById('confirmedCount').textContent = stats.confirmed;
+    document.getElementById('shippedCount').textContent = stats.shipped;
+    document.getElementById('deliveredCount').textContent = stats.delivered;
+}
+
+function refreshOrders() {
+    location.reload();
+}
+
+function viewOrderDetails(orderId) {
+    fetch(`/orders/${orderId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const order = data.order;
+            let content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Sipariş Bilgileri</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr><th>Sipariş No:</th><td>${order.order_number || order.id}</td></tr>
+                                    <tr><th>Tarih:</th><td>${new Date(order.created_at).toLocaleString('tr-TR')}</td></tr>
+                                    <tr><th>Durum:</th><td>${getStatusBadge(order.status)}</td></tr>
+                                    <tr><th>Toplam:</th><td><span class="text-success fw-bold">${order.total_price} ₺</span></td></tr>
+                                    ${order.payment_method ? `<tr><th>Ödeme:</th><td>${order.payment_method}</td></tr>` : ''}
+                                    ${order.updated_at ? `<tr><th>Son Güncelleme:</th><td>${new Date(order.updated_at).toLocaleString('tr-TR')}</td></tr>` : ''}
+                                </table>
+                                ${order.notes ? `<div class="alert alert-info"><strong>Müşteri Notu:</strong><br>${order.notes}</div>` : ''}
+                                ${order.admin_notes ? `<div class="alert alert-warning"><i class="fas fa-user-shield me-2"></i><strong>Yönetici Notu:</strong><br>${order.admin_notes}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-user me-2"></i>Teslimat Bilgileri</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr><th>Ad Soyad:</th><td>${order.customer_name}</td></tr>
+                                    <tr><th>E-posta:</th><td>${order.email}</td></tr>
+                                    <tr><th>Telefon:</th><td>${order.phone}</td></tr>
+                                    <tr><th>Adres:</th><td>${order.address.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-box me-2"></i>Sipariş Edilen Ürünler</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Ürün</th>
+                                                <th>Adet</th>
+                                                <th>Birim Fiyat</th>
+                                                <th>Toplam</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+            `;
+            
+            order.items.forEach(function(item) {
+                content += `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;" class="me-3">` : ''}
+                                <div>
+                                    <div class="fw-bold">${item.name}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-primary">${item.quantity} adet</span></td>
+                        <td>${item.price} ₺</td>
+                        <td class="fw-bold text-success">${(item.price * item.quantity).toFixed(2)} ₺</td>
+                    </tr>
+                `;
+            });
+            
+            content += `
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="table-success">
+                                                <th colspan="3" class="text-end">Genel Toplam:</th>
+                                                <th class="text-success">${order.total_price} ₺</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('orderDetailContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
+        } else {
+            alert('Sipariş detayları yüklenirken hata oluştu');
+        }
+    })
+    .catch(function(error) {
+        console.error('Error:', error);
+        alert('Bir hata oluştu');
+    });
+}
+
+function getStatusBadge(status) {
+    const statusMap = {
+        'pending': '<span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Beklemede</span>',
+        'confirmed': '<span class="badge bg-info"><i class="fas fa-check-circle me-1"></i>Onaylandı</span>',
+        'shipped': '<span class="badge bg-primary"><i class="fas fa-truck me-1"></i>Kargoda</span>',
+        'delivered': '<span class="badge bg-success"><i class="fas fa-home me-1"></i>Teslim Edildi</span>',
+        'cancelled': '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>İptal Edildi</span>'
+    };
+    return statusMap[status] || status;
+}
+
+function cancelOrder(orderId) {
+    if (confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?\n\nİptal edilen siparişler geri alınamaz!')) {
+        // Loading state göster
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İptal Ediliyor...';
+        button.disabled = true;
+        
+        fetch(`/orders/${orderId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Başarılı mesajı göster
+                alert('✅ ' + data.message);
+                // Sayfayı yenile
+                location.reload();
+            } else {
+                // Hata mesajı göster
+                alert('❌ ' + (data.error || 'Sipariş iptal edilemedi'));
+                // Button'u eski haline getir
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            alert('❌ Bir hata oluştu. Lütfen tekrar deneyin.');
+            // Button'u eski haline getir
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+</script>
+{{end}} 

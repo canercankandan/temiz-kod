@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Canlı Destek - Su Arıtma Uzmanı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: white;
+            line-height: 1.6;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid my-4" style="background-color: white; color: black; min-height: 100vh;">
+    <div class="row">
+        <!-- Sessions List -->
+        <div class="col-md-4">
+            <div class="card" style="background-color: white; border: 1px solid #ddd;">
+                <div class="card-header" style="background-color: #f8f9fa; color: black; border-bottom: 1px solid #ddd;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Aktif Sohbetler
+                        <span class="badge bg-dark text-white ms-2" id="sessionCount">{{len .sessions}}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-0" style="max-height: 600px; overflow-y: auto; background-color: white;">
+                    <div id="sessionsList">
+                        {{if .sessions}}
+                            {{range .sessions}}
+                            <div class="session-item p-3 border-bottom cursor-pointer" data-session-id="{{.SessionID}}" onclick="loadChat('{{.SessionID}}', '{{.Username}}')" style="background-color: white; color: black;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1" style="color: black;">{{.Username}}</h6>
+                                        <small style="color: #666;">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{.LastMessageAt.Format "15:04"}}
+                                        </small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-success me-2">Online</span>
+                                        {{if gt .UnreadCount 0}}
+                                        <span class="badge bg-danger me-2">{{.UnreadCount}}</span>
+                                        {{end}}
+                                        <!-- Video Call Request Buttons -->
+                                        <div class="video-call-buttons" id="videoCallButtons-{{.SessionID}}" style="display: none;">
+                                            <button class="btn btn-success btn-sm me-1" onclick="acceptVideoCall('{{.SessionID}}', '{{.Username}}')" title="Video Görüşmeyi Kabul Et">
+                                                <i class="fas fa-video"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectVideoCall('{{.SessionID}}', '{{.Username}}')" title="Video Görüşmeyi Reddet">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Video Call Request Notification -->
+                                <div class="video-call-notification mt-2" id="videoCallNotification-{{.SessionID}}" style="display: none;">
+                                    <div class="alert alert-info py-2 mb-0" style="font-size: 12px;">
+                                        <i class="fas fa-video me-1"></i>
+                                        <strong>{{.Username}}</strong> görüntülü görüşme istiyor
+                                    </div>
+                                </div>
+                            </div>
+                            {{end}}
+                        {{else}}
+                        <div class="p-4 text-center" style="color: #666;">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>Henüz aktif sohbet yok</p>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="col-md-8">
+            <div class="card" style="background-color: white; border: 1px solid #ddd;">
+                <div class="card-header" style="background-color: #f8f9fa; color: black; border-bottom: 1px solid #ddd;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" id="chatHeader">
+                            <i class="fas fa-comment-dots me-2"></i>Sohbet Seçin
+                        </h5>
+                        <div id="videoCallControls" style="display: none;">
+                            <span id="videoCallRequestInfo" class="me-3 text-info">
+                                <i class="fas fa-video me-1"></i>
+                                <span id="videoCallUsername">Kullanıcı</span> görüntülü görüşme istiyor
+                            </span>
+                            <button id="acceptVideoCallBtn" class="btn btn-success btn-sm me-2" title="Video Görüşmeyi Kabul Et">
+                                <i class="fas fa-video me-1"></i>Kabul Et
+                            </button>
+                            <button id="rejectVideoCallBtn" class="btn btn-danger btn-sm me-2" title="Video Görüşmeyi Reddet">
+                                <i class="fas fa-times me-1"></i>Reddet
+                            </button>
+                            <button id="endAdminCallBtn" class="btn btn-secondary btn-sm" style="display: none;" title="Görüşmeyi Sonlandır">
+                                <i class="fas fa-phone-slash me-1"></i>Sonlandır
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0" style="background-color: white;">
+                    <!-- Video Call Area -->
+                    <div id="adminVideoCallArea" class="video-call-area" style="display: none; height: 300px; background: #000; position: relative;">
+                        <video id="adminLocalVideo" autoplay muted style="width: 150px; height: 100px; position: absolute; top: 10px; right: 10px; border: 2px solid #fff; border-radius: 8px; z-index: 10;"></video>
+                        <video id="adminRemoteVideo" autoplay style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <div class="video-controls" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10;">
+                            <button id="adminToggleMuteBtn" class="btn btn-secondary btn-sm me-2" title="Mikrofonu Aç/Kapat">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button id="adminToggleVideoBtn" class="btn btn-secondary btn-sm me-2" title="Kamerayı Aç/Kapat">
+                                <i class="fas fa-video"></i>
+                            </button>
+                            <button id="adminEndCallBtn" class="btn btn-danger btn-sm" onclick="endAdminVideoCall()" title="Görüşmeyi Sonlandır">
+                                <i class="fas fa-phone-slash me-1"></i>Sonlandır
+                            </button>
+                        </div>
+                        <div class="call-status" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 15px; font-size: 12px;">
+                            <i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i>
+                            <span id="adminCallStatusText">Bağlantı aktif</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; background: white; color: black;">
+                        <div class="text-center" style="color: #666;">
+                            <i class="fas fa-arrow-left fa-2x mb-3"></i>
+                            <p>Soldan bir sohbet seçin</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Message Input -->
+                    <div class="chat-input border-top p-3" id="chatInput" style="display: none; background-color: white; border-top: 1px solid #ddd;">
+                        <div class="input-group">
+                            <input type="text" id="messageInput" class="form-control" placeholder="Yanıtınızı yazın..." maxlength="500" style="background-color: white; color: black; border: 1px solid #ddd;">
+                            <button class="btn btn-primary" id="sendButton" type="button">
+                                <i class="fas fa-paper-plane"></i> Gönder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Override base styles for white background theme */
+body {
+    background-color: white !important;
+    color: black !important;
+}
+
+.session-item {
+    transition: background-color 0.2s;
+    cursor: pointer;
+    background-color: white !important;
+    color: black !important;
+}
+
+.session-item:hover {
+    background-color: #f8f9fa !important;
+    color: black !important;
+}
+
+.session-item.active {
+    background-color: #e3f2fd !important;
+    border-left: 4px solid #2196F3;
+    color: black !important;
+}
+
+.chat-messages {
+    background: white !important;
+    color: black !important;
+}
+
+.message {
+    margin-bottom: 15px;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+    text-align: left;
+}
+
+.message.admin {
+    text-align: right;
+}
+
+.message-bubble {
+    display: inline-block;
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    position: relative;
+}
+
+.message.user .message-bubble {
+    background: #f8f9fa;
+    color: black;
+    border: 1px solid #ddd;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.message.admin .message-bubble {
+    background: #007bff;
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+.message.user .message-time {
+    text-align: left;
+    color: #666;
+}
+
+.message.admin .message-time {
+    text-align: right;
+    color: #007bff;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+#messageInput:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Ensure all text elements are black */
+h1, h2, h3, h4, h5, h6, p, span, div, small {
+    color: black !important;
+}
+
+/* Override any muted text to be visible */
+.text-muted {
+    color: #666 !important;
+}
+
+/* Ensure cards have white background */
+.card {
+    background-color: white !important;
+    border: 1px solid #ddd !important;
+}
+
+.card-header {
+    background-color: #f8f9fa !important;
+    color: black !important;
+    border-bottom: 1px solid #ddd !important;
+}
+
+.card-body {
+    background-color: white !important;
+    color: black !important;
+}
+
+/* Video Call Styles */
+.video-call-area {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.video-controls button {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-controls button.muted {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.video-controls button.video-off {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+#adminLocalVideo {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#adminLocalVideo:hover {
+    transform: scale(1.05);
+}
+
+.call-status {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+}
+
+/* Video Call Buttons */
+.video-call-buttons {
+    margin-top: 8px;
+}
+
+.video-call-buttons .btn-sm {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.video-call-notification .alert {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem !important;
+}
+
+.video-call-notification .alert-info {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    color: #1976d2;
+}
+
+/* Responsive video */
+@media (max-width: 768px) {
+    #adminLocalVideo {
+        width: 100px;
+        height: 75px;
+    }
+    
+    .video-controls button {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .video-call-buttons .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+</style>
+
+<script>
+let currentSessionID = null;
+let pollInterval = null;
+
+// Video Call Variables
+let adminLocalStream = null;
+let adminRemoteStream = null;
+let adminPeerConnection = null;
+let isAdminCallActive = false;
+let isAdminMuted = false;
+let isAdminVideoOff = false;
+let pendingVideoCallSession = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    startSessionPolling();
+    
+    // Send message on button click
+    document.getElementById('sendButton').addEventListener('click', sendMessage);
+    
+    // Send message on Enter key
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    // Video call event listeners
+    document.getElementById('acceptVideoCallBtn').addEventListener('click', acceptVideoCall);
+    document.getElementById('rejectVideoCallBtn').addEventListener('click', rejectVideoCall);
+    document.getElementById('endAdminCallBtn').addEventListener('click', endAdminVideoCall);
+    document.getElementById('adminToggleMuteBtn').addEventListener('click', adminToggleMute);
+    document.getElementById('adminToggleVideoBtn').addEventListener('click', adminToggleVideo);
+});
+
+// Load chat for selected session
+function loadChat(sessionID, username) {
+    currentSessionID = sessionID;
+    
+    // Update UI
+    document.getElementById('chatHeader').innerHTML = `
+        <i class="fas fa-comment-dots me-2"></i>${username} ile Sohbet
+        <small class="ms-2">(${sessionID.substring(0, 8)}...)</small>
+    `;
+    document.getElementById('chatInput').style.display = 'block';
+    
+    // Mark session as active
+    document.querySelectorAll('.session-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`[data-session-id="${sessionID}"]`).classList.add('active');
+    
+    // Load messages
+    loadMessages();
+    
+    // Start polling for this session
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+    startMessagePolling();
+    
+    // Focus on input
+    document.getElementById('messageInput').focus();
+}
+
+// Load messages for current session
+function loadMessages() {
+    if (!currentSessionID) return;
+    
+    fetch(`/admin/support/messages/${currentSessionID}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayMessages(data.messages);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading messages:', error);
+    });
+}
+
+// Display messages
+function displayMessages(messages) {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.innerHTML = '';
+    
+    if (messages && messages.length > 0) {
+        messages.forEach(message => {
+            addMessage(message);
+        });
+        scrollToBottom();
+    } else {
+        chatMessages.innerHTML = `
+            <div class="text-center" style="color: #666;">
+                <i class="fas fa-comments fa-3x mb-3"></i>
+                <p>Henüz mesaj yok. İlk mesajı gönderin!</p>
+            </div>
+        `;
+    }
+}
+
+// Add single message
+function addMessage(message) {
+    const chatMessages = document.getElementById('chatMessages');
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${message.is_admin ? 'admin' : 'user'}`;
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'message-bubble';
+    bubbleDiv.textContent = message.message;
+    
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    const messageTime = new Date(message.created_at);
+    timeDiv.textContent = `${message.username} - ${messageTime.toLocaleTimeString('tr-TR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    })}`;
+    
+    messageDiv.appendChild(bubbleDiv);
+    messageDiv.appendChild(timeDiv);
+    chatMessages.appendChild(messageDiv);
+}
+
+// Send message
+function sendMessage() {
+    if (!currentSessionID) return;
+    
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const message = messageInput.value.trim();
+    
+    if (!message) return;
+    
+    // Disable input while sending
+    messageInput.disabled = true;
+    sendButton.disabled = true;
+    
+    fetch(`/admin/support/send/${currentSessionID}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            message: message
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageInput.value = '';
+            addMessage(data.message);
+            scrollToBottom();
+        } else {
+            alert('Mesaj gönderilemedi: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Mesaj gönderilirken hata oluştu');
+    })
+    .finally(() => {
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        messageInput.focus();
+    });
+}
+
+// Scroll to bottom
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Start polling for sessions
+function startSessionPolling() {
+    setInterval(() => {
+        loadSessions();
+        checkVideoCallRequests(); // Check for video call requests globally
+    }, 2000); // Poll every 2 seconds
+}
+
+// Start polling for messages
+function startMessagePolling() {
+    pollInterval = setInterval(() => {
+        loadMessages();
+        checkVideoCallRequests(); // Check for video call requests
+    }, 2000); // Poll every 2 seconds
+}
+
+// Load sessions
+function loadSessions() {
+    fetch('/admin/support/sessions')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateSessionsList(data.sessions);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading sessions:', error);
+    });
+}
+
+// Update sessions list
+function updateSessionsList(sessions) {
+    const sessionsList = document.getElementById('sessionsList');
+    const sessionCount = document.getElementById('sessionCount');
+    
+    sessionCount.textContent = sessions.length;
+    
+    if (sessions.length === 0) {
+        sessionsList.innerHTML = `
+            <div class="p-4 text-center" style="color: #666;">
+                <i class="fas fa-comments fa-3x mb-3"></i>
+                <p>Henüz aktif sohbet yok</p>
+            </div>
+        `;
+        return;
+    }
+    
+    sessionsList.innerHTML = '';
+    sessions.forEach(session => {
+        const sessionDiv = document.createElement('div');
+        sessionDiv.className = 'session-item p-3 border-bottom';
+        sessionDiv.style.backgroundColor = 'white';
+        sessionDiv.style.color = 'black';
+        if (currentSessionID === session.session_id) {
+            sessionDiv.classList.add('active');
+        }
+        sessionDiv.setAttribute('data-session-id', session.session_id);
+        
+        const lastMessageTime = new Date(session.last_message_at);
+        
+        sessionDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2" onclick="loadChat('${session.session_id}', '${session.username}')" style="cursor: pointer;">
+                <div>
+                    <h6 class="mb-1" style="color: black;">${session.username}</h6>
+                    <small style="color: #666;">
+                        <i class="fas fa-clock me-1"></i>
+                        ${lastMessageTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                    </small>
+                </div>
+                <div>
+                    <span class="badge bg-success">Online</span>
+                    ${session.unread_count > 0 ? `<span class="badge bg-danger">${session.unread_count}</span>` : ''}
+                </div>
+            </div>
+            
+            <!-- Video Call Notification -->
+            <div id="videoCallNotification-${session.session_id}" class="video-call-notification mb-2" style="display: none;">
+                <div class="alert alert-info alert-sm mb-2 py-2">
+                    <i class="fas fa-video me-1"></i><strong>${session.username}</strong> görüntülü görüşme istiyor
+                </div>
+            </div>
+            
+            <!-- Video Call Buttons -->
+            <div id="videoCallButtons-${session.session_id}" class="video-call-buttons" style="display: none;">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${session.session_id}', '${session.username}')">
+                        <i class="fas fa-video me-1"></i>Cevap Ver
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${session.session_id}', '${session.username}')">
+                        <i class="fas fa-times me-1"></i>Reddet
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        sessionsList.appendChild(sessionDiv);
+    });
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', function() {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+    if (isAdminCallActive) {
+        endAdminVideoCall();
+    }
+});
+
+// Video Call Functions
+async function acceptVideoCall(sessionId, username) {
+    try {
+        currentSessionID = sessionId;
+        pendingVideoCallSession = sessionId;
+        
+        // Load chat for this session first
+        await loadChat(sessionId, username);
+        
+        // Start video call
+        adminLocalStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
+        
+        document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
+        
+        // Show video call area
+        document.getElementById('adminVideoCallArea').style.display = 'block';
+        document.getElementById('endAdminCallBtn').style.display = 'inline-block';
+        
+        // Adjust chat area height
+        document.getElementById('chatMessages').style.height = '300px';
+        
+        isAdminCallActive = true;
+        document.getElementById('adminCallStatusText').textContent = 'Video görüşme aktif';
+        
+        // Hide video call buttons for this session
+        const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+        const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+        
+        if (buttonsDiv) buttonsDiv.style.display = 'none';
+        if (notificationDiv) notificationDiv.style.display = 'none';
+        
+        // Initialize WebRTC peer connection
+        await initializeAdminPeerConnection();
+        
+        // Start signaling polling
+        startAdminSignalingPolling();
+        
+        // Send call-accepted message to customer first
+        await sendAdminSignalingMessage({
+            type: 'call-accepted'
+        });
+        
+        // Send acceptance to customer
+        await sendVideoCallResponse('accept', sessionId);
+        
+        // Add system message
+        addAdminSystemMessage(`${username} ile video görüşme başlatıldı.`);
+        
+    } catch (error) {
+        console.error('Video call kabul edilemedi:', error);
+        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
+        await sendVideoCallResponse('reject', sessionId);
+    }
+}
+
+// Reject video call from session list
+async function rejectVideoCall(sessionId, username) {
+    // Hide video call buttons for this session
+    const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+    const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+    
+    if (buttonsDiv) buttonsDiv.style.display = 'none';
+    if (notificationDiv) notificationDiv.style.display = 'none';
+    
+    // Send rejection to customer
+    await sendVideoCallResponse('reject', sessionId);
+    
+    // Add system message if this is current session
+    if (sessionId === currentSessionID) {
+        addAdminSystemMessage(`${username} ile video görüşme talebi reddedildi.`);
+    }
+}
+
+async function endAdminVideoCall() {
+    try {
+        // Stop local stream
+        if (adminLocalStream) {
+            adminLocalStream.getTracks().forEach(track => track.stop());
+            adminLocalStream = null;
+        }
+        
+        // Close peer connection
+        if (adminPeerConnection) {
+            adminPeerConnection.close();
+            adminPeerConnection = null;
+        }
+        
+        // Hide video call area
+        document.getElementById('adminVideoCallArea').style.display = 'none';
+        document.getElementById('endAdminCallBtn').style.display = 'none';
+        
+        // Reset chat area height
+        document.getElementById('chatMessages').style.height = '400px';
+        
+        // Reset video elements
+        document.getElementById('adminLocalVideo').srcObject = null;
+        document.getElementById('adminRemoteVideo').srcObject = null;
+        
+        // Reset states
+        isAdminCallActive = false;
+        isAdminMuted = false;
+        isAdminVideoOff = false;
+        
+        // Stop signaling polling
+        stopAdminSignalingPolling();
+        
+        // Reset button states
+        document.getElementById('adminToggleMuteBtn').classList.remove('muted');
+        document.getElementById('adminToggleVideoBtn').classList.remove('video-off');
+        document.getElementById('adminToggleMuteBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+        document.getElementById('adminToggleVideoBtn').innerHTML = '<i class="fas fa-video"></i>';
+        
+        // Send end call notification
+        await sendVideoCallResponse('end');
+        
+        // Add system message
+        addAdminSystemMessage('Video görüşme sonlandırıldı.');
+        
+    } catch (error) {
+        console.error('Video call sonlandırma hatası:', error);
+    }
+}
+
+function adminToggleMute() {
+    if (adminLocalStream) {
+        const audioTrack = adminLocalStream.getAudioTracks()[0];
+        if (audioTrack) {
+            audioTrack.enabled = !audioTrack.enabled;
+            isAdminMuted = !audioTrack.enabled;
+            
+            if (isAdminMuted) {
+                document.getElementById('adminToggleMuteBtn').classList.add('muted');
+                document.getElementById('adminToggleMuteBtn').innerHTML = '<i class="fas fa-microphone-slash"></i>';
+            } else {
+                document.getElementById('adminToggleMuteBtn').classList.remove('muted');
+                document.getElementById('adminToggleMuteBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+            }
+        }
+    }
+}
+
+function adminToggleVideo() {
+    if (adminLocalStream) {
+        const videoTrack = adminLocalStream.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            isAdminVideoOff = !videoTrack.enabled;
+            
+            if (isAdminVideoOff) {
+                document.getElementById('adminToggleVideoBtn').classList.add('video-off');
+                document.getElementById('adminToggleVideoBtn').innerHTML = '<i class="fas fa-video-slash"></i>';
+            } else {
+                document.getElementById('adminToggleVideoBtn').classList.remove('video-off');
+                document.getElementById('adminToggleVideoBtn').innerHTML = '<i class="fas fa-video"></i>';
+            }
+        }
+    }
+}
+
+// Initialize WebRTC peer connection for admin
+async function initializeAdminPeerConnection() {
+    try {
+        console.log('Initializing admin peer connection...');
+        
+        // Create peer connection with STUN servers
+        adminPeerConnection = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        });
+        
+        // Add local stream to peer connection
+        adminLocalStream.getTracks().forEach(track => {
+            adminPeerConnection.addTrack(track, adminLocalStream);
+        });
+        
+        // Handle remote stream
+        adminPeerConnection.ontrack = (event) => {
+            console.log('Admin received remote stream');
+            adminRemoteStream = event.streams[0];
+            document.getElementById('adminRemoteVideo').srcObject = adminRemoteStream;
+            document.getElementById('adminCallStatusText').textContent = 'Müşteri bağlandı';
+        };
+        
+        // Handle ICE candidates
+        adminPeerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                sendAdminSignalingMessage({
+                    type: 'ice-candidate',
+                    candidate: event.candidate
+                });
+            }
+        };
+        
+        // Handle connection state changes
+        adminPeerConnection.onconnectionstatechange = () => {
+            console.log('Admin connection state:', adminPeerConnection.connectionState);
+            switch (adminPeerConnection.connectionState) {
+                case 'connected':
+                    document.getElementById('adminCallStatusText').textContent = 'Bağlantı aktif';
+                    break;
+                case 'disconnected':
+                    document.getElementById('adminCallStatusText').textContent = 'Bağlantı kesildi';
+                    break;
+                case 'failed':
+                    document.getElementById('adminCallStatusText').textContent = 'Bağlantı başarısız';
+                    break;
+            }
+        };
+        
+        console.log('Admin peer connection initialized, waiting for customer offer...');
+        
+    } catch (error) {
+        console.error('Admin peer connection initialization failed:', error);
+    }
+}
+
+// Send signaling message to customer
+async function sendAdminSignalingMessage(message) {
+    try {
+        const response = await fetch('/admin/support/webrtc-signal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: currentSessionID,
+                message: message
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Admin signaling message failed:', data.error);
+        }
+    } catch (error) {
+        console.error('Error sending admin signaling message:', error);
+    }
+}
+
+// Handle incoming signaling messages for admin
+async function handleAdminSignalingMessage(message) {
+    try {
+        console.log('Admin handling signaling message:', message);
+        switch (message.type) {
+            case 'offer':
+                // Customer sent offer, create answer
+                await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                const answer = await adminPeerConnection.createAnswer();
+                await adminPeerConnection.setLocalDescription(answer);
+                sendAdminSignalingMessage({
+                    type: 'answer',
+                    answer: answer
+                });
+                console.log('Admin sent answer to customer offer');
+                break;
+                
+            case 'answer':
+                await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                break;
+                
+            case 'ice-candidate':
+                await adminPeerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+                break;
+        }
+    } catch (error) {
+        console.error('Error handling admin signaling message:', error);
+    }
+}
+
+async function sendVideoCallResponse(action, sessionId = null) {
+    try {
+        const response = await fetch('/admin/support/video-call-response', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionId || pendingVideoCallSession || currentSessionID,
+                action: action
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Video call response failed:', data.error);
+        }
+    } catch (error) {
+        console.error('Error sending video call response:', error);
+    }
+}
+
+function addAdminSystemMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message system';
+    messageDiv.style.textAlign = 'center';
+    messageDiv.style.marginBottom = '15px';
+    
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.style.display = 'inline-block';
+    bubbleDiv.style.background = '#17a2b8';
+    bubbleDiv.style.color = 'white';
+    bubbleDiv.style.padding = '8px 16px';
+    bubbleDiv.style.borderRadius = '15px';
+    bubbleDiv.style.fontSize = '0.9em';
+    bubbleDiv.innerHTML = '<i class="fas fa-info-circle me-2"></i>' + message;
+    
+    messageDiv.appendChild(bubbleDiv);
+    document.getElementById('chatMessages').appendChild(messageDiv);
+    scrollToBottom();
+}
+
+// Check for video call requests for all sessions
+function checkVideoCallRequests() {
+    fetch('/admin/support/video-call-requests')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.requests) {
+            // Check if there are new requests (for sound notification)
+            const hasNewRequests = data.requests.length > 0;
+            const currentRequests = data.requests.map(r => r.session_id);
+            
+            // Hide all existing video call buttons first
+            document.querySelectorAll('.video-call-buttons').forEach(buttons => {
+                buttons.style.display = 'none';
+            });
+            document.querySelectorAll('.video-call-notification').forEach(notification => {
+                notification.style.display = 'none';
+            });
+            
+            // Show buttons for sessions with pending requests
+            data.requests.forEach(request => {
+                const sessionId = request.session_id;
+                const username = request.username || 'Misafir';
+                
+                // Show video call buttons for this session
+                const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+                const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+                
+                if (buttonsDiv) {
+                    buttonsDiv.style.display = 'block';
+                }
+                
+                if (notificationDiv) {
+                    notificationDiv.style.display = 'block';
+                    // Update notification text with username
+                    const alertDiv = notificationDiv.querySelector('.alert');
+                    if (alertDiv) {
+                        alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
+                    }
+                }
+                
+                // Add system message if this is a new request for current session
+                if (sessionId === currentSessionID && !isAdminCallActive) {
+                    addAdminSystemMessage(`${username} video görüşme talep ediyor!`);
+                }
+            });
+            
+            // Play notification sound if there are new requests
+            if (hasNewRequests && (!window.lastVideoCallRequests || 
+                JSON.stringify(currentRequests.sort()) !== JSON.stringify(window.lastVideoCallRequests.sort()))) {
+                playNotificationSound();
+                window.lastVideoCallRequests = currentRequests;
+            }
+        } else {
+            // No requests, clear the last requests
+            window.lastVideoCallRequests = [];
+        }
+    })
+    .catch(error => {
+        console.error('Error checking video call requests:', error);
+    });
+}
+
+// Play notification sound for video call requests
+function playNotificationSound() {
+    try {
+        // Create a simple notification beep sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Configure the beep sound
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz frequency
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime); // 30% volume
+        
+        // Play beep for 200ms, pause, then repeat 2 more times
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+        
+        // Second beep
+        setTimeout(() => {
+            try {
+                const oscillator2 = audioContext.createOscillator();
+                const gainNode2 = audioContext.createGain();
+                oscillator2.connect(gainNode2);
+                gainNode2.connect(audioContext.destination);
+                oscillator2.frequency.setValueAtTime(800, audioContext.currentTime);
+                gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime);
+                oscillator2.start(audioContext.currentTime);
+                oscillator2.stop(audioContext.currentTime + 0.2);
+            } catch (e) {
+                console.log('Second beep failed:', e);
+            }
+        }, 300);
+        
+        // Third beep
+        setTimeout(() => {
+            try {
+                const oscillator3 = audioContext.createOscillator();
+                const gainNode3 = audioContext.createGain();
+                oscillator3.connect(gainNode3);
+                gainNode3.connect(audioContext.destination);
+                oscillator3.frequency.setValueAtTime(800, audioContext.currentTime);
+                gainNode3.gain.setValueAtTime(0.3, audioContext.currentTime);
+                oscillator3.start(audioContext.currentTime);
+                oscillator3.stop(audioContext.currentTime + 0.2);
+            } catch (e) {
+                console.log('Third beep failed:', e);
+            }
+        }, 600);
+        
+        console.log('🔊 Video call notification sound played');
+        
+    } catch (error) {
+        console.log('Notification sound failed (normal in some browsers):', error);
+        // Fallback: try to play a simple system beep using a data URL
+        try {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmEaBjiH0fPTgjMGJHfH8N2QQAoUX');
+            audio.volume = 0.3;
+            audio.play().catch(e => console.log('Fallback audio failed:', e));
+        } catch (e) {
+            console.log('All notification methods failed:', e);
+        }
+    }
+}
+
+// Admin signaling polling
+let adminSignalingPollInterval;
+
+function startAdminSignalingPolling() {
+    // Poll for signaling messages every 1 second
+    adminSignalingPollInterval = setInterval(async () => {
+        if (isAdminCallActive && currentSessionID) {
+            await pollAdminSignalingMessages();
+        }
+    }, 1000);
+}
+
+function stopAdminSignalingPolling() {
+    if (adminSignalingPollInterval) {
+        clearInterval(adminSignalingPollInterval);
+        adminSignalingPollInterval = null;
+    }
+}
+
+async function pollAdminSignalingMessages() {
+    try {
+        const response = await fetch(`/admin/support/webrtc-signals/${currentSessionID}`);
+        const data = await response.json();
+        
+        if (data.success && data.messages && data.messages.length > 0) {
+            for (const message of data.messages) {
+                await handleAdminSignalingMessage(message);
+            }
+        }
+    } catch (error) {
+        console.error('Error polling admin signaling messages:', error);
+    }
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

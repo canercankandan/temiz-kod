@@ -1,0 +1,33 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="card-title text-success">Sipariş Başarılı!</h2>
+                    <p class="card-text">
+                        Siparişiniz başarıyla alındı. En kısa sürede sizinle iletişime geçeceğiz.
+                    </p>
+                    <p class="card-text">
+                        Sipariş detaylarınız e-posta adresinize gönderildi.
+                    </p>
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary me-2">Ana Sayfaya Dön</a>
+                        <a href="/products" class="btn btn-outline-primary">Alışverişe Devam Et</a>
+                    </div>
+                    {{if .isLoggedIn}}
+                    <div class="mt-3">
+                        <a href="/orders" class="btn btn-outline-secondary">Siparişlerim</a>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}} 

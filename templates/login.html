@@ -1,0 +1,39 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Kullanıcı Girişi</h3>
+                </div>
+                <div class="card-body">
+                    {{if .error}}
+                    <div class="alert alert-danger" role="alert">
+                        {{.error}}
+                    </div>
+                    {{end}}
+                    <form action="/login" method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Parola</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                        </div>
+                    </form>
+                     <div class="text-center mt-3">
+                        <p>Hesabınız yok mu? <a href="/register">Kayıt Olun</a></p>
+                        <p><a href="/forgot-password">Şifremi Unuttum</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}} 

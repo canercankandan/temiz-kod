@@ -1,0 +1,730 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="products-hero text-center py-5 mb-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-4 fw-bold text-primary mb-3">
+                    <i class="fas fa-filter me-3"></i>Ürünlerimiz
+                </h1>
+                <p class="lead mb-4" style="color: #1e3a8a;">Ailenizin sağlığı için en kaliteli su arıtma çözümlerini keşfedin. Tüm ürünlerimiz uluslararası kalite standartlarında üretilmiştir.</p>
+                <div class="row text-center">
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-badge bg-white p-3 rounded-4 shadow-sm">
+                            <i class="fas fa-certificate text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="mb-0" style="color: #1e3a8a;">Sertifikalı Ürünler</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-badge bg-white p-3 rounded-4 shadow-sm">
+                            <i class="fas fa-shipping-fast text-success mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="mb-0" style="color: #1e3a8a;">Ücretsiz Kargo</h6>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-badge bg-white p-3 rounded-4 shadow-sm">
+                            <i class="fas fa-tools text-warning mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="mb-0" style="color: #1e3a8a;">Ücretsiz Kurulum</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search and Filter Section -->
+    <section class="filter-section mb-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-search me-2"></i>Ürün Ara
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0" id="searchInput" 
+                                   placeholder="Ürün adı, açıklama veya kategori..." onkeyup="filterProducts()">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-layer-group me-2"></i>Kategori
+                        </label>
+                        <select class="form-select" id="categoryFilter" onchange="filterProducts()">
+                            <option value="">Tüm Kategoriler</option>
+                            {{range .categories}}
+                            <option value="{{.}}" {{if eq . $.selectedCategory}}selected{{end}}>{{.}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-sort me-2"></i>Sıralama
+                        </label>
+                        <select class="form-select" id="sortFilter" onchange="filterProducts()">
+                            <option value="name">İsme Göre Sırala</option>
+                            <option value="price-low">Fiyat (Düşük-Yüksek)</option>
+                            <option value="price-high">Fiyat (Yüksek-Düşük)</option>
+                            <option value="newest">En Yeni</option>
+                            <option value="stock">Stok Durumu</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-primary" id="gridViewBtn" onclick="toggleView('grid')" title="Kart Görünümü">
+                                <i class="fas fa-th"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="listViewBtn" onclick="toggleView('list')" title="Liste Görünümü">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Count and Quick Stats -->
+    <section class="stats-section mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center">
+                    <h5 class="mb-0 me-3">
+                        <span class="badge bg-primary" id="productCount">
+                            {{if .products}}{{len .products}}{{else}}0{{end}}
+                        </span>
+                        ürün bulundu
+                    </h5>
+                    <div class="ms-auto d-none d-md-block">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>Tüm ürünler garantili
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Grid View -->
+    <div id="gridView">
+        {{if .products}}
+        <div class="row" id="productsContainer">
+            {{range .products}}
+            <div class="col-xl-4 col-lg-6 col-md-6 mb-4 product-item" 
+                 data-name="{{.Name}}" 
+                 data-category="{{.Category}}" 
+                 data-price="{{.Price}}" 
+                 data-stock="{{.Stock}}"
+                 data-date="{{.CreatedAt.Format "2006-01-02"}}">
+                <div class="product-card h-100">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="position-relative overflow-hidden">
+                            {{if .Image}}
+                            <img src="{{.Image}}" class="card-img-top product-image" alt="{{.Name}}">
+                            {{else}}
+                            <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center product-image">
+                                <i class="fas fa-filter text-white" style="font-size: 4rem; opacity: 0.8;"></i>
+                            </div>
+                            {{end}}
+                            
+                            <!-- Status Badges -->
+                            <div class="position-absolute top-0 start-0 m-3">
+                                {{if eq .Stock 0}}
+                                <span class="badge bg-danger">Tükendi</span>
+                                {{else if lt .Stock 5}}
+                                <span class="badge bg-warning">Son {{.Stock}} adet</span>
+                                {{else}}
+                                <span class="badge bg-success">Stokta</span>
+                                {{end}}
+                            </div>
+                            
+                            <!-- Quick View Button -->
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <button class="btn btn-light btn-sm rounded-circle quick-view-btn" 
+                                        data-bs-toggle="modal" data-bs-target="#quickViewModal"
+                                        data-product-name="{{.Name}}" data-product-description="{{.Description}}"
+                                        data-product-price="{{.Price}}" data-product-category="{{.Category}}"
+                                        data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Hover Overlay -->
+                            <div class="product-overlay">
+                                {{if gt .Stock 0}}
+                                <button class="btn btn-primary btn-lg add-to-cart-btn" 
+                                        data-product-id="{{.ID}}" data-product-name="{{.Name}}">
+                                    <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
+                                </button>
+                                {{else}}
+                                <button class="btn btn-secondary btn-lg" disabled>
+                                    <i class="fas fa-times me-2"></i>Stokta Yok
+                                </button>
+                                {{end}}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="mb-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary">{{.Category}}</span>
+                            </div>
+                            <h5 class="card-title fw-bold mb-3" style="color: #1e3a8a;">{{.Name}}</h5>
+                            <p class="card-text text-muted flex-grow-1 mb-3">{{.Description}}</p>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="price-tag">
+                                        <span class="text-success fw-bold fs-4">{{.Price}} ₺</span>
+                                    </div>
+                                    <div class="rating">
+                                        <small class="text-warning">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <span class="text-muted ms-1">(4.9)</span>
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>{{.CreatedAt.Format "02.01.2006"}}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-eye me-1"></i>1,234 görüntüleme
+                                    </small>
+                                </div>
+                                
+                                {{if gt .Stock 0}}
+                                <div class="d-grid">
+                                    <button class="btn btn-primary add-to-cart-btn" 
+                                            data-product-id="{{.ID}}" data-product-name="{{.Name}}">
+                                        <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
+                                    </button>
+                                </div>
+                                {{else}}
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-secondary" disabled>
+                                        <i class="fas fa-times me-2"></i>Stokta Yok
+                                    </button>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="empty-state text-center py-5">
+            <div class="bg-light rounded-4 p-5">
+                <i class="fas fa-box-open text-muted mb-4" style="font-size: 5rem;"></i>
+                <h3 class="text-muted mb-3">Henüz ürün eklenmemiş</h3>
+                <p class="text-muted mb-4">Yakında en kaliteli su arıtma ürünleri burada olacak!</p>
+                <a href="/contact" class="btn btn-primary">
+                    <i class="fas fa-phone me-2"></i>Bilgi Al
+                </a>
+            </div>
+        </div>
+        {{end}}
+    </div>
+
+    <!-- Products List View -->
+    <div id="listView" style="display: none;">
+        {{if .products}}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0 fw-semibold">Ürün</th>
+                                <th class="border-0 fw-semibold">Kategori</th>
+                                <th class="border-0 fw-semibold">Fiyat</th>
+                                <th class="border-0 fw-semibold">Stok</th>
+                                <th class="border-0 fw-semibold">Değerlendirme</th>
+                                <th class="border-0 fw-semibold">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            {{range .products}}
+                            <tr class="product-item" 
+                                data-name="{{.Name}}" 
+                                data-category="{{.Category}}" 
+                                data-price="{{.Price}}" 
+                                data-stock="{{.Stock}}"
+                                data-date="{{.CreatedAt.Format "2006-01-02"}}">
+                                <td class="py-3">
+                                    <div class="d-flex align-items-center">
+                                        {{if .Image}}
+                                        <img src="{{.Image}}" alt="{{.Name}}" class="rounded me-3 product-thumb">
+                                        {{else}}
+                                        <div class="bg-gradient rounded me-3 product-thumb d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-filter text-white"></i>
+                                        </div>
+                                        {{end}}
+                                        <div>
+                                            <h6 class="mb-1 fw-semibold" style="color: #1e3a8a;">{{.Name}}</h6>
+                                            <small class="text-muted">{{.Description}}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">{{.Category}}</span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="text-success fw-bold fs-5">{{.Price}} ₺</span>
+                                </td>
+                                <td class="py-3">
+                                    {{if gt .Stock 0}}
+                                    <span class="badge bg-success">{{.Stock}} adet</span>
+                                    {{else}}
+                                    <span class="badge bg-danger">Tükendi</span>
+                                    {{end}}
+                                </td>
+                                <td class="py-3">
+                                    <div class="text-warning">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <small class="text-muted ms-1">(4.9)</small>
+                                    </div>
+                                </td>
+                                <td class="py-3">
+                                    {{if gt .Stock 0}}
+                                    <button class="btn btn-primary btn-sm add-to-cart-btn" 
+                                            data-product-id="{{.ID}}" data-product-name="{{.Name}}">
+                                        <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
+                                    </button>
+                                    {{else}}
+                                    <button class="btn btn-outline-secondary btn-sm" disabled>
+                                        <i class="fas fa-times me-1"></i>Stokta Yok
+                                    </button>
+                                    {{end}}
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Ürün Detayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modalProductImage" src="" alt="" class="img-fluid rounded">
+                    </div>
+                    <div class="col-md-6">
+                        <h4 id="modalProductName" class="fw-bold mb-3" style="color: #1e3a8a;"></h4>
+                        <p id="modalProductDescription" class="text-muted mb-3"></p>
+                        <div class="mb-3">
+                            <span class="badge bg-primary" id="modalProductCategory"></span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-success fw-bold fs-3" id="modalProductPrice"></span>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Stok: <span id="modalProductStock"></span> adet</small>
+                        </div>
+                        <div class="features mb-4">
+                            <h6 class="fw-semibold mb-2">Özellikler:</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>5 Yıl Garanti</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Ücretsiz Kurulum</li>
+                                <li><i class="fas fa-check text-success me-2"></i>24/7 Teknik Destek</li>
+                                <li><i class="fas fa-check text-success me-2"></i>CE Sertifikalı</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-primary btn-lg w-100" id="modalAddToCart">
+                            <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.products-hero {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    margin-bottom: 3rem;
+}
+
+.feature-badge {
+    transition: all 0.3s ease;
+}
+
+.feature-badge:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.product-card {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+}
+
+.product-card:hover .card {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+}
+
+.product-image {
+    height: 280px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.product-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .product-overlay {
+    opacity: 1;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.quick-view-btn {
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover .quick-view-btn {
+    opacity: 1;
+}
+
+.product-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.price-tag {
+    position: relative;
+}
+
+.price-tag::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    border-radius: 1px;
+}
+
+.empty-state {
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-section .form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.btn-group .btn.active,
+.btn-group .btn:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: #667eea;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .product-overlay {
+        position: static;
+        opacity: 1;
+        background: transparent;
+        padding: 1rem 0 0;
+    }
+    
+    .quick-view-btn {
+        opacity: 1;
+    }
+    
+    .product-image {
+        height: 220px;
+    }
+}
+
+/* Loading Animation */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0,0,0,.1);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+let currentView = 'grid';
+
+// Toggle between grid and list view
+function toggleView(view) {
+    currentView = view;
+    const gridView = document.getElementById('gridView');
+    const listView = document.getElementById('listView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const listBtn = document.getElementById('listViewBtn');
+    
+    if (view === 'grid') {
+        gridView.style.display = 'block';
+        listView.style.display = 'none';
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    } else {
+        gridView.style.display = 'none';
+        listView.style.display = 'block';
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+    }
+    
+    // Save preference
+    localStorage.setItem('productsView', view);
+}
+
+// Load saved view preference
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('productsView') || 'grid';
+    toggleView(savedView);
+    
+    // Initialize quick view modal
+    initQuickViewModal();
+    
+    // Initialize add to cart buttons
+    initAddToCartButtons();
+});
+
+// Filter products
+function filterProducts() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const sortFilter = document.getElementById('sortFilter').value;
+    
+    let products = Array.from(document.querySelectorAll('.product-item'));
+    let visibleCount = 0;
+    
+    // Filter products
+    products.forEach(product => {
+        const name = product.dataset.name.toLowerCase();
+        const category = product.dataset.category;
+        const description = product.querySelector('.card-text, td small')?.textContent.toLowerCase() || '';
+        
+        const matchesSearch = name.includes(searchTerm) || description.includes(searchTerm);
+        const matchesCategory = !categoryFilter || category === categoryFilter;
+        
+        if (matchesSearch && matchesCategory) {
+            product.style.display = '';
+            visibleCount++;
+        } else {
+            product.style.display = 'none';
+        }
+    });
+    
+    // Sort products
+    const visibleProducts = products.filter(p => p.style.display !== 'none');
+    sortProducts(visibleProducts, sortFilter);
+    
+    // Update count
+    document.getElementById('productCount').textContent = visibleCount;
+}
+
+// Sort products
+function sortProducts(products, sortBy) {
+    const container = currentView === 'grid' ? 
+        document.getElementById('productsContainer') : 
+        document.getElementById('productsTableBody');
+    
+    products.sort((a, b) => {
+        switch(sortBy) {
+            case 'price-low':
+                return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            case 'price-high':
+                return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            case 'newest':
+                return new Date(b.dataset.date) - new Date(a.dataset.date);
+            case 'stock':
+                return parseInt(b.dataset.stock) - parseInt(a.dataset.stock);
+            default:
+                return a.dataset.name.localeCompare(b.dataset.name);
+        }
+    });
+    
+    // Reorder in DOM
+    products.forEach(product => container.appendChild(product));
+}
+
+// Quick view modal
+function initQuickViewModal() {
+    document.querySelectorAll('.quick-view-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const name = this.dataset.productName;
+            const description = this.dataset.productDescription;
+            const price = this.dataset.productPrice;
+            const category = this.dataset.productCategory;
+            const stock = this.dataset.productStock;
+            const image = this.dataset.productImage;
+            
+            document.getElementById('modalProductName').textContent = name;
+            document.getElementById('modalProductDescription').textContent = description;
+            document.getElementById('modalProductPrice').textContent = price + ' ₺';
+            document.getElementById('modalProductCategory').textContent = category;
+            document.getElementById('modalProductStock').textContent = stock;
+            
+            const modalImage = document.getElementById('modalProductImage');
+            if (image) {
+                modalImage.src = image;
+                modalImage.alt = name;
+            } else {
+                modalImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0yMDAgMTUwQzIwNSAxNTAgMjEwIDE0NSAyMTAgMTQwQzIxMCAxMzUgMjA1IDEzMCAyMDAgMTMwQzE5NSAxMzAgMTkwIDEzNSAxOTAgMTQwQzE5MCAxNDUgMTk1IDE1MCAyMDAgMTUwWiIgZmlsbD0iIzY2N0VFQSIvPgo8L3N2Zz4K';
+                modalImage.alt = 'Ürün Görseli';
+            }
+        });
+    });
+}
+
+// Add to cart functionality
+function initAddToCartButtons() {
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const productName = this.dataset.productName;
+            
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<span class="loading-spinner me-2"></span>Ekleniyor...';
+            this.disabled = true;
+            
+            // Simulate API call
+            fetch('/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: parseInt(productId),
+                    quantity: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                this.innerHTML = originalText;
+                this.disabled = false;
+                
+                if (data.success) {
+                    // Show success message
+                    showToast('success', productName + ' sepete eklendi!');
+                    
+                    // Update cart count
+                    updateCartCount();
+                } else {
+                    showToast('error', data.message || 'Bir hata oluştu');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                this.innerHTML = originalText;
+                this.disabled = false;
+                
+                showToast('error', 'Bir hata oluştu, lütfen tekrar deneyin');
+                console.error('Error:', error);
+            });
+        });
+    });
+}
+
+// Show toast notification
+function showToast(type, message) {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+// Update cart count
+function updateCartCount() {
+    fetch('/cart/count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('cartBadge');
+            if (badge) {
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        })
+        .catch(error => console.error('Cart count error:', error));
+}
+</script>
+{{end}} 
