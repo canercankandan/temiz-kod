@@ -80,7 +80,7 @@ func main() {
 	// Port'u environment variable'dan al, yoksa default kullan
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "8082"
 	}
 	
 	// Host'u environment variable'dan al
