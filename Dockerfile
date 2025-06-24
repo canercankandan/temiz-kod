@@ -1,6 +1,9 @@
 # Build stage
 FROM golang:1.21-alpine AS builder
 
+# Disable Go module checksum verification for Docker build
+ENV GOSUMDB=off
+
 WORKDIR /app
 
 # Copy go mod and sum files
