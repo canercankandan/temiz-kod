@@ -870,6 +870,7 @@ async function handleSignalingMessage(message) {
 
 async function sendVideoCallRequest() {
     try {
+        console.log('Customer sending video call request for session:', sessionID);
         const response = await fetch('/support/video-call-request', {
             method: 'POST',
             headers: {
@@ -882,11 +883,14 @@ async function sendVideoCallRequest() {
         });
         
         const data = await response.json();
+        console.log('Customer video call request response:', data);
         if (!data.success) {
-            console.error('Video call request failed:', data.error);
+            console.error('Customer video call request failed:', data.error);
+        } else {
+            console.log('Customer video call request sent successfully');
         }
     } catch (error) {
-        console.error('Error sending video call request:', error);
+        console.error('Customer error sending video call request:', error);
     }
 }
 

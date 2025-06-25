@@ -1950,7 +1950,7 @@ func (h *Handler) AdminSendSupportMessage(c *gin.Context) {
 
 // Video Call Request Handlers
 
-// HandleVideoCallRequest - Video görüşme talebi işle
+// HandleVideoCallRequest - Müşteri video görüşme talebi
 func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 	var request struct {
 		SessionID string `json:"session_id"`
@@ -1958,14 +1958,18 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 	}
 	
 	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Printf("HandleVideoCallRequest - Invalid request: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
 	
 	if request.SessionID == "" {
+		log.Printf("HandleVideoCallRequest - Missing session ID")
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
+	
+	log.Printf("HandleVideoCallRequest - Session: %s, Action: %s", request.SessionID, request.Action)
 	
 	switch request.Action {
 	case "start":
@@ -1985,6 +1989,8 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 			displayName = fmt.Sprintf("Misafir-%s", request.SessionID[:8])
 		}
 		
+		log.Printf("HandleVideoCallRequest - Creating video call request for session: %s, username: %s", request.SessionID, displayName)
+		
 		// Create video call request
 		err := h.db.CreateVideoCallRequest(request.SessionID, displayName, userID)
 		if err != nil {
@@ -1993,9 +1999,11 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 			return
 		}
 		
+		log.Printf("HandleVideoCallRequest - Video call request created successfully for session: %s", request.SessionID)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme talebi gönderildi"})
 		
 	case "end":
+		log.Printf("HandleVideoCallRequest - Ending video call request for session: %s", request.SessionID)
 		// End video call request
 		err := h.db.EndVideoCallRequest(request.SessionID)
 		if err != nil {
@@ -2005,6 +2013,7 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme sonlandırıldı"})
 		
 	default:
+		log.Printf("HandleVideoCallRequest - Invalid action: %s", request.Action)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz aksiyon"})
 	}
 }
@@ -2080,11 +2089,18 @@ func (h *Handler) CheckVideoCallStatus(c *gin.Context) {
 
 // AdminGetVideoCallRequests - Tüm aktif video görüşme taleplerini getir
 func (h *Handler) AdminGetVideoCallRequests(c *gin.Context) {
+	log.Printf("AdminGetVideoCallRequests - Getting all active video call requests")
 	requests, err := h.db.GetAllActiveVideoCallRequests()
 	if err != nil {
 		log.Printf("AdminGetVideoCallRequests - Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talepleri getirilemedi"})
 		return
+	}
+	
+	log.Printf("AdminGetVideoCallRequests - Found %d active video call requests", len(requests))
+	for i, req := range requests {
+		log.Printf("AdminGetVideoCallRequests - Request %d: SessionID=%s, Username=%s, Status=%s", 
+			i+1, req.SessionID, req.Username, req.Status)
 	}
 	
 	c.JSON(http.StatusOK, gin.H{

@@ -969,13 +969,16 @@ function addAdminSystemMessage(message) {
 
 // Check for video call requests for all sessions
 function checkVideoCallRequests() {
+    console.log('Admin checking for video call requests...');
     fetch('/admin/support/video-call-requests')
     .then(response => response.json())
     .then(data => {
+        console.log('Admin video call requests response:', data);
         if (data.success && data.requests) {
             // Check if there are new requests (for sound notification)
             const hasNewRequests = data.requests.length > 0;
             const currentRequests = data.requests.map(r => r.session_id);
+            console.log('Admin found video call requests:', data.requests);
             
             // Hide all existing video call buttons first
             document.querySelectorAll('.video-call-buttons').forEach(buttons => {
@@ -989,26 +992,34 @@ function checkVideoCallRequests() {
             data.requests.forEach(request => {
                 const sessionId = request.session_id;
                 const username = request.username || 'Misafir';
+                console.log('Admin processing video call request for session:', sessionId, 'username:', username);
                 
                 // Show video call buttons for this session
                 const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
                 const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
                 
                 if (buttonsDiv) {
+                    console.log('Admin showing video call buttons for session:', sessionId);
                     buttonsDiv.style.display = 'block';
+                } else {
+                    console.log('Admin video call buttons div not found for session:', sessionId);
                 }
                 
                 if (notificationDiv) {
+                    console.log('Admin showing video call notification for session:', sessionId);
                     notificationDiv.style.display = 'block';
                     // Update notification text with username
                     const alertDiv = notificationDiv.querySelector('.alert');
                     if (alertDiv) {
                         alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                     }
+                } else {
+                    console.log('Admin video call notification div not found for session:', sessionId);
                 }
                 
                 // Add system message if this is a new request for current session
                 if (sessionId === currentSessionID && !isAdminCallActive) {
+                    console.log('Admin adding system message for current session video call request');
                     addAdminSystemMessage(`${username} video görüşme talep ediyor!`);
                 }
             });
@@ -1016,16 +1027,18 @@ function checkVideoCallRequests() {
             // Play notification sound if there are new requests
             if (hasNewRequests && (!window.lastVideoCallRequests || 
                 JSON.stringify(currentRequests.sort()) !== JSON.stringify(window.lastVideoCallRequests.sort()))) {
+                console.log('Admin playing notification sound for new video call requests');
                 playNotificationSound();
                 window.lastVideoCallRequests = currentRequests;
             }
         } else {
+            console.log('Admin no video call requests found');
             // No requests, clear the last requests
             window.lastVideoCallRequests = [];
         }
     })
     .catch(error => {
-        console.error('Error checking video call requests:', error);
+        console.error('Admin error checking video call requests:', error);
     });
 }
 
