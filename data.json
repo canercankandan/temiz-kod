@@ -580,6 +580,26 @@
       "is_admin": true,
       "is_read": true,
       "created_at": "2025-06-25T15:19:00.6027737+03:00"
+    },
+    {
+      "id": 43,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "message": "hhhh",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T15:26:11.8992668+03:00"
+    },
+    {
+      "id": 44,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "message": "merhaba",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T15:27:58.2421567+03:00"
     }
   ],
   "support_sessions": [
@@ -719,7 +739,7 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "status": "active",
-      "last_message_at": "2025-06-25T15:19:00.6027737+03:00",
+      "last_message_at": "2025-06-25T15:27:58.2421567+03:00",
       "created_at": "2025-06-25T15:16:35.3220165+03:00",
       "unread_count": 0
     }
@@ -1381,6 +1401,33 @@
       "status": "ended",
       "requested_at": "2025-06-25T15:24:44.3388724+03:00",
       "responded_at": "2025-06-25T15:24:54.1837712+03:00"
+    },
+    {
+      "id": 74,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-06-25T15:26:04.169522+03:00",
+      "responded_at": "2025-06-25T15:26:32.6468377+03:00"
+    },
+    {
+      "id": 75,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-06-25T15:27:48.6007213+03:00",
+      "responded_at": "2025-06-25T15:28:01.1621125+03:00"
+    },
+    {
+      "id": 76,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-06-25T15:28:03.2979818+03:00",
+      "responded_at": "2025-06-25T16:58:11.1530184+03:00"
     }
   ]
 }

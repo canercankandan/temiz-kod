@@ -560,6 +560,7 @@ function loadSessions() {
 
 // Update sessions list
 function updateSessionsList(sessions) {
+    console.log('🔄 Sessions list güncelleniyor:', sessions);
     const sessionsList = document.getElementById('sessionsList');
     const sessionCount = document.getElementById('sessionCount');
     
@@ -577,6 +578,7 @@ function updateSessionsList(sessions) {
     
     sessionsList.innerHTML = '';
     sessions.forEach(session => {
+        console.log(`📝 Session oluşturuluyor: ${session.session_id} - ${session.username}`);
         const sessionDiv = document.createElement('div');
         sessionDiv.className = 'session-item p-3 border-bottom';
         sessionDiv.style.backgroundColor = 'white';
@@ -623,7 +625,14 @@ function updateSessionsList(sessions) {
             </div>
         `;
         
+        console.log(`✅ Session HTML oluşturuldu: ${session.session_id}`);
+        console.log(`🔍 Video call buttons div ID: videoCallButtons-${session.session_id}`);
+        
         sessionsList.appendChild(sessionDiv);
+        
+        // Oluşturulan div'i kontrol et
+        const createdButtonsDiv = document.getElementById(`videoCallButtons-${session.session_id}`);
+        console.log(`🔍 Oluşturulan buton div:`, createdButtonsDiv);
     });
 }
 
@@ -989,15 +998,41 @@ function checkVideoCallRequests() {
                 
                 console.log(`🎥 ${username} (${sessionId}) için video arama butonları gösteriliyor`);
                 
+                // Önce session div'ini bul
+                const sessionDiv = document.querySelector(`[data-session-id="${sessionId}"]`);
+                console.log(`🔍 Session div bulundu:`, sessionDiv);
+                
+                if (!sessionDiv) {
+                    console.log(`❌ Session div bulunamadı: ${sessionId}`);
+                    return;
+                }
+                
                 // Butonları göster
-                const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
-                const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+                const buttonsDiv = sessionDiv.querySelector(`#videoCallButtons-${sessionId}`);
+                const notificationDiv = sessionDiv.querySelector(`#videoCallNotification-${sessionId}`);
                 
                 if (buttonsDiv) {
                     buttonsDiv.style.display = 'block';
                     console.log(`✅ ${sessionId} için butonlar gösterildi`);
                 } else {
-                    console.log(`❌ ${sessionId} için buton div bulunamadı`);
+                    console.log(`❌ ${sessionId} için buton div bulunamadı - yeni oluşturuluyor`);
+                    
+                    // Eğer buton div yoksa, oluştur
+                    const newButtonsDiv = document.createElement('div');
+                    newButtonsDiv.id = `videoCallButtons-${sessionId}`;
+                    newButtonsDiv.className = 'video-call-buttons mb-2';
+                    newButtonsDiv.innerHTML = `
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${sessionId}', '${username}')" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-video me-1"></i>Cevap Ver
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${sessionId}', '${username}')" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-times me-1"></i>Reddet
+                            </button>
+                        </div>
+                    `;
+                    sessionDiv.appendChild(newButtonsDiv);
+                    console.log(`✅ ${sessionId} için yeni buton div oluşturuldu`);
                 }
                 
                 if (notificationDiv) {
@@ -1006,6 +1041,18 @@ function checkVideoCallRequests() {
                     if (alertDiv) {
                         alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                     }
+                } else {
+                    // Eğer notification div yoksa, oluştur
+                    const newNotificationDiv = document.createElement('div');
+                    newNotificationDiv.id = `videoCallNotification-${sessionId}`;
+                    newNotificationDiv.className = 'video-call-notification mb-2';
+                    newNotificationDiv.innerHTML = `
+                        <div class="alert alert-warning alert-sm mb-2 py-2">
+                            <i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor
+                        </div>
+                    `;
+                    sessionDiv.appendChild(newNotificationDiv);
+                    console.log(`✅ ${sessionId} için yeni notification div oluşturuldu`);
                 }
                 
                 // Ses çal
