@@ -61,6 +61,13 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 }
 
 func main() {
+	log.Println("[DEBUG] Sunucu başlatılıyor...")
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[PANIC] Uygulama çöktü: %v", r)
+		}
+	}()
+
 	// Production modunu aktif et
 	gin.SetMode(gin.ReleaseMode)
 	

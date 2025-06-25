@@ -560,7 +560,6 @@ function loadSessions() {
 
 // Update sessions list
 function updateSessionsList(sessions) {
-    console.log('🔄 Sessions list güncelleniyor:', sessions);
     const sessionsList = document.getElementById('sessionsList');
     const sessionCount = document.getElementById('sessionCount');
     
@@ -578,7 +577,6 @@ function updateSessionsList(sessions) {
     
     sessionsList.innerHTML = '';
     sessions.forEach(session => {
-        console.log(`📝 Session oluşturuluyor: ${session.session_id} - ${session.username}`);
         const sessionDiv = document.createElement('div');
         sessionDiv.className = 'session-item p-3 border-bottom';
         sessionDiv.style.backgroundColor = 'white';
@@ -607,32 +605,25 @@ function updateSessionsList(sessions) {
             
             <!-- Video Call Notification -->
             <div id="videoCallNotification-${session.session_id}" class="video-call-notification mb-2" style="display: none;">
-                <div class="alert alert-warning alert-sm mb-2 py-2">
+                <div class="alert alert-info alert-sm mb-2 py-2">
                     <i class="fas fa-video me-1"></i><strong>${session.username}</strong> görüntülü görüşme istiyor
                 </div>
             </div>
             
             <!-- Video Call Buttons -->
-            <div id="videoCallButtons-${session.session_id}" class="video-call-buttons mb-2" style="display: none;">
+            <div id="videoCallButtons-${session.session_id}" class="video-call-buttons" style="display: none;">
                 <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${session.session_id}', '${session.username}')" style="font-size: 12px; padding: 8px 12px;">
+                    <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${session.session_id}', '${session.username}')">
                         <i class="fas fa-video me-1"></i>Cevap Ver
                     </button>
-                    <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${session.session_id}', '${session.username}')" style="font-size: 12px; padding: 8px 12px;">
+                    <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${session.session_id}', '${session.username}')">
                         <i class="fas fa-times me-1"></i>Reddet
                     </button>
                 </div>
             </div>
         `;
         
-        console.log(`✅ Session HTML oluşturuldu: ${session.session_id}`);
-        console.log(`🔍 Video call buttons div ID: videoCallButtons-${session.session_id}`);
-        
         sessionsList.appendChild(sessionDiv);
-        
-        // Oluşturulan div'i kontrol et
-        const createdButtonsDiv = document.getElementById(`videoCallButtons-${session.session_id}`);
-        console.log(`🔍 Oluşturulan buton div:`, createdButtonsDiv);
     });
 }
 
@@ -698,8 +689,9 @@ async function acceptVideoCall(sessionId, username) {
         addAdminSystemMessage(`${username} ile video görüşme başlatıldı.`);
         
     } catch (error) {
-        console.error('Video call acceptance failed:', error);
-        alert('Video görüşme başlatılamadı: ' + error.message);
+        console.error('Video call kabul edilemedi:', error);
+        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
+        await sendVideoCallResponse('reject', sessionId);
     }
 }
 
@@ -810,7 +802,7 @@ function adminToggleVideo() {
 // Initialize WebRTC peer connection for admin
 async function initializeAdminPeerConnection() {
     try {
-        console.log('Admin initializing peer connection...');
+        console.log('Initializing admin peer connection...');
         
         // Create peer connection with STUN servers
         adminPeerConnection = new RTCPeerConnection({
@@ -819,14 +811,11 @@ async function initializeAdminPeerConnection() {
                 { urls: 'stun:stun1.l.google.com:19302' }
             ]
         });
-        console.log('Admin peer connection created');
         
         // Add local stream to peer connection
-        console.log('Admin adding local stream tracks to peer connection...');
         adminLocalStream.getTracks().forEach(track => {
             adminPeerConnection.addTrack(track, adminLocalStream);
         });
-        console.log('Admin local stream tracks added');
         
         // Handle remote stream
         adminPeerConnection.ontrack = (event) => {
@@ -839,7 +828,6 @@ async function initializeAdminPeerConnection() {
         // Handle ICE candidates
         adminPeerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-                console.log('Admin sending ICE candidate to customer...');
                 sendAdminSignalingMessage({
                     type: 'ice-candidate',
                     candidate: event.candidate
@@ -870,10 +858,9 @@ async function initializeAdminPeerConnection() {
     }
 }
 
-// Send admin signaling message to customer
+// Send signaling message to customer
 async function sendAdminSignalingMessage(message) {
     try {
-        console.log('Admin sending signaling message:', message);
         const response = await fetch('/admin/support/webrtc-signal', {
             method: 'POST',
             headers: {
@@ -888,8 +875,6 @@ async function sendAdminSignalingMessage(message) {
         const data = await response.json();
         if (!data.success) {
             console.error('Admin signaling message failed:', data.error);
-        } else {
-            console.log('Admin signaling message sent successfully');
         }
     } catch (error) {
         console.error('Error sending admin signaling message:', error);
@@ -903,13 +888,9 @@ async function handleAdminSignalingMessage(message) {
         switch (message.type) {
             case 'offer':
                 // Customer sent offer, create answer
-                console.log('Admin received offer, setting remote description...');
                 await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
-                console.log('Admin creating answer...');
                 const answer = await adminPeerConnection.createAnswer();
-                console.log('Admin setting local description (answer)...');
                 await adminPeerConnection.setLocalDescription(answer);
-                console.log('Admin sending answer to customer...');
                 sendAdminSignalingMessage({
                     type: 'answer',
                     answer: answer
@@ -918,15 +899,11 @@ async function handleAdminSignalingMessage(message) {
                 break;
                 
             case 'answer':
-                console.log('Admin received answer, setting remote description...');
                 await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
-                console.log('Admin remote description set successfully');
                 break;
                 
             case 'ice-candidate':
-                console.log('Admin received ICE candidate, adding...');
                 await adminPeerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
-                console.log('Admin ICE candidate added successfully');
                 break;
         }
     } catch (error) {
@@ -979,115 +956,77 @@ function addAdminSystemMessage(message) {
 // Check for video call requests for all sessions
 function checkVideoCallRequests() {
     console.log('🔍 Admin video arama taleplerini kontrol ediyor...');
-    console.log('🌐 Endpoint: /admin/support/video-call-requests');
-    
     fetch('/admin/support/video-call-requests')
     .then(response => {
         console.log('📡 Response status:', response.status);
-        console.log('📡 Response ok:', response.ok);
         return response.json();
     })
     .then(data => {
         console.log('📞 Admin video arama talepleri:', data);
-        console.log('📊 Data type:', typeof data);
-        console.log('📊 Data keys:', Object.keys(data));
-        
-        if (data.success && data.requests && data.requests.length > 0) {
-            console.log(`✅ ${data.requests.length} adet video arama talebi bulundu`);
+        if (data.success && data.requests) {
+            // Check if there are new requests (for sound notification)
+            const hasNewRequests = data.requests.length > 0;
+            const currentRequests = data.requests.map(r => r.session_id);
             
-            // Tüm mevcut butonları gizle
-            document.querySelectorAll('.video-call-buttons').forEach(btn => btn.style.display = 'none');
-            document.querySelectorAll('.video-call-notification').forEach(notif => notif.style.display = 'none');
+            console.log('✅ Video arama talepleri bulundu:', data.requests.length, 'adet');
             
-            // Her talep için butonları göster
-            data.requests.forEach((request, index) => {
-                console.log(`📋 Request ${index + 1}:`, request);
+            // Hide all existing video call buttons first
+            document.querySelectorAll('.video-call-buttons').forEach(buttons => {
+                buttons.style.display = 'none';
+            });
+            document.querySelectorAll('.video-call-notification').forEach(notification => {
+                notification.style.display = 'none';
+            });
+            
+            // Show buttons for sessions with pending requests
+            data.requests.forEach(request => {
                 const sessionId = request.session_id;
                 const username = request.username || 'Misafir';
                 
-                console.log(`🎥 ${username} (${sessionId}) için video arama butonları gösteriliyor`);
+                console.log('🎯 Session için butonlar gösteriliyor:', sessionId, username);
                 
-                // Önce session div'ini bul
-                const sessionDiv = document.querySelector(`[data-session-id="${sessionId}"]`);
-                console.log(`🔍 Session div bulundu:`, sessionDiv);
+                // Show video call buttons for this session
+                const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+                const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
                 
-                if (!sessionDiv) {
-                    console.log(`❌ Session div bulunamadı: ${sessionId}`);
-                    console.log(`🔍 Mevcut session div'leri:`, document.querySelectorAll('[data-session-id]'));
-                    return;
-                }
-                
-                // Butonları göster
-                const buttonsDiv = sessionDiv.querySelector(`#videoCallButtons-${sessionId}`);
-                const notificationDiv = sessionDiv.querySelector(`#videoCallNotification-${sessionId}`);
+                console.log('🔘 Buttons div bulundu:', !!buttonsDiv);
+                console.log('🔔 Notification div bulundu:', !!notificationDiv);
                 
                 if (buttonsDiv) {
                     buttonsDiv.style.display = 'block';
-                    console.log(`✅ ${sessionId} için butonlar gösterildi`);
-                } else {
-                    console.log(`❌ ${sessionId} için buton div bulunamadı - yeni oluşturuluyor`);
-                    
-                    // Eğer buton div yoksa, oluştur
-                    const newButtonsDiv = document.createElement('div');
-                    newButtonsDiv.id = `videoCallButtons-${sessionId}`;
-                    newButtonsDiv.className = 'video-call-buttons mb-2';
-                    newButtonsDiv.innerHTML = `
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${sessionId}', '${username}')" style="font-size: 12px; padding: 8px 12px;">
-                                <i class="fas fa-video me-1"></i>Cevap Ver
-                            </button>
-                            <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${sessionId}', '${username}')" style="font-size: 12px; padding: 8px 12px;">
-                                <i class="fas fa-times me-1"></i>Reddet
-                            </button>
-                        </div>
-                    `;
-                    sessionDiv.appendChild(newButtonsDiv);
-                    console.log(`✅ ${sessionId} için yeni buton div oluşturuldu`);
+                    console.log('✅ Butonlar gösterildi');
                 }
                 
                 if (notificationDiv) {
                     notificationDiv.style.display = 'block';
+                    // Update notification text with username
                     const alertDiv = notificationDiv.querySelector('.alert');
                     if (alertDiv) {
                         alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                     }
-                } else {
-                    // Eğer notification div yoksa, oluştur
-                    const newNotificationDiv = document.createElement('div');
-                    newNotificationDiv.id = `videoCallNotification-${sessionId}`;
-                    newNotificationDiv.className = 'video-call-notification mb-2';
-                    newNotificationDiv.innerHTML = `
-                        <div class="alert alert-warning alert-sm mb-2 py-2">
-                            <i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor
-                        </div>
-                    `;
-                    sessionDiv.appendChild(newNotificationDiv);
-                    console.log(`✅ ${sessionId} için yeni notification div oluşturuldu`);
+                    console.log('✅ Bildirim gösterildi');
                 }
                 
-                // Ses çal
-                if (!window.lastVideoCallRequests || !window.lastVideoCallRequests.includes(sessionId)) {
-                    playNotificationSound();
-                    if (!window.lastVideoCallRequests) window.lastVideoCallRequests = [];
-                    window.lastVideoCallRequests.push(sessionId);
+                // Add system message if this is a new request for current session
+                if (sessionId === currentSessionID && !isAdminCallActive) {
+                    addAdminSystemMessage(`${username} video görüşme talep ediyor!`);
                 }
             });
-        } else {
-            console.log('📭 Video arama talebi yok');
-            console.log('📊 Data success:', data.success);
-            console.log('📊 Data requests:', data.requests);
-            console.log('📊 Data requests length:', data.requests ? data.requests.length : 'undefined');
             
-            // Tüm butonları gizle
-            document.querySelectorAll('.video-call-buttons').forEach(btn => btn.style.display = 'none');
-            document.querySelectorAll('.video-call-notification').forEach(notif => notif.style.display = 'none');
+            // Play notification sound if there are new requests
+            if (hasNewRequests && (!window.lastVideoCallRequests || 
+                JSON.stringify(currentRequests.sort()) !== JSON.stringify(window.lastVideoCallRequests.sort()))) {
+                playNotificationSound();
+                window.lastVideoCallRequests = currentRequests;
+            }
+        } else {
+            console.log('❌ Video arama talebi yok');
+            // No requests, clear the last requests
             window.lastVideoCallRequests = [];
         }
     })
     .catch(error => {
-        console.error('❌ Video arama talepleri kontrol edilirken hata:', error);
-        console.error('❌ Error details:', error.message);
-        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error checking video call requests:', error);
     });
 }
 
@@ -1163,9 +1102,6 @@ function startAdminSignalingPolling() {
             const data = await response.json();
             
             if (data.success && data.messages) {
-                if (data.messages.length > 0) {
-                    console.log('Admin received signaling messages:', data.messages);
-                }
                 for (const message of data.messages) {
                     await handleAdminSignalingMessage(message);
                 }
@@ -1193,7 +1129,7 @@ function loadAdminSessions() {
 document.addEventListener('DOMContentLoaded', function() {
     loadAdminSessions();
     setInterval(loadAdminSessions, 5000);
-    setInterval(checkVideoCallRequests, 1000);
+    setInterval(checkVideoCallRequests, 3000);
 });
 </script>
 </body>
