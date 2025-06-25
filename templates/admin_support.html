@@ -979,10 +979,18 @@ function addAdminSystemMessage(message) {
 // Check for video call requests for all sessions
 function checkVideoCallRequests() {
     console.log('🔍 Admin video arama taleplerini kontrol ediyor...');
+    console.log('🌐 Endpoint: /admin/support/video-call-requests');
+    
     fetch('/admin/support/video-call-requests')
-    .then(response => response.json())
+    .then(response => {
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
+        return response.json();
+    })
     .then(data => {
         console.log('📞 Admin video arama talepleri:', data);
+        console.log('📊 Data type:', typeof data);
+        console.log('📊 Data keys:', Object.keys(data));
         
         if (data.success && data.requests && data.requests.length > 0) {
             console.log(`✅ ${data.requests.length} adet video arama talebi bulundu`);
@@ -992,7 +1000,8 @@ function checkVideoCallRequests() {
             document.querySelectorAll('.video-call-notification').forEach(notif => notif.style.display = 'none');
             
             // Her talep için butonları göster
-            data.requests.forEach(request => {
+            data.requests.forEach((request, index) => {
+                console.log(`📋 Request ${index + 1}:`, request);
                 const sessionId = request.session_id;
                 const username = request.username || 'Misafir';
                 
@@ -1004,6 +1013,7 @@ function checkVideoCallRequests() {
                 
                 if (!sessionDiv) {
                     console.log(`❌ Session div bulunamadı: ${sessionId}`);
+                    console.log(`🔍 Mevcut session div'leri:`, document.querySelectorAll('[data-session-id]'));
                     return;
                 }
                 
@@ -1064,6 +1074,10 @@ function checkVideoCallRequests() {
             });
         } else {
             console.log('📭 Video arama talebi yok');
+            console.log('📊 Data success:', data.success);
+            console.log('📊 Data requests:', data.requests);
+            console.log('📊 Data requests length:', data.requests ? data.requests.length : 'undefined');
+            
             // Tüm butonları gizle
             document.querySelectorAll('.video-call-buttons').forEach(btn => btn.style.display = 'none');
             document.querySelectorAll('.video-call-notification').forEach(notif => notif.style.display = 'none');
@@ -1072,6 +1086,8 @@ function checkVideoCallRequests() {
     })
     .catch(error => {
         console.error('❌ Video arama talepleri kontrol edilirken hata:', error);
+        console.error('❌ Error details:', error.message);
+        console.error('❌ Error stack:', error.stack);
     });
 }
 
