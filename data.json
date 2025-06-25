@@ -400,6 +400,166 @@
       "is_admin": false,
       "is_read": true,
       "created_at": "2025-06-25T23:27:00.8722387+03:00"
+    },
+    {
+      "id": 25,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "ılll",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-25T23:48:09.0440903+03:00"
+    },
+    {
+      "id": 26,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "lll",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T23:48:13.5265461+03:00"
+    },
+    {
+      "id": 27,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "8ae0e446-2ca0-46c3-b467-a5990dc07f7f",
+      "message": "rg",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T23:49:33.597613+03:00"
+    },
+    {
+      "id": 28,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "vvv",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T23:50:40.8339045+03:00"
+    },
+    {
+      "id": 29,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "8ae0e446-2ca0-46c3-b467-a5990dc07f7f",
+      "message": "oo",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-25T23:50:50.4254791+03:00"
+    },
+    {
+      "id": 30,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "ng",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-25T23:53:54.5191935+03:00"
+    },
+    {
+      "id": 31,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "8ae0e446-2ca0-46c3-b467-a5990dc07f7f",
+      "message": "hh",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-25T23:53:58.0640214+03:00"
+    },
+    {
+      "id": 32,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "hhh",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T23:54:02.7960368+03:00"
+    },
+    {
+      "id": 33,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "ddd",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T23:56:15.1397947+03:00"
+    },
+    {
+      "id": 34,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "qqqq",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T23:56:25.6447101+03:00"
+    },
+    {
+      "id": 35,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "şlşş",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-25T23:57:03.8870204+03:00"
+    },
+    {
+      "id": 36,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "8ae0e446-2ca0-46c3-b467-a5990dc07f7f",
+      "message": "gggg",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-25T23:59:46.0667965+03:00"
+    },
+    {
+      "id": 37,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "8ae0e446-2ca0-46c3-b467-a5990dc07f7f",
+      "message": "ggggggg",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-25T23:59:59.8348113+03:00"
+    },
+    {
+      "id": 38,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "nnnn",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-26T00:01:19.438039+03:00"
+    },
+    {
+      "id": 39,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "mm",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-26T00:01:26.7091539+03:00"
+    },
+    {
+      "id": 40,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "n",
+      "is_admin": true,
+      "is_read": false,
+      "created_at": "2025-06-26T00:01:44.7704827+03:00"
     }
   ],
   "support_sessions": [
@@ -409,8 +569,18 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "status": "active",
-      "last_message_at": "2025-06-25T23:27:00.8722387+03:00",
+      "last_message_at": "2025-06-26T00:01:44.7704827+03:00",
       "created_at": "2025-06-25T21:37:55.9532832+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 2,
+      "session_id": "8ae0e446-2ca0-46c3-b467-a5990dc07f7f",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "active",
+      "last_message_at": "2025-06-25T23:59:59.8348113+03:00",
+      "created_at": "2025-06-25T23:49:33.5970728+03:00",
       "unread_count": 0
     }
   ],
@@ -573,9 +743,72 @@
       "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
       "user_id": null,
       "username": "Misafir-d84bd133",
-      "status": "accepted",
+      "status": "ended",
       "requested_at": "2025-06-25T23:39:17.5507347+03:00",
-      "responded_at": "2025-06-25T23:39:22.2896049+03:00"
+      "responded_at": "2025-06-25T23:48:37.3470456+03:00"
+    },
+    {
+      "id": 19,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-25T23:48:00.0154946+03:00",
+      "responded_at": "2025-06-25T23:48:55.095124+03:00"
+    },
+    {
+      "id": 20,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-25T23:50:43.8501076+03:00",
+      "responded_at": "2025-06-25T23:51:38.0803895+03:00"
+    },
+    {
+      "id": 21,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-25T23:51:40.4904739+03:00",
+      "responded_at": "2025-06-25T23:51:48.0246675+03:00"
+    },
+    {
+      "id": 22,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-25T23:53:46.1743372+03:00",
+      "responded_at": "2025-06-25T23:56:39.9431303+03:00"
+    },
+    {
+      "id": 23,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-25T23:57:00.3403604+03:00",
+      "responded_at": "2025-06-25T23:57:12.9318002+03:00"
+    },
+    {
+      "id": 24,
+      "session_id": "8ae0e446-2ca0-46c3-b467-a5990dc07f7f",
+      "user_id": null,
+      "username": "Misafir-8ae0e446",
+      "status": "ended",
+      "requested_at": "2025-06-26T00:00:07.9994911+03:00",
+      "responded_at": "2025-06-26T00:00:58.2308576+03:00"
+    },
+    {
+      "id": 25,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "pending",
+      "requested_at": "2025-06-26T00:01:37.0496852+03:00",
+      "responded_at": null
     }
   ]
 }
