@@ -689,9 +689,8 @@ async function acceptVideoCall(sessionId, username) {
         addAdminSystemMessage(`${username} ile video görüşme başlatıldı.`);
         
     } catch (error) {
-        console.error('Video call kabul edilemedi:', error);
-        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
-        await sendVideoCallResponse('reject', sessionId);
+        console.error('Video call acceptance failed:', error);
+        alert('Video görüşme başlatılamadı: ' + error.message);
     }
 }
 
@@ -802,7 +801,7 @@ function adminToggleVideo() {
 // Initialize WebRTC peer connection for admin
 async function initializeAdminPeerConnection() {
     try {
-        console.log('Initializing admin peer connection...');
+        console.log('Admin initializing peer connection...');
         
         // Create peer connection with STUN servers
         adminPeerConnection = new RTCPeerConnection({
@@ -811,11 +810,14 @@ async function initializeAdminPeerConnection() {
                 { urls: 'stun:stun1.l.google.com:19302' }
             ]
         });
+        console.log('Admin peer connection created');
         
         // Add local stream to peer connection
+        console.log('Admin adding local stream tracks to peer connection...');
         adminLocalStream.getTracks().forEach(track => {
             adminPeerConnection.addTrack(track, adminLocalStream);
         });
+        console.log('Admin local stream tracks added');
         
         // Handle remote stream
         adminPeerConnection.ontrack = (event) => {
@@ -828,6 +830,7 @@ async function initializeAdminPeerConnection() {
         // Handle ICE candidates
         adminPeerConnection.onicecandidate = (event) => {
             if (event.candidate) {
+                console.log('Admin sending ICE candidate to customer...');
                 sendAdminSignalingMessage({
                     type: 'ice-candidate',
                     candidate: event.candidate
@@ -858,9 +861,10 @@ async function initializeAdminPeerConnection() {
     }
 }
 
-// Send signaling message to customer
+// Send admin signaling message to customer
 async function sendAdminSignalingMessage(message) {
     try {
+        console.log('Admin sending signaling message:', message);
         const response = await fetch('/admin/support/webrtc-signal', {
             method: 'POST',
             headers: {
@@ -875,6 +879,8 @@ async function sendAdminSignalingMessage(message) {
         const data = await response.json();
         if (!data.success) {
             console.error('Admin signaling message failed:', data.error);
+        } else {
+            console.log('Admin signaling message sent successfully');
         }
     } catch (error) {
         console.error('Error sending admin signaling message:', error);
@@ -888,9 +894,13 @@ async function handleAdminSignalingMessage(message) {
         switch (message.type) {
             case 'offer':
                 // Customer sent offer, create answer
+                console.log('Admin received offer, setting remote description...');
                 await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                console.log('Admin creating answer...');
                 const answer = await adminPeerConnection.createAnswer();
+                console.log('Admin setting local description (answer)...');
                 await adminPeerConnection.setLocalDescription(answer);
+                console.log('Admin sending answer to customer...');
                 sendAdminSignalingMessage({
                     type: 'answer',
                     answer: answer
@@ -899,11 +909,15 @@ async function handleAdminSignalingMessage(message) {
                 break;
                 
             case 'answer':
+                console.log('Admin received answer, setting remote description...');
                 await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                console.log('Admin remote description set successfully');
                 break;
                 
             case 'ice-candidate':
+                console.log('Admin received ICE candidate, adding...');
                 await adminPeerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+                console.log('Admin ICE candidate added successfully');
                 break;
         }
     } catch (error) {
@@ -1087,6 +1101,9 @@ function startAdminSignalingPolling() {
             const data = await response.json();
             
             if (data.success && data.messages) {
+                if (data.messages.length > 0) {
+                    console.log('Admin received signaling messages:', data.messages);
+                }
                 for (const message of data.messages) {
                     await handleAdminSignalingMessage(message);
                 }

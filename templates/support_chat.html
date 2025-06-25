@@ -729,6 +729,7 @@ function toggleVideo() {
 // Initialize WebRTC Peer Connection
 async function initializePeerConnection() {
     try {
+        console.log('Customer initializing peer connection...');
         // Create peer connection with STUN servers
         const configuration = {
             iceServers: [
@@ -738,17 +739,20 @@ async function initializePeerConnection() {
         };
         
         peerConnection = new RTCPeerConnection(configuration);
+        console.log('Customer peer connection created');
         
         // Add local stream to peer connection
         if (localStream) {
+            console.log('Customer adding local stream tracks to peer connection...');
             localStream.getTracks().forEach(track => {
                 peerConnection.addTrack(track, localStream);
             });
+            console.log('Customer local stream tracks added');
         }
         
         // Handle remote stream
         peerConnection.ontrack = (event) => {
-            console.log('Remote stream received');
+            console.log('Customer received remote stream');
             remoteStream = event.streams[0];
             remoteVideo.srcObject = remoteStream;
             callStatusText.textContent = 'Bağlantı kuruldu';
@@ -757,6 +761,7 @@ async function initializePeerConnection() {
         // Handle ICE candidates
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
+                console.log('Customer sending ICE candidate to admin...');
                 sendSignalingMessage({
                     type: 'ice-candidate',
                     candidate: event.candidate
@@ -766,7 +771,7 @@ async function initializePeerConnection() {
         
         // Handle connection state changes
         peerConnection.onconnectionstatechange = () => {
-            console.log('Connection state:', peerConnection.connectionState);
+            console.log('Customer connection state:', peerConnection.connectionState);
             switch (peerConnection.connectionState) {
                 case 'connected':
                     callStatusText.textContent = 'Bağlandı';
@@ -780,16 +785,17 @@ async function initializePeerConnection() {
             }
         };
         
-        console.log('Peer connection initialized');
+        console.log('Customer peer connection initialized, waiting for admin acceptance...');
         
     } catch (error) {
-        console.error('Peer connection initialization failed:', error);
+        console.error('Customer peer connection initialization failed:', error);
     }
 }
 
 // Send signaling message to admin
 async function sendSignalingMessage(message) {
     try {
+        console.log('Customer sending signaling message:', message);
         const response = await fetch('/support/webrtc-signal', {
             method: 'POST',
             headers: {
@@ -803,22 +809,28 @@ async function sendSignalingMessage(message) {
         
         const data = await response.json();
         if (!data.success) {
-            console.error('Signaling message failed:', data.error);
+            console.error('Customer signaling message failed:', data.error);
+        } else {
+            console.log('Customer signaling message sent successfully');
         }
     } catch (error) {
-        console.error('Error sending signaling message:', error);
+        console.error('Error sending customer signaling message:', error);
     }
 }
 
 // Handle incoming signaling messages
 async function handleSignalingMessage(message) {
     try {
-        console.log('Handling signaling message:', message);
+        console.log('Customer handling signaling message:', message);
         switch (message.type) {
             case 'offer':
+                console.log('Customer received offer, setting remote description...');
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                console.log('Customer creating answer...');
                 const answer = await peerConnection.createAnswer();
+                console.log('Customer setting local description (answer)...');
                 await peerConnection.setLocalDescription(answer);
+                console.log('Customer sending answer to admin...');
                 sendSignalingMessage({
                     type: 'answer',
                     answer: answer
@@ -826,18 +838,24 @@ async function handleSignalingMessage(message) {
                 break;
                 
             case 'answer':
+                console.log('Customer received answer, setting remote description...');
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                console.log('Customer remote description set successfully');
                 break;
                 
             case 'ice-candidate':
+                console.log('Customer received ICE candidate, adding...');
                 await peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+                console.log('Customer ICE candidate added successfully');
                 break;
                 
             case 'call-accepted':
                 // Admin accepted the call, now create and send offer
                 console.log('Call accepted by admin, creating offer...');
                 const offer = await peerConnection.createOffer();
+                console.log('Customer offer created, setting local description...');
                 await peerConnection.setLocalDescription(offer);
+                console.log('Customer sending offer to admin...');
                 sendSignalingMessage({
                     type: 'offer',
                     offer: offer
@@ -1286,12 +1304,13 @@ async function pollSignalingMessages() {
         const data = await response.json();
         
         if (data.success && data.messages && data.messages.length > 0) {
+            console.log('Customer received signaling messages:', data.messages);
             for (const message of data.messages) {
                 await handleSignalingMessage(message);
             }
         }
     } catch (error) {
-        console.error('Error polling signaling messages:', error);
+        console.error('Error polling customer signaling messages:', error);
     }
 }
 </script>
