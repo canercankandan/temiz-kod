@@ -605,18 +605,18 @@ function updateSessionsList(sessions) {
             
             <!-- Video Call Notification -->
             <div id="videoCallNotification-${session.session_id}" class="video-call-notification mb-2" style="display: none;">
-                <div class="alert alert-info alert-sm mb-2 py-2">
+                <div class="alert alert-warning alert-sm mb-2 py-2">
                     <i class="fas fa-video me-1"></i><strong>${session.username}</strong> görüntülü görüşme istiyor
                 </div>
             </div>
             
             <!-- Video Call Buttons -->
-            <div id="videoCallButtons-${session.session_id}" class="video-call-buttons" style="display: none;">
+            <div id="videoCallButtons-${session.session_id}" class="video-call-buttons mb-2" style="display: none;">
                 <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${session.session_id}', '${session.username}')">
+                    <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${session.session_id}', '${session.username}')" style="font-size: 12px; padding: 8px 12px;">
                         <i class="fas fa-video me-1"></i>Cevap Ver
                     </button>
-                    <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${session.session_id}', '${session.username}')">
+                    <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${session.session_id}', '${session.username}')" style="font-size: 12px; padding: 8px 12px;">
                         <i class="fas fa-times me-1"></i>Reddet
                     </button>
                 </div>
@@ -969,90 +969,62 @@ function addAdminSystemMessage(message) {
 
 // Check for video call requests for all sessions
 function checkVideoCallRequests() {
-    console.log('Admin checking for video call requests...');
+    console.log('🔍 Admin video arama taleplerini kontrol ediyor...');
     fetch('/admin/support/video-call-requests')
     .then(response => response.json())
     .then(data => {
-        console.log('Admin video call requests response:', data);
-        if (data.success && data.requests) {
-            // Check if there are new requests (for sound notification)
-            const hasNewRequests = data.requests.length > 0;
-            const currentRequests = data.requests.map(r => r.session_id);
-            console.log('Admin found video call requests:', data.requests);
-            console.log('Admin current requests session IDs:', currentRequests);
+        console.log('📞 Admin video arama talepleri:', data);
+        
+        if (data.success && data.requests && data.requests.length > 0) {
+            console.log(`✅ ${data.requests.length} adet video arama talebi bulundu`);
             
-            // Hide all existing video call buttons first
-            const allButtons = document.querySelectorAll('.video-call-buttons');
-            const allNotifications = document.querySelectorAll('.video-call-notification');
-            console.log('Admin hiding all existing buttons:', allButtons.length, 'buttons and', allNotifications.length, 'notifications');
+            // Tüm mevcut butonları gizle
+            document.querySelectorAll('.video-call-buttons').forEach(btn => btn.style.display = 'none');
+            document.querySelectorAll('.video-call-notification').forEach(notif => notif.style.display = 'none');
             
-            allButtons.forEach(buttons => {
-                buttons.style.display = 'none';
-            });
-            allNotifications.forEach(notification => {
-                notification.style.display = 'none';
-            });
-            
-            // Show buttons for sessions with pending requests
+            // Her talep için butonları göster
             data.requests.forEach(request => {
                 const sessionId = request.session_id;
                 const username = request.username || 'Misafir';
-                console.log('Admin processing video call request for session:', sessionId, 'username:', username);
                 
-                // Show video call buttons for this session
+                console.log(`🎥 ${username} (${sessionId}) için video arama butonları gösteriliyor`);
+                
+                // Butonları göster
                 const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
                 const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
                 
-                console.log('Admin looking for buttons div with ID:', `videoCallButtons-${sessionId}`);
-                console.log('Admin buttons div found:', buttonsDiv);
-                console.log('Admin looking for notification div with ID:', `videoCallNotification-${sessionId}`);
-                console.log('Admin notification div found:', notificationDiv);
-                
                 if (buttonsDiv) {
-                    console.log('Admin showing video call buttons for session:', sessionId);
                     buttonsDiv.style.display = 'block';
+                    console.log(`✅ ${sessionId} için butonlar gösterildi`);
                 } else {
-                    console.log('Admin video call buttons div not found for session:', sessionId);
-                    console.log('Admin all elements with videoCallButtons in ID:');
-                    document.querySelectorAll('[id*="videoCallButtons"]').forEach(el => {
-                        console.log('  -', el.id);
-                    });
+                    console.log(`❌ ${sessionId} için buton div bulunamadı`);
                 }
                 
                 if (notificationDiv) {
-                    console.log('Admin showing video call notification for session:', sessionId);
                     notificationDiv.style.display = 'block';
-                    // Update notification text with username
                     const alertDiv = notificationDiv.querySelector('.alert');
                     if (alertDiv) {
                         alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                     }
-                } else {
-                    console.log('Admin video call notification div not found for session:', sessionId);
                 }
                 
-                // Add system message if this is a new request for current session
-                if (sessionId === currentSessionID && !isAdminCallActive) {
-                    console.log('Admin adding system message for current session video call request');
-                    addAdminSystemMessage(`${username} video görüşme talep ediyor!`);
+                // Ses çal
+                if (!window.lastVideoCallRequests || !window.lastVideoCallRequests.includes(sessionId)) {
+                    playNotificationSound();
+                    if (!window.lastVideoCallRequests) window.lastVideoCallRequests = [];
+                    window.lastVideoCallRequests.push(sessionId);
                 }
             });
-            
-            // Play notification sound if there are new requests
-            if (hasNewRequests && (!window.lastVideoCallRequests || 
-                JSON.stringify(currentRequests.sort()) !== JSON.stringify(window.lastVideoCallRequests.sort()))) {
-                console.log('Admin playing notification sound for new video call requests');
-                playNotificationSound();
-                window.lastVideoCallRequests = currentRequests;
-            }
         } else {
-            console.log('Admin no video call requests found');
-            // No requests, clear the last requests
+            console.log('📭 Video arama talebi yok');
+            // Tüm butonları gizle
+            document.querySelectorAll('.video-call-buttons').forEach(btn => btn.style.display = 'none');
+            document.querySelectorAll('.video-call-notification').forEach(notif => notif.style.display = 'none');
             window.lastVideoCallRequests = [];
         }
     })
     .catch(error => {
-        console.error('Admin error checking video call requests:', error);
+        console.error('❌ Video arama talepleri kontrol edilirken hata:', error);
     });
 }
 
@@ -1158,7 +1130,7 @@ function loadAdminSessions() {
 document.addEventListener('DOMContentLoaded', function() {
     loadAdminSessions();
     setInterval(loadAdminSessions, 5000);
-    setInterval(checkVideoCallRequests, 3000);
+    setInterval(checkVideoCallRequests, 1000);
 });
 </script>
 </body>

@@ -1360,9 +1360,27 @@
       "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
       "user_id": null,
       "username": "Misafir-e5c56228",
-      "status": "pending",
+      "status": "ended",
       "requested_at": "2025-06-25T15:19:11.3647892+03:00",
-      "responded_at": null
+      "responded_at": "2025-06-25T15:19:59.0257922+03:00"
+    },
+    {
+      "id": 72,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-06-25T15:21:22.391588+03:00",
+      "responded_at": "2025-06-25T15:21:42.0357155+03:00"
+    },
+    {
+      "id": 73,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-06-25T15:24:44.3388724+03:00",
+      "responded_at": "2025-06-25T15:24:54.1837712+03:00"
     }
   ]
 }
