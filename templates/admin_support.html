@@ -979,12 +979,17 @@ function checkVideoCallRequests() {
             const hasNewRequests = data.requests.length > 0;
             const currentRequests = data.requests.map(r => r.session_id);
             console.log('Admin found video call requests:', data.requests);
+            console.log('Admin current requests session IDs:', currentRequests);
             
             // Hide all existing video call buttons first
-            document.querySelectorAll('.video-call-buttons').forEach(buttons => {
+            const allButtons = document.querySelectorAll('.video-call-buttons');
+            const allNotifications = document.querySelectorAll('.video-call-notification');
+            console.log('Admin hiding all existing buttons:', allButtons.length, 'buttons and', allNotifications.length, 'notifications');
+            
+            allButtons.forEach(buttons => {
                 buttons.style.display = 'none';
             });
-            document.querySelectorAll('.video-call-notification').forEach(notification => {
+            allNotifications.forEach(notification => {
                 notification.style.display = 'none';
             });
             
@@ -998,11 +1003,20 @@ function checkVideoCallRequests() {
                 const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
                 const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
                 
+                console.log('Admin looking for buttons div with ID:', `videoCallButtons-${sessionId}`);
+                console.log('Admin buttons div found:', buttonsDiv);
+                console.log('Admin looking for notification div with ID:', `videoCallNotification-${sessionId}`);
+                console.log('Admin notification div found:', notificationDiv);
+                
                 if (buttonsDiv) {
                     console.log('Admin showing video call buttons for session:', sessionId);
                     buttonsDiv.style.display = 'block';
                 } else {
                     console.log('Admin video call buttons div not found for session:', sessionId);
+                    console.log('Admin all elements with videoCallButtons in ID:');
+                    document.querySelectorAll('[id*="videoCallButtons"]').forEach(el => {
+                        console.log('  -', el.id);
+                    });
                 }
                 
                 if (notificationDiv) {
