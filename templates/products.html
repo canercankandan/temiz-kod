@@ -156,16 +156,36 @@
                             
                             <!-- Hover Overlay -->
                             <div class="product-overlay">
-                                {{if gt .Stock 0}}
-                                <button class="btn btn-primary btn-lg add-to-cart-btn" 
-                                        data-product-id="{{.ID}}" data-product-name="{{.Name}}">
-                                    <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
-                                </button>
-                                {{else}}
-                                <button class="btn btn-secondary btn-lg" disabled>
-                                    <i class="fas fa-times me-2"></i>Stokta Yok
-                                </button>
-                                {{end}}
+                                <div class="d-flex flex-column gap-2">
+                                    {{if gt .Stock 0}}
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-info view-product-btn" 
+                                                data-bs-toggle="modal" data-bs-target="#quickViewModal"
+                                                data-product-name="{{.Name}}" data-product-description="{{.Description}}"
+                                                data-product-price="{{.Price}}" data-product-category="{{.Category}}"
+                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
+                                            <i class="fas fa-eye me-2"></i>Ürünü İncele
+                                        </button>
+                                        <button class="btn btn-primary add-to-cart-btn" 
+                                                data-product-id="{{.ID}}" data-product-name="{{.Name}}">
+                                            <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
+                                        </button>
+                                    </div>
+                                    {{else}}
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-info view-product-btn" 
+                                                data-bs-toggle="modal" data-bs-target="#quickViewModal"
+                                                data-product-name="{{.Name}}" data-product-description="{{.Description}}"
+                                                data-product-price="{{.Price}}" data-product-category="{{.Category}}"
+                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
+                                            <i class="fas fa-eye me-2"></i>Ürünü İncele
+                                        </button>
+                                        <button class="btn btn-outline-secondary" disabled>
+                                            <i class="fas fa-times me-2"></i>Stokta Yok
+                                        </button>
+                                    </div>
+                                    {{end}}
+                                </div>
                             </div>
                         </div>
                         
@@ -201,21 +221,6 @@
                                         <i class="fas fa-eye me-1"></i>1,234 görüntüleme
                                     </small>
                                 </div>
-                                
-                                {{if gt .Stock 0}}
-                                <div class="d-grid">
-                                    <button class="btn btn-primary add-to-cart-btn" 
-                                            data-product-id="{{.ID}}" data-product-name="{{.Name}}">
-                                        <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
-                                    </button>
-                                </div>
-                                {{else}}
-                                <div class="d-grid">
-                                    <button class="btn btn-outline-secondary" disabled>
-                                        <i class="fas fa-times me-2"></i>Stokta Yok
-                                    </button>
-                                </div>
-                                {{end}}
                             </div>
                         </div>
                     </div>
@@ -301,16 +306,25 @@
                                     </div>
                                 </td>
                                 <td class="py-3">
-                                    {{if gt .Stock 0}}
-                                    <button class="btn btn-primary btn-sm add-to-cart-btn" 
-                                            data-product-id="{{.ID}}" data-product-name="{{.Name}}">
-                                        <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
-                                    </button>
-                                    {{else}}
-                                    <button class="btn btn-outline-secondary btn-sm" disabled>
-                                        <i class="fas fa-times me-1"></i>Stokta Yok
-                                    </button>
-                                    {{end}}
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-info btn-sm view-product-btn" 
+                                                data-bs-toggle="modal" data-bs-target="#quickViewModal"
+                                                data-product-name="{{.Name}}" data-product-description="{{.Description}}"
+                                                data-product-price="{{.Price}}" data-product-category="{{.Category}}"
+                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
+                                            <i class="fas fa-eye me-1"></i>İncele
+                                        </button>
+                                        {{if gt .Stock 0}}
+                                        <button class="btn btn-primary btn-sm add-to-cart-btn" 
+                                                data-product-id="{{.ID}}" data-product-name="{{.Name}}">
+                                            <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
+                                        </button>
+                                        {{else}}
+                                        <button class="btn btn-outline-secondary btn-sm" disabled>
+                                            <i class="fas fa-times me-1"></i>Stokta Yok
+                                        </button>
+                                        {{end}}
+                                    </div>
                                 </td>
                             </tr>
                             {{end}}
@@ -544,6 +558,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize quick view modal
     initQuickViewModal();
     
+    // Initialize view product buttons
+    initViewProductButtons();
+    
     // Initialize add to cart buttons
     initAddToCartButtons();
 });
@@ -610,6 +627,35 @@ function sortProducts(products, sortBy) {
 // Quick view modal
 function initQuickViewModal() {
     document.querySelectorAll('.quick-view-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const name = this.dataset.productName;
+            const description = this.dataset.productDescription;
+            const price = this.dataset.productPrice;
+            const category = this.dataset.productCategory;
+            const stock = this.dataset.productStock;
+            const image = this.dataset.productImage;
+            
+            document.getElementById('modalProductName').textContent = name;
+            document.getElementById('modalProductDescription').textContent = description;
+            document.getElementById('modalProductPrice').textContent = price + ' ₺';
+            document.getElementById('modalProductCategory').textContent = category;
+            document.getElementById('modalProductStock').textContent = stock;
+            
+            const modalImage = document.getElementById('modalProductImage');
+            if (image) {
+                modalImage.src = image;
+                modalImage.alt = name;
+            } else {
+                modalImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0yMDAgMTUwQzIwNSAxNTAgMjEwIDE0NSAyMTAgMTQwQzIxMCAxMzUgMjA1IDEzMCAyMDAgMTMwQzE5NSAxMzAgMTkwIDEzNSAxOTAgMTQwQzE5MCAxNDUgMTk1IDE1MCAyMDAgMTUwWiIgZmlsbD0iIzY2N0VFQSIvPgo8L3N2Zz4K';
+                modalImage.alt = 'Ürün Görseli';
+            }
+        });
+    });
+}
+
+// View product buttons
+function initViewProductButtons() {
+    document.querySelectorAll('.view-product-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const name = this.dataset.productName;
             const description = this.dataset.productDescription;
