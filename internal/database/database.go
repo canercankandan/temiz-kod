@@ -684,10 +684,12 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	
-	// Check if there's already a pending request for this session
-	for _, req := range db.data.VideoCallRequests {
+	// First, end any existing pending requests for this session
+	for i, req := range db.data.VideoCallRequests {
 		if req.SessionID == sessionID && req.Status == "pending" {
-			return errors.New("pending video call request already exists")
+			db.data.VideoCallRequests[i].Status = "ended"
+			now := time.Now()
+			db.data.VideoCallRequests[i].RespondedAt = &now
 		}
 	}
 	
