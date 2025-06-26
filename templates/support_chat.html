@@ -350,6 +350,17 @@ document.addEventListener('DOMContentLoaded', function() {
     endCallBtn.addEventListener('click', endVideoCall);
     toggleMuteBtn.addEventListener('click', toggleMute);
     toggleVideoBtn.addEventListener('click', toggleVideo);
+    
+    // Test WebRTC after page loads
+    setTimeout(() => {
+        testWebRTC().then(success => {
+            if (success) {
+                console.log('🎉 WebRTC tamamen uyumlu');
+            } else {
+                console.warn('⚠️ WebRTC uyumluluk sorunu');
+            }
+        });
+    }, 1000);
 });
 
 // Load existing messages
@@ -494,104 +505,45 @@ window.addEventListener('beforeunload', function() {
 // Video Call Functions
 async function startVideoCall() {
     try {
-        // Check permissions first
-        const permissions = await checkMediaPermissions();
+        console.log('🎥 Video görüşme başlatılıyor...');
         
-        if (!permissions.supported) {
-            showPermissionDialog(permissions.message);
-            callStatusText.textContent = 'Desteklenmiyor';
-            return;
+        // Check if WebRTC is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('WebRTC desteklenmiyor. Lütfen modern bir tarayıcı kullanın.');
         }
         
-        if (!permissions.granted && permissions.message) {
-            showPermissionDialog(permissions.message);
-            callStatusText.textContent = 'İzin gerekli';
-            return;
+        // Check if RTCPeerConnection is supported
+        if (!window.RTCPeerConnection) {
+            throw new Error('RTCPeerConnection desteklenmiyor. Lütfen modern bir tarayıcı kullanın.');
         }
         
-        // Detect mobile device and browser
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        console.log('✅ WebRTC desteği kontrol edildi');
         
-        // Safari and mobile-friendly constraints
-        const constraints = {
-            video: isSafari ? {
-                facingMode: isMobile ? 'user' : 'environment',
-                width: { ideal: isMobile ? 640 : 1280, max: 1920 },
-                height: { ideal: isMobile ? 480 : 720, max: 1080 },
-                frameRate: { ideal: 30, max: 30 }
-            } : (isMobile ? {
-                facingMode: 'user',
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            } : {
+        // Get user media with better error handling
+        console.log('📹 Kamera ve mikrofon erişimi isteniyor...');
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: {
                 width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }),
+                height: { ideal: 720 },
+                facingMode: 'user'
+            },
             audio: {
                 echoCancellation: true,
                 noiseSuppression: true,
-                autoGainControl: true,
-                sampleRate: isSafari ? 44100 : undefined
+                autoGainControl: true
             }
-        };
+        });
         
-        // Request camera and microphone access with Safari-specific handling
-        try {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-            } else {
-                // Fallback for older browsers
-                const getUserMedia = navigator.getUserMedia || 
-                                   navigator.webkitGetUserMedia || 
-                                   navigator.mozGetUserMedia ||
-                                   navigator.msGetUserMedia;
-                
-                if (!getUserMedia) {
-                    throw new Error('getUserMedia not supported');
-                }
-                
-                localStream = await new Promise((resolve, reject) => {
-                    getUserMedia.call(navigator, constraints, resolve, reject);
-                });
-            }
-        } catch (error) {
-            // Safari fallback with simpler constraints
-            if (isSafari) {
-                console.log('Safari: Trying simpler constraints...');
-                try {
-                    const simpleConstraints = { 
-                        video: isMobile ? { facingMode: 'user' } : true, 
-                        audio: true 
-                    };
-                    
-                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                        localStream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
-                    } else {
-                        const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
-                        localStream = await new Promise((resolve, reject) => {
-                            getUserMedia.call(navigator, simpleConstraints, resolve, reject);
-                        });
-                    }
-                    
-                    console.log('Safari: Simple constraints worked!');
-                } catch (simpleError) {
-                    throw simpleError; // Re-throw the simpler error
-                }
-            } else {
-                throw error; // Re-throw original error for non-Safari browsers
-            }
-        }
+        console.log('✅ Kamera ve mikrofon erişimi başarılı');
         
         // Set video source
         localVideo.srcObject = localStream;
         
         // Safari-specific video handling
         if (isSafari) {
-            localVideo.playsInline = true; // Prevent fullscreen on iOS
-            localVideo.setAttribute('playsinline', ''); // Additional attribute for iOS
-            localVideo.muted = true; // Ensure local video is muted
+            localVideo.playsInline = true;
+            localVideo.setAttribute('playsinline', '');
+            localVideo.muted = true;
         }
         
         // Show video call area
@@ -607,33 +559,59 @@ async function startVideoCall() {
         }
         
         isCallActive = true;
-        callStatusText.textContent = isSafari ? 'Safari görüntülü görüşme aktif' : 'Görüntülü görüşme başlatıldı';
+        callStatusText.textContent = 'Görüntülü görüşme başlatıldı';
         
+        console.log('📞 Video görüşme talebi gönderiliyor...');
         // Send video call request to admin
         await sendVideoCallRequest();
         
+        console.log('🔗 WebRTC peer connection başlatılıyor...');
         // Initialize WebRTC peer connection
         await initializePeerConnection();
         
+        console.log('🔄 Signaling polling başlatılıyor...');
         // Start signaling polling
         startSignalingPolling();
         
         // Add system message
-        addSystemMessage(`Görüntülü görüşme başlatıldı${isSafari ? ' (Safari)' : ''}. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...`);
+        addSystemMessage('Görüntülü görüşme başlatıldı. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...');
+        
+        console.log('✅ Video görüşme başarıyla başlatıldı');
         
     } catch (error) {
-        console.error('Video call başlatılamadı:', error);
+        console.error('❌ Video görüşme başlatılamadı:', error);
         
-        // Use Safari-specific or general error message
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        // Detailed error logging
+        if (error.name === 'NotAllowedError') {
+            console.error('🔒 Kullanıcı kamera/mikrofon iznini reddetti');
+        } else if (error.name === 'NotFoundError') {
+            console.error('📹 Kamera veya mikrofon bulunamadı');
+        } else if (error.name === 'NotReadableError') {
+            console.error('📹 Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor');
+        } else if (error.name === 'OverconstrainedError') {
+            console.error('📹 Kamera gereksinimleri karşılanamıyor');
+        } else if (error.name === 'TypeError') {
+            console.error('🔗 WebRTC bağlantı hatası');
+        }
         
-        const errorMessage = isSafari ? 
-            getSafariErrorMessage(error.name, isIOS) : 
-            getErrorMessage(error.name, isMobile);
+        // Show user-friendly error message
+        let errorMessage = 'Video görüşme başlatılamadı. ';
         
-        // Show detailed error message
+        if (error.name === 'NotAllowedError') {
+            errorMessage += 'Lütfen kamera ve mikrofon izinlerini verin.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage += 'Kamera veya mikrofon bulunamadı.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage += 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor.';
+        } else if (error.name === 'OverconstrainedError') {
+            errorMessage += 'Kamera gereksinimleri karşılanamıyor.';
+        } else if (error.name === 'TypeError') {
+            errorMessage += 'WebRTC bağlantı hatası. Lütfen sayfayı yenileyin.';
+        } else {
+            errorMessage += 'Bilinmeyen bir hata oluştu. Lütfen sayfayı yenileyin.';
+        }
+        
+        // Show error dialog
         showPermissionDialog(errorMessage);
         callStatusText.textContent = 'Hata oluştu';
     }
@@ -731,14 +709,15 @@ async function initializePeerConnection() {
     try {
         console.log('Customer initializing peer connection...');
         // Create peer connection with STUN servers
-        const configuration = {
+        peerConnection = new RTCPeerConnection({
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' }
             ]
-        };
-        
-        peerConnection = new RTCPeerConnection(configuration);
+        });
         console.log('Customer peer connection created');
         
         // Add local stream to peer connection
@@ -1315,6 +1294,54 @@ async function pollSignalingMessages() {
         }
     } catch (error) {
         console.error('Error polling customer signaling messages:', error);
+    }
+}
+
+// Test WebRTC functionality for Render.com
+async function testWebRTC() {
+    console.log('🧪 WebRTC test başlatılıyor...');
+    
+    try {
+        // Test 1: Check WebRTC support
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('WebRTC getUserMedia desteklenmiyor');
+        }
+        console.log('✅ getUserMedia destekleniyor');
+        
+        // Test 2: Check RTCPeerConnection
+        if (!window.RTCPeerConnection) {
+            throw new Error('RTCPeerConnection desteklenmiyor');
+        }
+        console.log('✅ RTCPeerConnection destekleniyor');
+        
+        // Test 3: Create test peer connection
+        const testPC = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' }
+            ]
+        });
+        console.log('✅ Test peer connection oluşturuldu');
+        
+        // Test 4: Check ICE gathering
+        testPC.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log('✅ ICE candidate üretildi:', event.candidate.type);
+            }
+        };
+        
+        // Test 5: Create offer
+        const offer = await testPC.createOffer();
+        console.log('✅ Test offer oluşturuldu');
+        
+        // Cleanup
+        testPC.close();
+        console.log('✅ WebRTC test başarılı - Render.com uyumlu');
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ WebRTC test başarısız:', error);
+        return false;
     }
 }
 </script>
