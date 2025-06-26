@@ -640,112 +640,76 @@ window.addEventListener('beforeunload', function() {
 // Video Call Functions
 async function acceptVideoCall(sessionId, username) {
     try {
-        console.log('✅ Video call kabul ediliyor:', sessionId, username);
+        currentSessionID = sessionId;
+        pendingVideoCallSession = sessionId;
         
-        // First try to get camera access
-        const stream = await navigator.mediaDevices.getUserMedia({
+        // Load chat for this session first
+        await loadChat(sessionId, username);
+        
+        // Start video call
+        adminLocalStream = await navigator.mediaDevices.getUserMedia({
             video: true,
             audio: true
         });
         
-        console.log('📹 Admin kamera erişimi başarılı!');
+        document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
         
-        // Stop the stream immediately (we just needed permission)
-        stream.getTracks().forEach(track => track.stop());
+        // Show video call area
+        document.getElementById('adminVideoCallArea').style.display = 'block';
+        document.getElementById('endAdminCallBtn').style.display = 'inline-block';
         
-        // Send acceptance to customer
-        const response = await fetch('/admin/support/video-call-response', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                session_id: sessionId,
-                action: 'accept'
-            })
+        // Adjust chat area height
+        document.getElementById('chatMessages').style.height = '300px';
+        
+        isAdminCallActive = true;
+        document.getElementById('adminCallStatusText').textContent = 'Video görüşme aktif';
+        
+        // Hide video call buttons for this session
+        const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+        const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+        
+        if (buttonsDiv) buttonsDiv.style.display = 'none';
+        if (notificationDiv) notificationDiv.style.display = 'none';
+        
+        // Initialize WebRTC peer connection
+        await initializeAdminPeerConnection();
+        
+        // Start signaling polling
+        startAdminSignalingPolling();
+        
+        // Send call-accepted message to customer first
+        await sendAdminSignalingMessage({
+            type: 'call-accepted'
         });
         
-        const data = await response.json();
-        console.log('📞 Accept response:', data);
+        // Send acceptance to customer
+        await sendVideoCallResponse('accept', sessionId);
         
-        if (data.success) {
-            // Hide video call buttons for this session
-            const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
-            const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
-            
-            if (buttonsDiv) buttonsDiv.style.display = 'none';
-            if (notificationDiv) notificationDiv.style.display = 'none';
-            
-            // Add system message if this is current session
-            if (sessionId === currentSessionID) {
-                addAdminSystemMessage(`${username} ile video görüşme kabul edildi.`);
-            }
-            
-            alert(`${username} ile video görüşme kabul edildi!`);
-        } else {
-            alert('Video görüşme kabul edilemedi: ' + data.error);
-        }
+        // Add system message
+        addAdminSystemMessage(`${username} ile video görüşme başlatıldı.`);
         
     } catch (error) {
-        console.error('❌ Accept video call error:', error);
-        
-        let errorMessage = 'Video görüşme kabul edilemedi. ';
-        
-        if (error.name === 'NotAllowedError') {
-            errorMessage += 'Lütfen kamera ve mikrofon izinlerini verin.';
-        } else if (error.name === 'NotFoundError') {
-            errorMessage += 'Kamera veya mikrofon bulunamadı.';
-        } else if (error.name === 'NotReadableError') {
-            errorMessage += 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
+        console.error('Video call kabul edilemedi:', error);
+        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
+        await sendVideoCallResponse('reject', sessionId);
     }
 }
 
 // Reject video call from session list
 async function rejectVideoCall(sessionId, username) {
-    try {
-        console.log('❌ Video call reddediliyor:', sessionId, username);
-        
-        // Send rejection to customer
-        const response = await fetch('/admin/support/video-call-response', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                session_id: sessionId,
-                action: 'reject'
-            })
-        });
-        
-        const data = await response.json();
-        console.log('📞 Reject response:', data);
-        
-        if (data.success) {
-            // Hide video call buttons for this session
-            const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
-            const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
-            
-            if (buttonsDiv) buttonsDiv.style.display = 'none';
-            if (notificationDiv) notificationDiv.style.display = 'none';
-            
-            // Add system message if this is current session
-            if (sessionId === currentSessionID) {
-                addAdminSystemMessage(`${username} ile video görüşme talebi reddedildi.`);
-            }
-            
-            alert(`${username} ile video görüşme reddedildi.`);
-        } else {
-            alert('Video görüşme reddedilemedi: ' + data.error);
-        }
-        
-    } catch (error) {
-        console.error('❌ Reject video call error:', error);
-        alert('Video görüşme reddedilirken hata oluştu');
+    // Hide video call buttons for this session
+    const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+    const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+    
+    if (buttonsDiv) buttonsDiv.style.display = 'none';
+    if (notificationDiv) notificationDiv.style.display = 'none';
+    
+    // Send rejection to customer
+    await sendVideoCallResponse('reject', sessionId);
+    
+    // Add system message if this is current session
+    if (sessionId === currentSessionID) {
+        addAdminSystemMessage(`${username} ile video görüşme talebi reddedildi.`);
     }
 }
 
@@ -844,10 +808,7 @@ async function initializeAdminPeerConnection() {
         adminPeerConnection = new RTCPeerConnection({
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun4.l.google.com:19302' }
+                { urls: 'stun:stun1.l.google.com:19302' }
             ]
         });
         
@@ -994,20 +955,13 @@ function addAdminSystemMessage(message) {
 
 // Check for video call requests for all sessions
 function checkVideoCallRequests() {
-    console.log('🔍 Admin video arama taleplerini kontrol ediyor...');
     fetch('/admin/support/video-call-requests')
-    .then(response => {
-        console.log('📡 Response status:', response.status);
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log('📞 Admin video arama talepleri:', data);
         if (data.success && data.requests) {
             // Check if there are new requests (for sound notification)
             const hasNewRequests = data.requests.length > 0;
             const currentRequests = data.requests.map(r => r.session_id);
-            
-            console.log('✅ Video arama talepleri bulundu:', data.requests.length, 'adet');
             
             // Hide all existing video call buttons first
             document.querySelectorAll('.video-call-buttons').forEach(buttons => {
@@ -1022,18 +976,12 @@ function checkVideoCallRequests() {
                 const sessionId = request.session_id;
                 const username = request.username || 'Misafir';
                 
-                console.log('🎯 Session için butonlar gösteriliyor:', sessionId, username);
-                
                 // Show video call buttons for this session
                 const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
                 const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
                 
-                console.log('🔘 Buttons div bulundu:', !!buttonsDiv);
-                console.log('🔔 Notification div bulundu:', !!notificationDiv);
-                
                 if (buttonsDiv) {
                     buttonsDiv.style.display = 'block';
-                    console.log('✅ Butonlar gösterildi');
                 }
                 
                 if (notificationDiv) {
@@ -1043,7 +991,6 @@ function checkVideoCallRequests() {
                     if (alertDiv) {
                         alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                     }
-                    console.log('✅ Bildirim gösterildi');
                 }
                 
                 // Add system message if this is a new request for current session
@@ -1059,13 +1006,12 @@ function checkVideoCallRequests() {
                 window.lastVideoCallRequests = currentRequests;
             }
         } else {
-            console.log('❌ Video arama talebi yok');
             // No requests, clear the last requests
             window.lastVideoCallRequests = [];
         }
     })
     .catch(error => {
-        console.error('❌ Error checking video call requests:', error);
+        console.error('Error checking video call requests:', error);
     });
 }
 
@@ -1167,8 +1113,8 @@ function loadAdminSessions() {
 // Initialize admin support functionality
 document.addEventListener('DOMContentLoaded', function() {
     loadAdminSessions();
-    setInterval(loadAdminSessions, 3000); // Her 3 saniyede bir
-    setInterval(checkVideoCallRequests, 2000); // Her 2 saniyede bir video call request kontrolü
+    setInterval(loadAdminSessions, 5000);
+    setInterval(checkVideoCallRequests, 3000);
 });
 </script>
 </body>

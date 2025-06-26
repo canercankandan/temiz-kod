@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"suaritamauzumani/internal/models"
+	"cenap/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -157,7 +157,7 @@ func (db *JSONDatabase) DeleteProduct(id int) error {
 
 // --- User Functions ---
 
-// CreateUser, yeni bir kullanıcı oluşturur (parola zaten hash'lenmiş olmalı).
+// CreateUser, yeni bir kullanıcı oluşturur ve parolasını hashler.
 func (db *JSONDatabase) CreateUser(user *models.User) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
@@ -171,6 +171,13 @@ func (db *JSONDatabase) CreateUser(user *models.User) error {
 			return errors.New("email already exists")
 		}
 	}
+
+	// Parolayı hashle
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedPassword)
 
 	// Yeni ID ata
 	maxID := 0
@@ -207,19 +214,6 @@ func (db *JSONDatabase) GetUserByEmail(email string) (*models.User, error) {
 
 	for _, u := range db.data.Users {
 		if u.Email == email {
-			return &u, nil
-		}
-	}
-	return nil, errors.New("user not found")
-}
-
-// GetUserByID, kullanıcı ID'sine göre bir kullanıcıyı döndürür.
-func (db *JSONDatabase) GetUserByID(userID int) (*models.User, error) {
-	db.mu.RLock()
-	defer db.mu.RUnlock()
-
-	for _, u := range db.data.Users {
-		if u.ID == userID {
 			return &u, nil
 		}
 	}
@@ -562,15 +556,20 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	defer db.mu.RUnlock()
 	
 	var sessions []models.SupportSession
+	// Son 30 dakika içinde mesaj alışverişi olan sessionları göster
+	thirtyMinutesAgo := time.Now().Add(-30 * time.Minute)
+	
 	for _, session := range db.data.SupportSessions {
-		if session.Status == "active" {
+		if session.Status == "active" && session.LastMessageAt.After(thirtyMinutesAgo) {
 			sessions = append(sessions, session)
 		}
 	}
-	// Son mesaj zamanına göre sırala
+	
+	// Sort by last_message_at DESC
 	sort.Slice(sessions, func(i, j int) bool {
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
+	
 	return sessions, nil
 }
 
@@ -684,21 +683,10 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	
-	// First, end any existing pending requests for this session
-	now := time.Now()
-	for i, req := range db.data.VideoCallRequests {
+	// Check if there's already a pending request for this session
+	for _, req := range db.data.VideoCallRequests {
 		if req.SessionID == sessionID && req.Status == "pending" {
-			db.data.VideoCallRequests[i].Status = "ended"
-			db.data.VideoCallRequests[i].RespondedAt = &now
-		}
-	}
-	
-	// Also end any old pending requests (older than 5 minutes)
-	fiveMinutesAgo := now.Add(-5 * time.Minute)
-	for i, req := range db.data.VideoCallRequests {
-		if req.Status == "pending" && req.RequestedAt.Before(fiveMinutesAgo) {
-			db.data.VideoCallRequests[i].Status = "ended"
-			db.data.VideoCallRequests[i].RespondedAt = &now
+			return errors.New("pending video call request already exists")
 		}
 	}
 	
@@ -716,7 +704,7 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 		UserID:      userID,
 		Username:    username,
 		Status:      "pending",
-		RequestedAt: now,
+		RequestedAt: time.Now(),
 	}
 	
 	db.data.VideoCallRequests = append(db.data.VideoCallRequests, newRequest)

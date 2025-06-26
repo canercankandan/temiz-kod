@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"suaritamauzumani/internal/database"
-	"suaritamauzumani/internal/models"
-	"suaritamauzumani/internal/services"
+	"cenap/internal/database"
+	"cenap/internal/models"
+	"cenap/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -30,7 +30,6 @@ type DBInterface interface {
 	CreateUser(user *models.User) error
 	GetUserByUsername(username string) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
-	GetUserByID(userID int) (*models.User, error)
 	GetAllUsers() ([]models.User, error)
 	UpdateUser(user *models.User) error
 	DeleteUser(userID int) error
@@ -267,69 +266,9 @@ func (h *Handler) UserLogout(c *gin.Context) {
 // ProfilePage, kullanıcı profil sayfasını oluşturur.
 func (h *Handler) ProfilePage(c *gin.Context) {
 	username, _ := c.Cookie("username")
-	
-	// Kullanıcı bilgilerini al
-	user, err := h.db.GetUserByUsername(username)
-	if err != nil {
-		log.Printf("Error getting user: %v", err)
-		c.HTML(http.StatusOK, "profile.html", gin.H{
-			"title":    "Profilim",
-			"username": username,
-			"error":    "Kullanıcı bilgileri yüklenemedi",
-		})
-		return
-	}
-	
 	c.HTML(http.StatusOK, "profile.html", gin.H{
 		"title":    "Profilim",
 		"username": username,
-		"user":     user,
-	})
-}
-
-// UpdateUserAddress, kullanıcı adres bilgilerini günceller.
-func (h *Handler) UpdateUserAddress(c *gin.Context) {
-	username, _ := c.Cookie("username")
-	if username == "" {
-		c.Redirect(http.StatusSeeOther, "/login")
-		return
-	}
-	
-	user, err := h.db.GetUserByUsername(username)
-	if err != nil {
-		log.Printf("Error getting user: %v", err)
-		c.HTML(http.StatusOK, "profile.html", gin.H{
-			"title":         "Profilim",
-			"username":      username,
-			"address_error": "Kullanıcı bilgileri yüklenemedi",
-		})
-		return
-	}
-	
-	// Form verilerini al
-	user.Phone = c.PostForm("phone")
-	user.City = c.PostForm("city")
-	user.District = c.PostForm("district")
-	user.PostalCode = c.PostForm("postal_code")
-	user.Address = c.PostForm("address")
-	
-	// Kullanıcı bilgilerini güncelle
-	if err := h.db.UpdateUser(user); err != nil {
-		log.Printf("Error updating user address: %v", err)
-		c.HTML(http.StatusOK, "profile.html", gin.H{
-			"title":         "Profilim",
-			"username":      username,
-			"user":          user,
-			"address_error": "Adres bilgileri güncellenemedi",
-		})
-		return
-	}
-	
-	c.HTML(http.StatusOK, "profile.html", gin.H{
-		"title":           "Profilim",
-		"username":        username,
-		"user":            user,
-		"address_success": "Adres bilgileriniz başarıyla güncellendi!",
 	})
 }
 
@@ -925,29 +864,10 @@ func (h *Handler) CheckoutPage(c *gin.Context) {
 		return
 	}
 
-	// Kullanıcı giriş yapmış mı kontrol et
-	username, _ := c.Cookie("username")
-	isLoggedIn := username != ""
-	
-	var user *models.User
-	if isLoggedIn {
-		var err error
-		user, err = h.db.GetUserByUsername(username)
-		if err != nil {
-			log.Printf("Error getting user for checkout: %v", err)
-			// Kullanıcı bilgileri alınamadıysa boş user objesi oluştur
-			user = &models.User{}
-		}
-	} else {
-		// Giriş yapmamış kullanıcı için boş user objesi
-		user = &models.User{}
-	}
-
 	c.HTML(http.StatusOK, "checkout.html", gin.H{
 		"title":      "Sipariş Ver",
 		"cart":       cart,
-		"isLoggedIn": isLoggedIn,
-		"user":       user,
+		"isLoggedIn": true,
 	})
 }
 
@@ -1068,26 +988,10 @@ func (h *Handler) AdminGetOrderDetail(c *gin.Context) {
 		return
 	}
 
-	// Eğer sipariş kayıtlı bir kullanıcıya aitse, kullanıcının tam adres bilgilerini al
-	var userDetails *models.User
-	if order.UserID > 0 {
-		user, err := h.db.GetUserByID(order.UserID)
-		if err == nil {
-			userDetails = user
-		}
-	}
-
-	response := gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"order":   order,
-	}
-
-	// Kullanıcı detayları varsa ekle
-	if userDetails != nil {
-		response["user_details"] = userDetails
-	}
-
-	c.JSON(http.StatusOK, response)
+	})
 }
 
 // Helper functions
@@ -1166,20 +1070,15 @@ func (h *Handler) AdminDeleteUser(c *gin.Context) {
 	userIDStr := c.Param("id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
-		log.Printf("AdminDeleteUser - Invalid user ID: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz kullanıcı ID"})
 		return
 	}
 
-	log.Printf("AdminDeleteUser - Attempting to delete user ID: %d", userID)
-
 	if err := h.db.DeleteUser(userID); err != nil {
-		log.Printf("AdminDeleteUser - Error deleting user ID %d: %v", userID, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": fmt.Sprintf("Kullanıcı silinemedi: %v", err)})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Kullanıcı silinemedi"})
 		return
 	}
 
-	log.Printf("AdminDeleteUser - Successfully deleted user ID: %d", userID)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Kullanıcı silindi"})
 }
 
@@ -1556,312 +1455,10 @@ func (h *Handler) AdminSupportPage(c *gin.Context) {
 		sessions = []models.SupportSession{}
 	}
 	
-	// Render basit HTML olarak - template hatası için
-	html := `<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Canlı Destek - Su Arıtma Uzmanı</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Poppins', sans-serif; }
-        body { background: white; line-height: 1.6; color: black; }
-        .session-item { transition: background-color 0.2s; cursor: pointer; background-color: white !important; color: black !important; }
-        .session-item:hover { background-color: #f8f9fa !important; color: black !important; }
-        .session-item.active { background-color: #e3f2fd !important; border-left: 4px solid #2196F3; color: black !important; }
-        .chat-messages { background: white !important; color: black !important; }
-        .message { margin-bottom: 15px; animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .message.user { text-align: left; }
-        .message.admin { text-align: right; }
-        .message-bubble { display: inline-block; max-width: 70%; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; position: relative; }
-        .message.user .message-bubble { background: #f8f9fa; color: black; border: 1px solid #ddd; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .message.admin .message-bubble { background: #007bff; color: white; border-bottom-right-radius: 4px; }
-        .message-time { font-size: 0.75rem; opacity: 0.7; margin-top: 5px; }
-        .message.user .message-time { text-align: left; color: #666; }
-        .message.admin .message-time { text-align: right; color: #007bff; }
-        .cursor-pointer { cursor: pointer; }
-        #messageInput:focus { border-color: #007bff !important; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important; background-color: white !important; color: black !important; }
-        h1, h2, h3, h4, h5, h6, p, span, div, small { color: black !important; }
-        .text-muted { color: #666 !important; }
-        .card { background-color: white !important; border: 1px solid #ddd !important; }
-        .card-header { background-color: #f8f9fa !important; color: black !important; border-bottom: 1px solid #ddd !important; }
-        .card-body { background-color: white !important; color: black !important; }
-    </style>
-</head>
-<body>
-<div class="container-fluid my-4" style="background-color: white; color: black; min-height: 100vh;">
-    <div class="row">
-        <!-- Sessions List -->
-        <div class="col-md-4">
-            <div class="card" style="background-color: white; border: 1px solid #ddd;">
-                <div class="card-header" style="background-color: #f8f9fa; color: black; border-bottom: 1px solid #ddd;">
-                    <h5 class="mb-0">
-                        <i class="fas fa-users me-2"></i>Aktif Sohbetler
-                        <span class="badge bg-dark text-white ms-2" id="sessionCount">` + fmt.Sprintf("%d", len(sessions)) + `</span>
-                    </h5>
-                </div>
-                <div class="card-body p-0" style="max-height: 600px; overflow-y: auto; background-color: white;">
-                    <div id="sessionsList">
-                        <div class="p-4 text-center" style="color: #666;">
-                            <i class="fas fa-comments fa-3x mb-3"></i>
-                            <p>Henüz aktif sohbet yok</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Chat Area -->
-        <div class="col-md-8">
-            <div class="card" style="background-color: white; border: 1px solid #ddd;">
-                <div class="card-header" style="background-color: #f8f9fa; color: black; border-bottom: 1px solid #ddd;">
-                    <h5 class="mb-0" id="chatHeader">
-                        <i class="fas fa-comment-dots me-2"></i>Sohbet Seçin
-                    </h5>
-                </div>
-                <div class="card-body p-0" style="background-color: white;">
-                    <!-- Chat Messages -->
-                    <div id="chatMessages" class="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; background: white; color: black;">
-                        <div class="text-center" style="color: #666;">
-                            <i class="fas fa-arrow-left fa-2x mb-3"></i>
-                            <p>Soldan bir sohbet seçin</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Message Input -->
-                    <div class="chat-input border-top p-3" id="chatInput" style="display: none; background-color: white; border-top: 1px solid #ddd;">
-                        <div class="input-group">
-                            <input type="text" id="messageInput" class="form-control" placeholder="Yanıtınızı yazın..." maxlength="500" style="background-color: white; color: black; border: 1px solid #ddd;">
-                            <button class="btn btn-primary" id="sendButton" type="button">
-                                <i class="fas fa-paper-plane"></i> Gönder
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-let currentSessionID = null;
-let pollInterval = null;
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    startSessionPolling();
-    
-    // Send message on button click
-    document.getElementById('sendButton').addEventListener('click', sendMessage);
-    
-    // Send message on Enter key
-    document.getElementById('messageInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-});
-
-// Load chat for selected session
-function loadChat(sessionID, username) {
-    currentSessionID = sessionID;
-    
-    // Update UI
-    document.getElementById('chatHeader').innerHTML = '<i class="fas fa-comment-dots me-2"></i>' + username + ' ile Sohbet<small class="ms-2">(' + sessionID.substring(0, 8) + '...)</small>';
-    document.getElementById('chatInput').style.display = 'block';
-    
-    // Mark session as active
-    document.querySelectorAll('.session-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector('[data-session-id="' + sessionID + '"]').classList.add('active');
-    
-    // Load messages
-    loadMessages();
-    
-    // Start polling for this session
-    if (pollInterval) {
-        clearInterval(pollInterval);
-    }
-    startMessagePolling();
-    
-    // Focus on input
-    document.getElementById('messageInput').focus();
-}
-
-// Load messages for current session
-function loadMessages() {
-    if (!currentSessionID) return;
-    
-    fetch('/admin/support/messages/' + currentSessionID)
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            displayMessages(data.messages);
-        }
-    })
-    .catch(error => {
-        console.error('Error loading messages:', error);
-    });
-}
-
-// Display messages
-function displayMessages(messages) {
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.innerHTML = '';
-    
-    if (messages && messages.length > 0) {
-        messages.forEach(message => {
-            addMessage(message);
-        });
-        scrollToBottom();
-    } else {
-        chatMessages.innerHTML = '<div class="text-center" style="color: #666;"><i class="fas fa-comments fa-3x mb-3"></i><p>Henüz mesaj yok. İlk mesajı gönderin!</p></div>';
-    }
-}
-
-// Add single message
-function addMessage(message) {
-    const chatMessages = document.getElementById('chatMessages');
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message ' + (message.is_admin ? 'admin' : 'user');
-    
-    const bubbleDiv = document.createElement('div');
-    bubbleDiv.className = 'message-bubble';
-    bubbleDiv.textContent = message.message;
-    
-    const timeDiv = document.createElement('div');
-    timeDiv.className = 'message-time';
-    const messageTime = new Date(message.created_at);
-    timeDiv.textContent = message.username + ' - ' + messageTime.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
-    
-    messageDiv.appendChild(bubbleDiv);
-    messageDiv.appendChild(timeDiv);
-    chatMessages.appendChild(messageDiv);
-}
-
-// Send message
-function sendMessage() {
-    if (!currentSessionID) return;
-    
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
-    const message = messageInput.value.trim();
-    
-    if (!message) return;
-    
-    // Disable input while sending
-    messageInput.disabled = true;
-    sendButton.disabled = true;
-    
-    fetch('/admin/support/send/' + currentSessionID, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({message: message})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            messageInput.value = '';
-            addMessage(data.message);
-            scrollToBottom();
-        } else {
-            alert('Mesaj gönderilemedi: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error sending message:', error);
-        alert('Mesaj gönderilirken hata oluştu');
-    })
-    .finally(() => {
-        messageInput.disabled = false;
-        sendButton.disabled = false;
-        messageInput.focus();
-    });
-}
-
-// Scroll to bottom
-function scrollToBottom() {
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-// Start polling for sessions
-function startSessionPolling() {
-    setInterval(() => {
-        loadSessions();
-    }, 2000);
-}
-
-// Start polling for messages
-function startMessagePolling() {
-    pollInterval = setInterval(() => {
-        loadMessages();
-    }, 2000);
-}
-
-// Load sessions
-function loadSessions() {
-    fetch('/admin/support/sessions')
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            updateSessionsList(data.sessions);
-        }
-    })
-    .catch(error => {
-        console.error('Error loading sessions:', error);
-    });
-}
-
-// Update sessions list
-function updateSessionsList(sessions) {
-    const sessionsList = document.getElementById('sessionsList');
-    const sessionCount = document.getElementById('sessionCount');
-    
-    sessionCount.textContent = sessions.length;
-    
-    if (sessions.length === 0) {
-        sessionsList.innerHTML = '<div class="p-4 text-center" style="color: #666;"><i class="fas fa-comments fa-3x mb-3"></i><p>Henüz aktif sohbet yok</p></div>';
-        return;
-    }
-    
-    sessionsList.innerHTML = '';
-    sessions.forEach(session => {
-        const sessionDiv = document.createElement('div');
-        sessionDiv.className = 'session-item p-3 border-bottom';
-        sessionDiv.style.backgroundColor = 'white';
-        sessionDiv.style.color = 'black';
-        if (currentSessionID === session.session_id) {
-            sessionDiv.classList.add('active');
-        }
-        sessionDiv.setAttribute('data-session-id', session.session_id);
-        
-        const lastMessageTime = new Date(session.last_message_at);
-        
-        sessionDiv.innerHTML = '<div class="d-flex justify-content-between align-items-center mb-2" onclick="loadChat(\'' + session.session_id + '\', \'' + session.username + '\')" style="cursor: pointer;"><div><h6 class="mb-1" style="color: black;">' + session.username + '</h6><small style="color: #666;"><i class="fas fa-clock me-1"></i>' + lastMessageTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) + '</small></div><div><span class="badge bg-success">Online</span>' + (session.unread_count > 0 ? '<span class="badge bg-danger">' + session.unread_count + '</span>' : '') + '</div></div>';
-        
-        sessionsList.appendChild(sessionDiv);
-    });
-}
-
-// Cleanup on page unload
-window.addEventListener('beforeunload', function() {
-    if (pollInterval) {
-        clearInterval(pollInterval);
-    }
-});
-</script>
-</body>
-</html>`
-	
-	c.Header("Content-Type", "text/html; charset=utf-8")
-	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
+	c.HTML(http.StatusOK, "admin_support.html", gin.H{
+		"title":    "Canlı Destek Yönetimi",
+		"sessions": sessions,
+	})
 }
 
 // AdminGetSupportSessions - Admin için aktif oturumları getir
@@ -1950,33 +1547,25 @@ func (h *Handler) AdminSendSupportMessage(c *gin.Context) {
 
 // Video Call Request Handlers
 
-// HandleVideoCallRequest - Müşteri video görüşme talebi
+// HandleVideoCallRequest - Video görüşme talebi işle
 func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
-	log.Printf("🔔 HandleVideoCallRequest - Yeni istek geldi")
-	
 	var request struct {
 		SessionID string `json:"session_id"`
 		Action    string `json:"action"` // start, end
 	}
 	
 	if err := c.ShouldBindJSON(&request); err != nil {
-		log.Printf("❌ HandleVideoCallRequest - JSON parse hatası: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
 	
-	log.Printf("📋 HandleVideoCallRequest - Request data: SessionID=%s, Action=%s", request.SessionID, request.Action)
-	
 	if request.SessionID == "" {
-		log.Printf("❌ HandleVideoCallRequest - Session ID eksik")
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
 	
 	switch request.Action {
 	case "start":
-		log.Printf("🎥 HandleVideoCallRequest - Video call başlatma isteği")
-		
 		// Get user info
 		username, _ := c.Cookie("username")
 		var userID *int
@@ -1987,105 +1576,80 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 			if err == nil {
 				userID = &user.ID
 				displayName = user.Username
-				log.Printf("👤 HandleVideoCallRequest - Kullanıcı bulundu: %s", displayName)
-			} else {
-				log.Printf("⚠️ HandleVideoCallRequest - Kullanıcı bulunamadı: %v", err)
 			}
 		} else {
 			// Generate guest number for anonymous users
 			displayName = fmt.Sprintf("Misafir-%s", request.SessionID[:8])
-			log.Printf("👤 HandleVideoCallRequest - Misafir kullanıcı: %s", displayName)
 		}
 		
-		log.Printf("📝 HandleVideoCallRequest - Video call request oluşturuluyor: Session=%s, Username=%s", request.SessionID, displayName)
-		
-		// Create video call request (this will automatically clear any existing pending requests)
+		// Create video call request
 		err := h.db.CreateVideoCallRequest(request.SessionID, displayName, userID)
 		if err != nil {
-			log.Printf("❌ HandleVideoCallRequest - Video call request oluşturma hatası: %v", err)
+			log.Printf("HandleVideoCallRequest - Error creating request: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talebi oluşturulamadı"})
 			return
 		}
 		
-		log.Printf("✅ HandleVideoCallRequest - Video call request başarıyla oluşturuldu: Session=%s", request.SessionID)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme talebi gönderildi"})
 		
 	case "end":
-		log.Printf("🔚 HandleVideoCallRequest - Video call sonlandırma isteği: Session=%s", request.SessionID)
 		// End video call request
 		err := h.db.EndVideoCallRequest(request.SessionID)
 		if err != nil {
-			log.Printf("❌ HandleVideoCallRequest - Video call sonlandırma hatası: %v", err)
-		} else {
-			log.Printf("✅ HandleVideoCallRequest - Video call başarıyla sonlandırıldı: Session=%s", request.SessionID)
+			log.Printf("HandleVideoCallRequest - Error ending request: %v", err)
 		}
 		
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme sonlandırıldı"})
 		
 	default:
-		log.Printf("❌ HandleVideoCallRequest - Geçersiz action: %s", request.Action)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz aksiyon"})
 	}
 }
 
 // AdminVideoCallResponse - Admin video görüşme yanıtı
 func (h *Handler) AdminVideoCallResponse(c *gin.Context) {
-	log.Printf("🔔 AdminVideoCallResponse - Yeni admin yanıtı")
-	
 	var request struct {
 		SessionID string `json:"session_id"`
 		Action    string `json:"action"` // accept, reject, end
 	}
 	
 	if err := c.ShouldBindJSON(&request); err != nil {
-		log.Printf("❌ AdminVideoCallResponse - JSON parse hatası: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
 	
-	log.Printf("📋 AdminVideoCallResponse - Request data: SessionID=%s, Action=%s", request.SessionID, request.Action)
-	
 	if request.SessionID == "" {
-		log.Printf("❌ AdminVideoCallResponse - Session ID eksik")
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
 	
 	switch request.Action {
 	case "accept":
-		log.Printf("✅ AdminVideoCallResponse - Video call kabul ediliyor: Session=%s", request.SessionID)
 		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "accepted")
 		if err != nil {
-			log.Printf("❌ AdminVideoCallResponse - Kabul etme hatası: %v", err)
+			log.Printf("AdminVideoCallResponse - Error accepting: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme kabul edilemedi"})
 			return
 		}
-		log.Printf("✅ AdminVideoCallResponse - Video call başarıyla kabul edildi: Session=%s", request.SessionID)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme kabul edildi"})
 		
 	case "reject":
-		log.Printf("❌ AdminVideoCallResponse - Video call reddediliyor: Session=%s", request.SessionID)
 		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "rejected")
 		if err != nil {
-			log.Printf("❌ AdminVideoCallResponse - Reddetme hatası: %v", err)
+			log.Printf("AdminVideoCallResponse - Error rejecting: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme reddedilemedi"})
 			return
 		}
-		log.Printf("✅ AdminVideoCallResponse - Video call başarıyla reddedildi: Session=%s", request.SessionID)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme reddedildi"})
 		
 	case "end":
-		log.Printf("🔚 AdminVideoCallResponse - Video call sonlandırılıyor: Session=%s", request.SessionID)
 		err := h.db.EndVideoCallRequest(request.SessionID)
 		if err != nil {
-			log.Printf("❌ AdminVideoCallResponse - Sonlandırma hatası: %v", err)
-		} else {
-			log.Printf("✅ AdminVideoCallResponse - Video call başarıyla sonlandırıldı: Session=%s", request.SessionID)
+			log.Printf("AdminVideoCallResponse - Error ending: %v", err)
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme sonlandırıldı"})
 		
 	default:
-		log.Printf("❌ AdminVideoCallResponse - Geçersiz action: %s", request.Action)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz aksiyon"})
 	}
 }
@@ -2113,18 +1677,11 @@ func (h *Handler) CheckVideoCallStatus(c *gin.Context) {
 
 // AdminGetVideoCallRequests - Tüm aktif video görüşme taleplerini getir
 func (h *Handler) AdminGetVideoCallRequests(c *gin.Context) {
-	log.Printf("AdminGetVideoCallRequests - Getting all active video call requests")
 	requests, err := h.db.GetAllActiveVideoCallRequests()
 	if err != nil {
 		log.Printf("AdminGetVideoCallRequests - Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talepleri getirilemedi"})
 		return
-	}
-	
-	log.Printf("AdminGetVideoCallRequests - Found %d active video call requests", len(requests))
-	for i, req := range requests {
-		log.Printf("AdminGetVideoCallRequests - Request %d: SessionID=%s, Username=%s, Status=%s", 
-			i+1, req.SessionID, req.Username, req.Status)
 	}
 	
 	c.JSON(http.StatusOK, gin.H{

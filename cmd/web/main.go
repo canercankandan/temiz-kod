@@ -11,11 +11,12 @@ import (
 	"log"
 	"math/big"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
-	"suaritamauzumani/internal/database"
-	"suaritamauzumani/internal/handlers"
+	"cenap/internal/database"
+	"cenap/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,13 +62,6 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 }
 
 func main() {
-	log.Println("[DEBUG] Sunucu başlatılıyor...")
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("[PANIC] Uygulama çöktü: %v", r)
-		}
-	}()
-
 	// Production modunu aktif et
 	gin.SetMode(gin.ReleaseMode)
 	
@@ -87,13 +81,7 @@ func main() {
 	// Port'u environment variable'dan al, yoksa default kullan
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081"
-	}
-	
-	// Host'u environment variable'dan al
-	host := os.Getenv("HOST")
-	if host == "" {
-		host = "0.0.0.0"
+		port = "9500"
 	}
 
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
@@ -109,34 +97,31 @@ func main() {
 	// Her sayfa için ayrı template setleri oluştur
 	templates := map[string]*template.Template{}
 	
-	// Template engine'i basitleştir - Render uyumluluğu için
 	templateFiles := map[string][]string{
-		"home.html":           {"templates/base.html", "templates/home.html"},
-		"products.html":       {"templates/base.html", "templates/products.html"},
-		"about.html":          {"templates/base.html", "templates/about.html"},
-		"contact.html":        {"templates/base.html", "templates/contact.html"},
-		"admin.html":          {"templates/base.html", "templates/admin.html"},
-		"admin_login.html":    {"templates/base.html", "templates/admin_login.html"},
-		"login.html":          {"templates/base.html", "templates/login.html"},
-		"register.html":       {"templates/base.html", "templates/register.html"},
-		"profile.html":        {"templates/base.html", "templates/profile.html"},
-		"forgot_password.html": {"templates/base.html", "templates/forgot_password.html"},
-		"reset_password.html":  {"templates/base.html", "templates/reset_password.html"},
-		"cart.html":           {"templates/base.html", "templates/cart.html"},
-		"checkout.html":       {"templates/base.html", "templates/checkout.html"},
-		"order_success.html":  {"templates/base.html", "templates/order_success.html"},
-		"orders.html":         {"templates/base.html", "templates/orders.html"},
-		"order_tracking.html": {"templates/base.html", "templates/order_tracking.html"},
-		"support_chat.html":   {"templates/base.html", "templates/support_chat.html"},
-		"admin_support.html":  {"templates/base.html", "templates/admin_support.html"},
+		"home.html":           {"templates/home.html", "templates/base.html"},
+		"products.html":       {"templates/products.html", "templates/base.html"},
+		"about.html":          {"templates/about.html", "templates/base.html"},
+		"contact.html":        {"templates/contact.html", "templates/base.html"},
+		"admin.html":          {"templates/admin.html", "templates/base.html"},
+		"admin_login.html":    {"templates/admin_login.html", "templates/base.html"},
+		"login.html":          {"templates/login.html", "templates/base.html"},
+		"register.html":       {"templates/register.html", "templates/base.html"},
+		"profile.html":        {"templates/profile.html", "templates/base.html"},
+		"forgot_password.html": {"templates/forgot_password.html", "templates/base.html"},
+		"reset_password.html":  {"templates/reset_password.html", "templates/base.html"},
+		"cart.html":           {"templates/cart.html", "templates/base.html"},
+		"checkout.html":       {"templates/checkout.html", "templates/base.html"},
+		"order_success.html":  {"templates/order_success.html", "templates/base.html"},
+		"orders.html":         {"templates/orders.html", "templates/base.html"},
+		"order_tracking.html": {"templates/order_tracking.html", "templates/base.html"},
+		"support_chat.html":   {"templates/support_chat.html", "templates/base.html"},
+		"admin_support.html":  {"templates/admin_support.html", "templates/base.html"},
 	}
 	
 	for name, files := range templateFiles {
-		tmpl, err := template.New(name).ParseFiles(files...)
+		tmpl, err := template.ParseFiles(files...)
 		if err != nil {
-			log.Printf("Template yüklenemedi %s: %v", name, err)
-			// Template yüklenemezse devam et, sadece log'la
-			continue
+			log.Fatalf("Template yüklenemedi %s: %v", name, err)
 		}
 		templates[name] = tmpl
 		log.Printf("Template yüklendi: %s", name)
@@ -173,7 +158,6 @@ func main() {
 	r.POST("/support/send", h.SendSupportMessage)
 	r.GET("/support/messages", h.GetSupportMessages)
 	r.POST("/support/video-call-request", h.HandleVideoCallRequest)
-	r.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
 	r.POST("/support/webrtc-signal", h.HandleWebRTCSignal)
 	r.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
 	log.Printf("Support chat routes registered successfully")
@@ -247,7 +231,6 @@ func main() {
 	{
 		user.GET("", h.ProfilePage)
 		user.POST("/change-password", h.HandleChangePassword)
-		user.POST("/update-address", h.UpdateUserAddress)
 	}
 
 	// Sipariş geçmişi (protected)
@@ -259,12 +242,55 @@ func main() {
 		orders.DELETE("/:id", h.UserCancelOrder)
 	}
 
-	// Render.com için tek server kullan
-	log.Printf("🌐 Server başlatılıyor...")
-	log.Printf("📱 Erişim için: http://%s:%s", host, port)
+	// Load external certificate files
+	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
+	if err != nil {
+		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
+		// Fallback to self-signed certificate
+		cert, err = generateSelfSignedCert()
+		if err != nil {
+			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
+		}
+	} else {
+		log.Printf("✅ External certificate yüklendi: localhost.crt")
+	}
+
+	// Configure TLS
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	// HTTPS portu
+	httpsPort := "8081"
 	
-	// Tek server başlat
-	if err := r.Run(host + ":" + port); err != nil {
-		log.Fatalf("Server başlatılamadı: %v", err)
+	// Create HTTPS server
+	httpsServer := &http.Server{
+		Addr:      ":" + httpsPort,
+		Handler:   r,
+		TLSConfig: tlsConfig,
+	}
+
+	// HTTP Server'ı başlat (port 8080'de)
+	httpPort := "8080"
+	
+	// HTTPS Server'ı goroutine'de başlat
+	go func() {
+		log.Printf("🔒 HTTPS Server başlatılıyor...")
+		log.Printf("📱 iPhone Safari desteği için: https://localhost:%s", httpsPort)
+		log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
+		log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
+		
+		if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
+			log.Fatalf("HTTPS Server başlatılamadı: %v", err)
+		}
+	}()
+	
+	// HTTP Server'ı başlat
+	log.Printf("🌐 HTTP Server başlatılıyor...")
+	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
+	log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
+	
+	if err := http.ListenAndServe(":"+httpPort, r); err != nil {
+		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
 } 

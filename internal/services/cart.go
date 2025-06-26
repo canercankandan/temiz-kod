@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"suaritamauzumani/internal/models"
+	"cenap/internal/models"
 )
 
 // CartService, sepet işlemlerini yönetir

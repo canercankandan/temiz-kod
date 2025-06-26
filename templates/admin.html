@@ -795,7 +795,7 @@ class AdminPanel {
             const data = await response.json();
 
             if (data.success) {
-                this.displayOrderDetails(data.order, data.user_details);
+                this.displayOrderDetails(data.order);
                 new bootstrap.Modal(document.getElementById('adminOrderModal')).show();
             }
         } catch (error) {
@@ -804,31 +804,7 @@ class AdminPanel {
         }
     }
 
-    displayOrderDetails(order, userDetails = null) {
-        // Adres bilgisini hazırla
-        let addressInfo = order.address.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>');
-        
-        // Eğer kayıtlı kullanıcı varsa tam adres bilgilerini göster
-        if (userDetails && userDetails.id > 0) {
-            addressInfo = `
-                <div class="mb-2">
-                    <strong>Sipariş Adresi:</strong><br>
-                    <div class="border p-2 rounded bg-light mb-2">
-                        ${order.address.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-                <div>
-                    <strong>Kullanıcı Profil Adresi:</strong><br>
-                    <div class="border p-2 rounded bg-success bg-opacity-10">
-                        <strong>Adres:</strong> ${userDetails.address.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')}<br>
-                        <strong>İlçe:</strong> ${userDetails.district}<br>
-                        <strong>İl:</strong> ${userDetails.city}<br>
-                        <strong>Posta Kodu:</strong> ${userDetails.postal_code}
-                    </div>
-                </div>
-            `;
-        }
-        
+    displayOrderDetails(order) {
         const content = `
             <div class="row">
                 <div class="col-md-6">
@@ -855,9 +831,10 @@ class AdminPanel {
                         <strong>Ad Soyad:</strong> ${order.customer_name}<br>
                         <strong>E-posta:</strong> ${order.email}<br>
                         <strong>Telefon:</strong> ${order.phone}<br>
-                        ${userDetails ? `<strong>Kayıtlı Kullanıcı:</strong> <span class="badge bg-success">Evet</span><br>` : '<strong>Kayıtlı Kullanıcı:</strong> <span class="badge bg-secondary">Hayır</span><br>'}
-                        <strong>Adres Bilgileri:</strong><br>
-                        ${addressInfo}
+                        <strong>Adres:</strong><br>
+                        <div class="border p-2 rounded bg-light">
+                            ${order.address.replace(/\r\n/g, '<br>').replace(/\n/g, '<br>')}
+                        </div>
                     </div>
                 </div>
             </div>

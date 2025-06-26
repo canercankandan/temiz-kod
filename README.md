@@ -1,86 +1,133 @@
-# Su Arıtama Uzmanı
+# suarıtama uzmanı com Web Sitesi
 
-Türkiye'nin en güvenilir su arıtma sistemleri e-ticaret platformu.
+Go ile geliştirilmiş modern web sitesi ve admin paneli.
 
-## 🚀 Özellikler
+## Özellikler
 
-- 🛒 E-ticaret sistemi
-- 👥 Kullanıcı yönetimi
-- 📦 Sipariş takibi
-- 💬 Canlı destek sistemi
-- 📹 Video görüşme desteği
-- 📱 Mobil uyumlu tasarım
-- 🔒 Güvenli ödeme sistemi
+- 🏠 **Ana Sayfa**: Hoş geldin mesajı ve öne çıkan ürünler
+- 📦 **Ürünler Sayfası**: Tüm ürünlerin listelendiği sayfa
+- ⚙️ **Admin Paneli**: Ürün ekleme, silme ve yönetim
+- 📸 **Resim Yükleme**: Ürünlere resim ekleme özelliği
+- 📱 **Responsive Tasarım**: Mobil uyumlu modern arayüz
+- 🗄️ **JSON Veritabanı**: Harici bağımlılık gerektirmeyen, dosya tabanlı veritabanı
 
-## 🛠️ Teknolojiler
+## Teknolojiler
 
 - **Backend**: Go (Gin Framework)
-- **Frontend**: HTML, CSS, JavaScript, Bootstrap
-- **Database**: JSON dosya sistemi
-- **Real-time**: WebSocket
-- **Video**: WebRTC
+- **Veritabanı**: JSON Dosyası
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Template Engine**: Go HTML templates
 
-## 📋 Kurulum
+## Kurulum ve Çalıştırma
 
-### Yerel Geliştirme
+Proje sizin için derlendi ve çalıştırılmaya hazır hale getirildi.
 
-1. Repository'yi klonlayın:
-```bash
-git clone https://github.com/canercankandan/su-aritma-uzmani.git
-cd su-aritma-uzmani
+1.  Proje dizinine gidin (eğer zaten orada değilseniz):
+    ```powershell
+    cd cenap
+    ```
+
+2.  Uygulamayı çalıştırın. Bunun için oluşturulan `suaritamauzumani.exe` dosyasını çalıştırmanız yeterlidir:
+    ```powershell
+    ./suaritamauzumani.exe
+    ```
+
+3.  Tarayıcınızda `http://localhost:9394` adresine gidin.
+
+Eğer projede değişiklik yapıp yeniden derlemek isterseniz, aşağıdaki komutu kullanabilirsiniz:
+```powershell
+go build -o suaritamauzumani.exe cmd/web/main.go
 ```
 
-2. Bağımlılıkları yükleyin:
-```bash
-go mod download
+### Geliştirme Ortamı İçin
+Eğer `go run` komutu ile çalışmak isterseniz, aşağıdaki komutu kullanabilirsiniz:
+```powershell
+$env:GOPATH = "C:\temp\go"; $env:GOCACHE = "C:\temp\go\cache"; go run cmd/web/main.go
 ```
 
-3. Uygulamayı çalıştırın:
-```bash
-go run cmd/web/main.go
-```
-
-4. Tarayıcıda açın:
-- HTTP: http://localhost:8080
-- HTTPS: https://localhost:8081
-
-### Production Deployment
-
-#### Render.com (Önerilen)
-
-1. GitHub'a push edin
-2. Render.com'da hesap oluşturun
-3. "New Web Service" seçin
-4. Repository'nizi bağlayın
-5. `render.yaml` otomatik algılanacak
-
-#### Docker ile
-
-```bash
-docker build -t suaritamauzumani .
-docker run -p 8080:8080 suaritamauzumani
-```
-
-## 🔧 Yapılandırma
-
-### Environment Variables
-
-- `PORT`: Server portu (varsayılan: 8080)
-- `GIN_MODE`: release/debug
-- `HTTPS_PORT`: HTTPS portu (varsayılan: 8081)
+## Kullanım
 
 ### Admin Paneli
 
-- URL: `/admin`
-- Varsayılan kullanıcı: `sa`
-- Şifre: Admin panelinden ayarlayın
+1.  `/admin` sayfasına gidin (`http://localhost:9394/admin`)
+2.  Yeni ürün eklemek için formu doldurun:
+    -   Ürün adı
+    -   Kategori
+    -   Açıklama
+    -   Fiyat
+    -   Stok miktarı
+    -   Ürün resmi
+3.  "Ürün Ekle" butonuna tıklayın
 
-## 📞 İletişim
+### Ürün Yönetimi
 
-- Web: https://suaritamauzumani.com
-- E-posta: info@suaritamauzumani.com
-- Telefon: +90 XXX XXX XX XX
+-   **Ekleme**: Admin panelinden form ile
+-   **Silme**: Admin panelindeki tabloda silme butonu ile
+-   **Görüntüleme**: Ana sayfa ve ürünler sayfasında
 
-## 📄 Lisans
+## Proje Yapısı
+
+```
+cenap/
+├── cmd/
+│   └── web/
+│       └── main.go          # Ana uygulama dosyası
+├── internal/
+│   ├── database/
+│   │   └── database.go      # Veritabanı işlemleri (JSON)
+│   ├── handlers/
+│   │   └── handlers.go      # HTTP handler'ları
+│   └── models/
+│       └── product.go       # Veri modelleri
+├── static/
+│   ├── css/
+│   │   └── style.css        # Özel CSS stilleri
+│   ├── js/
+│   │   └── app.js           # JavaScript fonksiyonları
+│   └── uploads/             # Yüklenen ürün resimleri
+├── templates/
+│   ├── base.html            # Temel template
+│   ├── home.html            # Ana sayfa
+│   ├── products.html        # Ürünler sayfası
+│   ├── admin.html           # Admin paneli
+│   ├── about.html           # Hakkımızda
+│   └── contact.html         # İletişim
+├── go.mod                   # Go modül dosyası
+├── data.json                # Ürün verilerinin saklandığı dosya
+└── README.md                # Bu dosya
+```
+
+## API Endpoints
+
+-   `GET /` - Ana sayfa
+-   `GET /products` - Ürünler sayfası
+-   `GET /about` - Hakkımızda sayfası
+-   `GET /contact` - İletişim sayfası
+-   `GET /admin` - Admin paneli
+-   `POST /admin/add-product` - Ürün ekleme
+-   `DELETE /admin/delete-product/:id` - Ürün silme
+
+## Veri Yapısı (data.json)
+
+`data.json` dosyası, ürünlerin bir dizisini içerir. Her ürün aşağıdaki alanlara sahiptir:
+
+| Alan | Tip | Açıklama |
+| --- | --- | --- |
+| id | number | Benzersiz ID |
+| name | string | Ürün adı |
+| description | string | Ürün açıklaması |
+| price | number | Fiyat |
+| image | string | Resim dosya yolu |
+| category | string | Kategori |
+| stock | number | Stok miktarı |
+| created_at | string | Oluşturulma tarihi (ISO 8601) |
+| updated_at | string | Güncellenme tarihi (ISO 8601) |
+
+## Lisans
 
 Bu proje MIT lisansı altında lisanslanmıştır.
+
+## İletişim
+
+-   E-posta: info@suaritamauzamani.com
+-   Telefon: +90 555 123 4567 
