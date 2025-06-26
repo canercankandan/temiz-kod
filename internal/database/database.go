@@ -685,10 +685,19 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 	defer db.mu.Unlock()
 	
 	// First, end any existing pending requests for this session
+	now := time.Now()
 	for i, req := range db.data.VideoCallRequests {
 		if req.SessionID == sessionID && req.Status == "pending" {
 			db.data.VideoCallRequests[i].Status = "ended"
-			now := time.Now()
+			db.data.VideoCallRequests[i].RespondedAt = &now
+		}
+	}
+	
+	// Also end any old pending requests (older than 5 minutes)
+	fiveMinutesAgo := now.Add(-5 * time.Minute)
+	for i, req := range db.data.VideoCallRequests {
+		if req.Status == "pending" && req.RequestedAt.Before(fiveMinutesAgo) {
+			db.data.VideoCallRequests[i].Status = "ended"
 			db.data.VideoCallRequests[i].RespondedAt = &now
 		}
 	}
@@ -707,7 +716,7 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 		UserID:      userID,
 		Username:    username,
 		Status:      "pending",
-		RequestedAt: time.Now(),
+		RequestedAt: now,
 	}
 	
 	db.data.VideoCallRequests = append(db.data.VideoCallRequests, newRequest)

@@ -115,6 +115,27 @@
             </div>
         </div>
         
+        <!-- Video Call Area -->
+        <div id="videoCallArea" class="video-call-area" style="display: none; height: 400px; background: #000; position: relative; border-radius: 10px; margin: 10px 0;">
+            <video id="localVideo" autoplay muted style="width: 150px; height: 100px; position: absolute; top: 10px; right: 10px; border: 2px solid #fff; border-radius: 8px; z-index: 10;"></video>
+            <video id="remoteVideo" autoplay style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;"></video>
+            <div class="video-controls" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10;">
+                <button id="toggleMuteBtn" class="btn btn-secondary btn-sm me-2" title="Mikrofonu Aç/Kapat" onclick="toggleMute()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="toggleVideoBtn" class="btn btn-secondary btn-sm me-2" title="Kamerayı Aç/Kapat" onclick="toggleVideo()">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button id="endCallBtn" class="btn btn-danger btn-sm" onclick="endVideoCall()" title="Görüşmeyi Sonlandır">
+                    <i class="fas fa-phone-slash me-1"></i>Sonlandır
+                </button>
+            </div>
+            <div class="call-status" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 15px; font-size: 12px;">
+                <i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i>
+                <span id="callStatusText">Bağlantı kuruluyor...</span>
+            </div>
+        </div>
+        
         <div class="chat-input">
             <button class="video-call-btn" id="videoCallBtn" onclick="startVideoCall()">
                 <i class="fas fa-video me-2"></i>Görüntülü Görüşme
@@ -132,6 +153,14 @@
     <script>
         let sessionID = '{{.sessionID}}';
         let messages = [];
+        
+        // Video call variables
+        let localStream = null;
+        let remoteStream = null;
+        let peerConnection = null;
+        let isCallActive = false;
+        let isMuted = false;
+        let isVideoOff = false;
         
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -273,8 +302,14 @@
             .then(stream => {
                 console.log('📹 Kamera erişimi başarılı!');
                 
-                // Stop the stream immediately (we just needed permission)
-                stream.getTracks().forEach(track => track.stop());
+                // Store the stream for later use
+                localStream = stream;
+                
+                // Show local video preview
+                const localVideo = document.getElementById('localVideo');
+                if (localVideo) {
+                    localVideo.srcObject = stream;
+                }
                 
                 // Now send video call request
                 return fetch('/support/video-call-request', {
@@ -332,46 +367,311 @@
             });
         }
         
+        // Initialize WebRTC peer connection
+        async function initializePeerConnection() {
+            try {
+                console.log('🔗 WebRTC peer connection başlatılıyor...');
+                
+                // Create peer connection with STUN servers
+                peerConnection = new RTCPeerConnection({
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' }
+                    ]
+                });
+                
+                // Add local stream to peer connection
+                if (localStream) {
+                    localStream.getTracks().forEach(track => {
+                        peerConnection.addTrack(track, localStream);
+                    });
+                }
+                
+                // Handle remote stream
+                peerConnection.ontrack = (event) => {
+                    console.log('📹 Remote stream alındı!');
+                    remoteStream = event.streams[0];
+                    const remoteVideo = document.getElementById('remoteVideo');
+                    if (remoteVideo) {
+                        remoteVideo.srcObject = remoteStream;
+                    }
+                };
+                
+                // Handle ICE candidates
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        sendSignalingMessage({
+                            type: 'ice-candidate',
+                            candidate: event.candidate
+                        });
+                    }
+                };
+                
+                // Handle connection state changes
+                peerConnection.onconnectionstatechange = () => {
+                    console.log('🔗 Connection state:', peerConnection.connectionState);
+                    switch (peerConnection.connectionState) {
+                        case 'connected':
+                            addSystemMessage('Video görüşme bağlantısı kuruldu!');
+                            break;
+                        case 'disconnected':
+                            addSystemMessage('Video görüşme bağlantısı kesildi.');
+                            break;
+                        case 'failed':
+                            addSystemMessage('Video görüşme bağlantısı başarısız.');
+                            break;
+                    }
+                };
+                
+                console.log('✅ WebRTC peer connection hazır!');
+                
+            } catch (error) {
+                console.error('❌ WebRTC initialization failed:', error);
+                addSystemMessage('Video görüşme başlatılamadı: ' + error.message);
+            }
+        }
+
+        // Send signaling message to admin
+        async function sendSignalingMessage(message) {
+            try {
+                const response = await fetch('/support/webrtc-signal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionID,
+                        message: message
+                    })
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('❌ Signaling message failed:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error sending signaling message:', error);
+            }
+        }
+
+        // Handle incoming signaling messages
+        async function handleSignalingMessage(message) {
+            try {
+                console.log('📨 Signaling message alındı:', message);
+                switch (message.type) {
+                    case 'offer':
+                        // Admin sent offer, create answer
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                        const answer = await peerConnection.createAnswer();
+                        await peerConnection.setLocalDescription(answer);
+                        sendSignalingMessage({
+                            type: 'answer',
+                            answer: answer
+                        });
+                        console.log('✅ Answer gönderildi');
+                        break;
+                        
+                    case 'answer':
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                        break;
+                        
+                    case 'ice-candidate':
+                        await peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+                        break;
+                }
+            } catch (error) {
+                console.error('❌ Error handling signaling message:', error);
+            }
+        }
+
+        // Start actual video call when admin accepts
+        async function startActualVideoCall() {
+            try {
+                console.log('🎥 Gerçek video call başlatılıyor...');
+                
+                // Initialize peer connection
+                await initializePeerConnection();
+                
+                // Create and send offer
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                sendSignalingMessage({
+                    type: 'offer',
+                    offer: offer
+                });
+                
+                console.log('✅ Offer gönderildi');
+                
+                // Show video call interface
+                showVideoCallInterface();
+                
+                // Start signaling polling
+                startSignalingPolling();
+                
+                isCallActive = true;
+                
+            } catch (error) {
+                console.error('❌ Video call başlatma hatası:', error);
+                addSystemMessage('Video görüşme başlatılamadı: ' + error.message);
+            }
+        }
+
+        // Show video call interface
+        function showVideoCallInterface() {
+            // Hide chat messages
+            document.getElementById('chatMessages').style.display = 'none';
+            document.getElementById('messageInput').style.display = 'none';
+            document.getElementById('sendButton').style.display = 'none';
+            
+            // Show video call area
+            const videoCallArea = document.getElementById('videoCallArea');
+            if (videoCallArea) {
+                videoCallArea.style.display = 'block';
+            }
+            
+            // Update button
+            const videoBtn = document.getElementById('videoCallBtn');
+            videoBtn.innerHTML = '<i class="fas fa-phone-slash me-2"></i>Görüşmeyi Sonlandır';
+            videoBtn.style.background = '#dc3545';
+            videoBtn.onclick = endVideoCall;
+        }
+
+        // Hide video call interface
+        function hideVideoCallInterface() {
+            // Show chat messages
+            document.getElementById('chatMessages').style.display = 'block';
+            document.getElementById('messageInput').style.display = 'block';
+            document.getElementById('sendButton').style.display = 'block';
+            
+            // Hide video call area
+            const videoCallArea = document.getElementById('videoCallArea');
+            if (videoCallArea) {
+                videoCallArea.style.display = 'none';
+            }
+        }
+
+        // Start signaling polling
+        function startSignalingPolling() {
+            if (window.signalingInterval) {
+                clearInterval(window.signalingInterval);
+            }
+            
+            window.signalingInterval = setInterval(async () => {
+                if (!isCallActive) return;
+                
+                try {
+                    const response = await fetch(`/support/webrtc-signals/${sessionID}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.messages) {
+                        for (const message of data.messages) {
+                            await handleSignalingMessage(message);
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error polling signaling messages:', error);
+                }
+            }, 1000);
+        }
+
+        // Stop signaling polling
+        function stopSignalingPolling() {
+            if (window.signalingInterval) {
+                clearInterval(window.signalingInterval);
+                window.signalingInterval = null;
+            }
+        }
+
         // End video call
         function endVideoCall() {
-            const videoBtn = document.getElementById('videoCallBtn');
-            videoBtn.disabled = true;
-            videoBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sonlandırılıyor...';
-            
-            // Send end request
-            fetch('/support/video-call-request', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    session_id: sessionID,
-                    action: 'end'
+            try {
+                console.log('📞 Video call sonlandırılıyor...');
+                
+                // Stop local stream
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+                
+                // Close peer connection
+                if (peerConnection) {
+                    peerConnection.close();
+                    peerConnection = null;
+                }
+                
+                // Hide video call interface
+                hideVideoCallInterface();
+                
+                // Reset video elements
+                const localVideo = document.getElementById('localVideo');
+                const remoteVideo = document.getElementById('remoteVideo');
+                if (localVideo) localVideo.srcObject = null;
+                if (remoteVideo) remoteVideo.srcObject = null;
+                
+                // Reset states
+                isCallActive = false;
+                isMuted = false;
+                isVideoOff = false;
+                
+                // Stop signaling polling
+                stopSignalingPolling();
+                
+                // Send end request
+                fetch('/support/video-call-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionID,
+                        action: 'end'
+                    })
                 })
-            })
+                .then(response => response.json())
+                .then(data => {
+                    resetVideoCallButton();
+                    addSystemMessage('Görüntülü görüşme sonlandırıldı.');
+                })
+                .catch(error => {
+                    console.error('❌ End video call error:', error);
+                    resetVideoCallButton();
+                });
+                
+            } catch (error) {
+                console.error('❌ Video call sonlandırma hatası:', error);
+                resetVideoCallButton();
+            }
+        }
+
+        // Check video call status
+        function checkVideoCallStatus() {
+            fetch(`/support/video-call-status/${sessionID}`)
             .then(response => response.json())
             .then(data => {
-                videoBtn.disabled = false;
-                videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
-                videoBtn.style.background = '#28a745';
-                videoBtn.onclick = startVideoCall;
-                
-                // Add system message
-                const systemMessage = {
-                    message: 'Görüntülü görüşme sonlandırıldı.',
-                    is_admin: false,
-                    created_at: new Date().toISOString()
-                };
-                messages.push(systemMessage);
-                addMessageToDisplay(systemMessage);
-                scrollToBottom();
+                console.log('📊 Video call status:', data);
+                if (data.success && data.has_request) {
+                    const request = data.request;
+                    console.log('📞 Video call request status:', request.status);
+                    
+                    if (request.status === 'accepted') {
+                        // Admin accepted the call - START ACTUAL VIDEO CALL
+                        clearInterval(window.videoCallStatusInterval);
+                        addSystemMessage('Destek temsilcisi video görüşmeyi kabul etti! Bağlantı kuruluyor...');
+                        startActualVideoCall(); // 🎯 BURASI EKSİKTİ!
+                    } else if (request.status === 'rejected') {
+                        // Admin rejected the call
+                        clearInterval(window.videoCallStatusInterval);
+                        addSystemMessage('Destek temsilcisi video görüşmeyi reddetti.');
+                        resetVideoCallButton();
+                    }
+                }
             })
             .catch(error => {
-                console.error('End video call error:', error);
-                videoBtn.disabled = false;
-                videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
-                videoBtn.style.background = '#28a745';
-                videoBtn.onclick = startVideoCall;
+                console.error('❌ Error checking video call status:', error);
             });
         }
         
@@ -399,34 +699,6 @@
             }, 3000); // Her 3 saniyede bir kontrol et
         }
         
-        // Check video call status
-        function checkVideoCallStatus() {
-            fetch(`/support/video-call-status/${sessionID}`)
-            .then(response => response.json())
-            .then(data => {
-                console.log('📊 Video call status:', data);
-                if (data.success && data.has_request) {
-                    const request = data.request;
-                    console.log('📞 Video call request status:', request.status);
-                    
-                    if (request.status === 'accepted') {
-                        // Admin accepted the call
-                        clearInterval(window.videoCallStatusInterval);
-                        addSystemMessage('Destek temsilcisi video görüşmeyi kabul etti!');
-                        // TODO: Start actual video call
-                    } else if (request.status === 'rejected') {
-                        // Admin rejected the call
-                        clearInterval(window.videoCallStatusInterval);
-                        addSystemMessage('Destek temsilcisi video görüşmeyi reddetti.');
-                        resetVideoCallButton();
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error checking video call status:', error);
-            });
-        }
-        
         // Reset video call button
         function resetVideoCallButton() {
             const videoBtn = document.getElementById('videoCallBtn');
@@ -434,6 +706,46 @@
             videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
             videoBtn.style.background = '#007bff';
             videoBtn.onclick = startVideoCall;
+        }
+
+        // Toggle mute
+        function toggleMute() {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    isMuted = !audioTrack.enabled;
+                    
+                    const toggleMuteBtn = document.getElementById('toggleMuteBtn');
+                    if (isMuted) {
+                        toggleMuteBtn.classList.add('muted');
+                        toggleMuteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                    } else {
+                        toggleMuteBtn.classList.remove('muted');
+                        toggleMuteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    }
+                }
+            }
+        }
+
+        // Toggle video
+        function toggleVideo() {
+            if (localStream) {
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    isVideoOff = !videoTrack.enabled;
+                    
+                    const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+                    if (isVideoOff) {
+                        toggleVideoBtn.classList.add('video-off');
+                        toggleVideoBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+                    } else {
+                        toggleVideoBtn.classList.remove('video-off');
+                        toggleVideoBtn.innerHTML = '<i class="fas fa-video"></i>';
+                    }
+                }
+            }
         }
     </script>
 </body>
