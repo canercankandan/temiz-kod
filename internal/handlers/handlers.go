@@ -1952,27 +1952,31 @@ func (h *Handler) AdminSendSupportMessage(c *gin.Context) {
 
 // HandleVideoCallRequest - Müşteri video görüşme talebi
 func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
+	log.Printf("🔔 HandleVideoCallRequest - Yeni istek geldi")
+	
 	var request struct {
 		SessionID string `json:"session_id"`
 		Action    string `json:"action"` // start, end
 	}
 	
 	if err := c.ShouldBindJSON(&request); err != nil {
-		log.Printf("HandleVideoCallRequest - Invalid request: %v", err)
+		log.Printf("❌ HandleVideoCallRequest - JSON parse hatası: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
 	
+	log.Printf("📋 HandleVideoCallRequest - Request data: SessionID=%s, Action=%s", request.SessionID, request.Action)
+	
 	if request.SessionID == "" {
-		log.Printf("HandleVideoCallRequest - Missing session ID")
+		log.Printf("❌ HandleVideoCallRequest - Session ID eksik")
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
 	
-	log.Printf("HandleVideoCallRequest - Session: %s, Action: %s", request.SessionID, request.Action)
-	
 	switch request.Action {
 	case "start":
+		log.Printf("🎥 HandleVideoCallRequest - Video call başlatma isteği")
+		
 		// Get user info
 		username, _ := c.Cookie("username")
 		var userID *int
@@ -1983,85 +1987,105 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 			if err == nil {
 				userID = &user.ID
 				displayName = user.Username
+				log.Printf("👤 HandleVideoCallRequest - Kullanıcı bulundu: %s", displayName)
+			} else {
+				log.Printf("⚠️ HandleVideoCallRequest - Kullanıcı bulunamadı: %v", err)
 			}
 		} else {
 			// Generate guest number for anonymous users
 			displayName = fmt.Sprintf("Misafir-%s", request.SessionID[:8])
+			log.Printf("👤 HandleVideoCallRequest - Misafir kullanıcı: %s", displayName)
 		}
 		
-		log.Printf("HandleVideoCallRequest - Creating video call request for session: %s, username: %s", request.SessionID, displayName)
+		log.Printf("📝 HandleVideoCallRequest - Video call request oluşturuluyor: Session=%s, Username=%s", request.SessionID, displayName)
 		
 		// Create video call request
 		err := h.db.CreateVideoCallRequest(request.SessionID, displayName, userID)
 		if err != nil {
-			log.Printf("HandleVideoCallRequest - Error creating request: %v", err)
+			log.Printf("❌ HandleVideoCallRequest - Video call request oluşturma hatası: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talebi oluşturulamadı"})
 			return
 		}
 		
-		log.Printf("HandleVideoCallRequest - Video call request created successfully for session: %s", request.SessionID)
+		log.Printf("✅ HandleVideoCallRequest - Video call request başarıyla oluşturuldu: Session=%s", request.SessionID)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme talebi gönderildi"})
 		
 	case "end":
-		log.Printf("HandleVideoCallRequest - Ending video call request for session: %s", request.SessionID)
+		log.Printf("🔚 HandleVideoCallRequest - Video call sonlandırma isteği: Session=%s", request.SessionID)
 		// End video call request
 		err := h.db.EndVideoCallRequest(request.SessionID)
 		if err != nil {
-			log.Printf("HandleVideoCallRequest - Error ending request: %v", err)
+			log.Printf("❌ HandleVideoCallRequest - Video call sonlandırma hatası: %v", err)
+		} else {
+			log.Printf("✅ HandleVideoCallRequest - Video call başarıyla sonlandırıldı: Session=%s", request.SessionID)
 		}
 		
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme sonlandırıldı"})
 		
 	default:
-		log.Printf("HandleVideoCallRequest - Invalid action: %s", request.Action)
+		log.Printf("❌ HandleVideoCallRequest - Geçersiz action: %s", request.Action)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz aksiyon"})
 	}
 }
 
 // AdminVideoCallResponse - Admin video görüşme yanıtı
 func (h *Handler) AdminVideoCallResponse(c *gin.Context) {
+	log.Printf("🔔 AdminVideoCallResponse - Yeni admin yanıtı")
+	
 	var request struct {
 		SessionID string `json:"session_id"`
 		Action    string `json:"action"` // accept, reject, end
 	}
 	
 	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Printf("❌ AdminVideoCallResponse - JSON parse hatası: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
 	
+	log.Printf("📋 AdminVideoCallResponse - Request data: SessionID=%s, Action=%s", request.SessionID, request.Action)
+	
 	if request.SessionID == "" {
+		log.Printf("❌ AdminVideoCallResponse - Session ID eksik")
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
 	
 	switch request.Action {
 	case "accept":
+		log.Printf("✅ AdminVideoCallResponse - Video call kabul ediliyor: Session=%s", request.SessionID)
 		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "accepted")
 		if err != nil {
-			log.Printf("AdminVideoCallResponse - Error accepting: %v", err)
+			log.Printf("❌ AdminVideoCallResponse - Kabul etme hatası: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme kabul edilemedi"})
 			return
 		}
+		log.Printf("✅ AdminVideoCallResponse - Video call başarıyla kabul edildi: Session=%s", request.SessionID)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme kabul edildi"})
 		
 	case "reject":
+		log.Printf("❌ AdminVideoCallResponse - Video call reddediliyor: Session=%s", request.SessionID)
 		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "rejected")
 		if err != nil {
-			log.Printf("AdminVideoCallResponse - Error rejecting: %v", err)
+			log.Printf("❌ AdminVideoCallResponse - Reddetme hatası: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme reddedilemedi"})
 			return
 		}
+		log.Printf("✅ AdminVideoCallResponse - Video call başarıyla reddedildi: Session=%s", request.SessionID)
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme reddedildi"})
 		
 	case "end":
+		log.Printf("🔚 AdminVideoCallResponse - Video call sonlandırılıyor: Session=%s", request.SessionID)
 		err := h.db.EndVideoCallRequest(request.SessionID)
 		if err != nil {
-			log.Printf("AdminVideoCallResponse - Error ending: %v", err)
+			log.Printf("❌ AdminVideoCallResponse - Sonlandırma hatası: %v", err)
+		} else {
+			log.Printf("✅ AdminVideoCallResponse - Video call başarıyla sonlandırıldı: Session=%s", request.SessionID)
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme sonlandırıldı"})
 		
 	default:
+		log.Printf("❌ AdminVideoCallResponse - Geçersiz action: %s", request.Action)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz aksiyon"})
 	}
 }

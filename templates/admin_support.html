@@ -640,76 +640,88 @@ window.addEventListener('beforeunload', function() {
 // Video Call Functions
 async function acceptVideoCall(sessionId, username) {
     try {
-        currentSessionID = sessionId;
-        pendingVideoCallSession = sessionId;
-        
-        // Load chat for this session first
-        await loadChat(sessionId, username);
-        
-        // Start video call
-        adminLocalStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-        });
-        
-        document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
-        
-        // Show video call area
-        document.getElementById('adminVideoCallArea').style.display = 'block';
-        document.getElementById('endAdminCallBtn').style.display = 'inline-block';
-        
-        // Adjust chat area height
-        document.getElementById('chatMessages').style.height = '300px';
-        
-        isAdminCallActive = true;
-        document.getElementById('adminCallStatusText').textContent = 'Video görüşme aktif';
-        
-        // Hide video call buttons for this session
-        const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
-        const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
-        
-        if (buttonsDiv) buttonsDiv.style.display = 'none';
-        if (notificationDiv) notificationDiv.style.display = 'none';
-        
-        // Initialize WebRTC peer connection
-        await initializeAdminPeerConnection();
-        
-        // Start signaling polling
-        startAdminSignalingPolling();
-        
-        // Send call-accepted message to customer first
-        await sendAdminSignalingMessage({
-            type: 'call-accepted'
-        });
+        console.log('✅ Video call kabul ediliyor:', sessionId, username);
         
         // Send acceptance to customer
-        await sendVideoCallResponse('accept', sessionId);
+        const response = await fetch('/admin/support/video-call-response', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionId,
+                action: 'accept'
+            })
+        });
         
-        // Add system message
-        addAdminSystemMessage(`${username} ile video görüşme başlatıldı.`);
+        const data = await response.json();
+        console.log('📞 Accept response:', data);
+        
+        if (data.success) {
+            // Hide video call buttons for this session
+            const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+            const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+            
+            if (buttonsDiv) buttonsDiv.style.display = 'none';
+            if (notificationDiv) notificationDiv.style.display = 'none';
+            
+            // Add system message if this is current session
+            if (sessionId === currentSessionID) {
+                addAdminSystemMessage(`${username} ile video görüşme kabul edildi.`);
+            }
+            
+            alert(`${username} ile video görüşme kabul edildi!`);
+        } else {
+            alert('Video görüşme kabul edilemedi: ' + data.error);
+        }
         
     } catch (error) {
-        console.error('Video call kabul edilemedi:', error);
-        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
-        await sendVideoCallResponse('reject', sessionId);
+        console.error('❌ Accept video call error:', error);
+        alert('Video görüşme kabul edilirken hata oluştu');
     }
 }
 
 // Reject video call from session list
 async function rejectVideoCall(sessionId, username) {
-    // Hide video call buttons for this session
-    const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
-    const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
-    
-    if (buttonsDiv) buttonsDiv.style.display = 'none';
-    if (notificationDiv) notificationDiv.style.display = 'none';
-    
-    // Send rejection to customer
-    await sendVideoCallResponse('reject', sessionId);
-    
-    // Add system message if this is current session
-    if (sessionId === currentSessionID) {
-        addAdminSystemMessage(`${username} ile video görüşme talebi reddedildi.`);
+    try {
+        console.log('❌ Video call reddediliyor:', sessionId, username);
+        
+        // Send rejection to customer
+        const response = await fetch('/admin/support/video-call-response', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionId,
+                action: 'reject'
+            })
+        });
+        
+        const data = await response.json();
+        console.log('📞 Reject response:', data);
+        
+        if (data.success) {
+            // Hide video call buttons for this session
+            const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+            const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+            
+            if (buttonsDiv) buttonsDiv.style.display = 'none';
+            if (notificationDiv) notificationDiv.style.display = 'none';
+            
+            // Add system message if this is current session
+            if (sessionId === currentSessionID) {
+                addAdminSystemMessage(`${username} ile video görüşme talebi reddedildi.`);
+            }
+            
+            alert(`${username} ile video görüşme reddedildi.`);
+        } else {
+            alert('Video görüşme reddedilemedi: ' + data.error);
+        }
+        
+    } catch (error) {
+        console.error('❌ Reject video call error:', error);
+        alert('Video görüşme reddedilirken hata oluştu');
     }
 }
 
