@@ -263,7 +263,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        session_id: sessionID
+                        session_id: sessionID,
+                        action: 'start'
                     })
                 });
             })
@@ -298,20 +299,44 @@
         // End video call
         function endVideoCall() {
             const videoBtn = document.getElementById('videoCallBtn');
-            videoBtn.disabled = false;
-            videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
-            videoBtn.style.background = '#28a745';
-            videoBtn.onclick = startVideoCall;
+            videoBtn.disabled = true;
+            videoBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sonlandırılıyor...';
             
-            // Add system message
-            const systemMessage = {
-                message: 'Görüntülü görüşme sonlandırıldı.',
-                is_admin: false,
-                created_at: new Date().toISOString()
-            };
-            messages.push(systemMessage);
-            addMessageToDisplay(systemMessage);
-            scrollToBottom();
+            // Send end request
+            fetch('/support/video-call-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session_id: sessionID,
+                    action: 'end'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                videoBtn.disabled = false;
+                videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
+                videoBtn.style.background = '#28a745';
+                videoBtn.onclick = startVideoCall;
+                
+                // Add system message
+                const systemMessage = {
+                    message: 'Görüntülü görüşme sonlandırıldı.',
+                    is_admin: false,
+                    created_at: new Date().toISOString()
+                };
+                messages.push(systemMessage);
+                addMessageToDisplay(systemMessage);
+                scrollToBottom();
+            })
+            .catch(error => {
+                console.error('End video call error:', error);
+                videoBtn.disabled = false;
+                videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
+                videoBtn.style.background = '#28a745';
+                videoBtn.onclick = startVideoCall;
+            });
         }
         
         // Scroll to bottom
