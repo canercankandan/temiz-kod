@@ -219,6 +219,7 @@ func main() {
 		admin.GET("/support/messages/:sessionId", h.AdminGetSupportMessages)
 		admin.POST("/support/send/:sessionId", h.AdminSendSupportMessage)
 		admin.POST("/support/video-call-response", h.AdminVideoCallResponse)
+		admin.POST("/support/start-video-call", h.AdminStartVideoCall)
 		admin.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
 		admin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
 		admin.POST("/support/webrtc-signal", h.HandleAdminWebRTCSignal)

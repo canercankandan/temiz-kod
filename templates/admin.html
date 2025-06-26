@@ -394,6 +394,21 @@
                                             <small class="text-muted">JPG, PNG, GIF dosyaları kabul edilir</small>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Dinamik Özellikler -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label mb-0">Ürün Özellikleri</label>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addFeatureField()">
+                                                <i class="fas fa-plus me-1"></i>Özellik Ekle
+                                            </button>
+                                        </div>
+                                        <div id="featuresContainer">
+                                            <!-- Özellik alanları buraya dinamik olarak eklenecek -->
+                                        </div>
+                                        <small class="text-muted">Her ürün için farklı özellikler tanımlayabilirsiniz (örn: Garanti, Kurulum, Boyut vb.)</small>
+                                    </div>
+                                    
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-save me-2"></i>Ürünü Kaydet
                                     </button>
@@ -1181,6 +1196,48 @@ function saveOrderChanges() {
         alert('Bir hata oluştu!');
     });
 }
+
+// Dinamik özellik ekleme fonksiyonları
+let featureCounter = 0;
+
+function addFeatureField() {
+    const container = document.getElementById('featuresContainer');
+    const featureDiv = document.createElement('div');
+    featureDiv.className = 'row mb-2 feature-row';
+    featureDiv.id = `feature-${featureCounter}`;
+    
+    featureDiv.innerHTML = `
+        <div class="col-md-5">
+            <input type="text" class="form-control" name="features[feature_${featureCounter}_key]" 
+                   placeholder="Özellik adı (örn: Garanti, Kurulum, Boyut)" required>
+        </div>
+        <div class="col-md-5">
+            <input type="text" class="form-control" name="features[feature_${featureCounter}_value]" 
+                   placeholder="Özellik değeri (örn: 5 yıl, Ücretsiz, 50x30cm)" required>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFeatureField(${featureCounter})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(featureDiv);
+    featureCounter++;
+}
+
+function removeFeatureField(id) {
+    const featureDiv = document.getElementById(`feature-${id}`);
+    if (featureDiv) {
+        featureDiv.remove();
+    }
+}
+
+// Sayfa yüklendiğinde varsayılan özellik alanları ekle
+document.addEventListener('DOMContentLoaded', function() {
+    // İlk özellik alanını otomatik ekle
+    addFeatureField();
+});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

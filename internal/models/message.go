@@ -35,4 +35,5 @@ type VideoCallRequest struct {
 	Status       string    `json:"status" db:"status"` // pending, accepted, rejected, ended
 	RequestedAt  time.Time `json:"requested_at" db:"requested_at"`
 	RespondedAt  *time.Time `json:"responded_at" db:"responded_at"`
+	Initiator    string    `json:"initiator" db:"initiator"`
 } 

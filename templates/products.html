@@ -163,7 +163,8 @@
                                                 data-bs-toggle="modal" data-bs-target="#quickViewModal"
                                                 data-product-name="{{.Name}}" data-product-description="{{.Description}}"
                                                 data-product-price="{{.Price}}" data-product-category="{{.Category}}"
-                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
+                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}"
+                                                data-product-features="{{.Features}}">
                                             <i class="fas fa-eye me-2"></i>Ürünü İncele
                                         </button>
                                         <button class="btn btn-primary add-to-cart-btn" 
@@ -193,8 +194,8 @@
                             <div class="mb-2">
                                 <span class="badge bg-primary bg-opacity-10 text-primary">{{.Category}}</span>
                             </div>
-                            <h5 class="card-title fw-bold mb-3" style="color: #1e3a8a;">{{.Name}}</h5>
-                            <p class="card-text text-muted flex-grow-1 mb-3">{{.Description}}</p>
+                            <h5 class="card-title fw-bold mb-3" style="color: #000000;">{{.Name}}</h5>
+                            <p class="card-text text-dark flex-grow-1 mb-3">{{.Description}}</p>
                             
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -214,12 +215,39 @@
                                 </div>
                                 
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <small class="text-muted">
+                                    <small class="text-dark">
                                         <i class="fas fa-calendar me-1"></i>{{.CreatedAt.Format "02.01.2006"}}
                                     </small>
-                                    <small class="text-muted">
+                                    <small class="text-dark">
                                         <i class="fas fa-eye me-1"></i>1,234 görüntüleme
                                     </small>
+                                </div>
+                                
+                                <!-- Garanti Bilgisi -->
+                                <div class="mb-3">
+                                    {{if eq .Category "Yedek Parça"}}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-shield-alt text-warning me-2"></i>
+                                        <small class="text-dark fw-semibold">1 Yıl Garanti</small>
+                                    </div>
+                                    {{else}}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-shield-alt text-success me-2"></i>
+                                        <small class="text-dark fw-semibold">5 Yıl Garanti</small>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-tools text-info me-2"></i>
+                                        <small class="text-dark">Ücretsiz Kurulum</small>
+                                    </div>
+                                    {{end}}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-headset text-primary me-2"></i>
+                                        <small class="text-dark">24/7 Teknik Destek</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-certificate text-success me-2"></i>
+                                        <small class="text-dark">CE Sertifikalı</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -277,8 +305,8 @@
                                         </div>
                                         {{end}}
                                         <div>
-                                            <h6 class="mb-1 fw-semibold" style="color: #1e3a8a;">{{.Name}}</h6>
-                                            <small class="text-muted">{{.Description}}</small>
+                                            <h6 class="mb-1 fw-semibold" style="color: #000000;">{{.Name}}</h6>
+                                            <small class="text-dark">{{.Description}}</small>
                                         </div>
                                     </div>
                                 </td>
@@ -311,7 +339,8 @@
                                                 data-bs-toggle="modal" data-bs-target="#quickViewModal"
                                                 data-product-name="{{.Name}}" data-product-description="{{.Description}}"
                                                 data-product-price="{{.Price}}" data-product-category="{{.Category}}"
-                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
+                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}"
+                                                data-product-features="{{.Features}}">
                                             <i class="fas fa-eye me-1"></i>İncele
                                         </button>
                                         {{if gt .Stock 0}}
@@ -352,7 +381,7 @@
                     </div>
                     <div class="col-md-6">
                         <h4 id="modalProductName" class="fw-bold mb-3" style="color: #1e3a8a;"></h4>
-                        <p id="modalProductDescription" class="text-muted mb-3"></p>
+                        <p id="modalProductDescription" class="text-primary mb-3"></p>
                         <div class="mb-3">
                             <span class="badge bg-primary" id="modalProductCategory"></span>
                         </div>
@@ -360,15 +389,12 @@
                             <span class="text-success fw-bold fs-3" id="modalProductPrice"></span>
                         </div>
                         <div class="mb-3">
-                            <small class="text-muted">Stok: <span id="modalProductStock"></span> adet</small>
+                            <small class="text-primary">Stok: <span id="modalProductStock"></span> adet</small>
                         </div>
                         <div class="features mb-4">
-                            <h6 class="fw-semibold mb-2">Özellikler:</h6>
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-check text-success me-2"></i>5 Yıl Garanti</li>
-                                <li><i class="fas fa-check text-success me-2"></i>Ücretsiz Kurulum</li>
-                                <li><i class="fas fa-check text-success me-2"></i>24/7 Teknik Destek</li>
-                                <li><i class="fas fa-check text-success me-2"></i>CE Sertifikalı</li>
+                            <h6 class="fw-semibold mb-2" style="color: #1e3a8a;">Özellikler:</h6>
+                            <ul class="list-unstyled" id="modalProductFeatures">
+                                <!-- Dinamik özellikler buraya eklenecek -->
                             </ul>
                         </div>
                         <button class="btn btn-primary btn-lg w-100" id="modalAddToCart">
@@ -641,6 +667,9 @@ function initQuickViewModal() {
             document.getElementById('modalProductCategory').textContent = category;
             document.getElementById('modalProductStock').textContent = stock;
             
+            // Dinamik özellikleri yükle
+            loadProductFeatures(this.dataset.productFeatures, category);
+            
             const modalImage = document.getElementById('modalProductImage');
             if (image) {
                 modalImage.src = image;
@@ -653,6 +682,37 @@ function initQuickViewModal() {
     });
 }
 
+// Dinamik özellikleri yükle
+function loadProductFeatures(featuresJson, category) {
+    const featuresContainer = document.getElementById('modalProductFeatures');
+    let featuresHtml = '';
+    
+    // Varsayılan özellikler
+    if (category === 'Yedek Parça') {
+        featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>1 Yıl Garanti</li>';
+    } else {
+        featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>5 Yıl Garanti</li>';
+        featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>Ücretsiz Kurulum</li>';
+    }
+    
+    featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>24/7 Teknik Destek</li>';
+    featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>CE Sertifikalı</li>';
+    
+    // Dinamik özellikleri ekle
+    if (featuresJson) {
+        try {
+            const features = JSON.parse(featuresJson);
+            for (const [key, value] of Object.entries(features)) {
+                featuresHtml += `<li class="text-primary"><i class="fas fa-check text-success me-2"></i>${key}: ${value}</li>`;
+            }
+        } catch (e) {
+            console.error('Özellikler parse edilemedi:', e);
+        }
+    }
+    
+    featuresContainer.innerHTML = featuresHtml;
+}
+
 // View product buttons
 function initViewProductButtons() {
     document.querySelectorAll('.view-product-btn').forEach(btn => {
@@ -663,12 +723,16 @@ function initViewProductButtons() {
             const category = this.dataset.productCategory;
             const stock = this.dataset.productStock;
             const image = this.dataset.productImage;
+            const features = this.dataset.productFeatures; // Yeni özellik
             
             document.getElementById('modalProductName').textContent = name;
             document.getElementById('modalProductDescription').textContent = description;
             document.getElementById('modalProductPrice').textContent = price + ' ₺';
             document.getElementById('modalProductCategory').textContent = category;
             document.getElementById('modalProductStock').textContent = stock;
+            
+            // Dinamik özellikleri yükle
+            loadProductFeatures(features, category);
             
             const modalImage = document.getElementById('modalProductImage');
             if (image) {

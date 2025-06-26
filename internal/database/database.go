@@ -782,4 +782,38 @@ func (db *JSONDatabase) GetAllActiveVideoCallRequests() ([]models.VideoCallReque
 	return activeRequests, nil
 }
 
+// Yeni bir video görüşme talebi oluşturur (initiator ile)
+func (db *JSONDatabase) CreateVideoCallRequestWithInitiator(sessionID, username string, userID *int, initiator string) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// Check if there's already a pending request for this session
+	for _, req := range db.data.VideoCallRequests {
+		if req.SessionID == sessionID && req.Status == "pending" {
+			return errors.New("pending video call request already exists")
+		}
+	}
+
+	// Generate new ID
+	maxID := 0
+	for _, req := range db.data.VideoCallRequests {
+		if req.ID > maxID {
+			maxID = req.ID
+		}
+	}
+
+	newRequest := models.VideoCallRequest{
+		ID:          maxID + 1,
+		SessionID:   sessionID,
+		UserID:      userID,
+		Username:    username,
+		Status:      "pending",
+		RequestedAt: time.Now(),
+		Initiator:   initiator,
+	}
+
+	db.data.VideoCallRequests = append(db.data.VideoCallRequests, newRequest)
+	return db.saveData()
+}
+
  

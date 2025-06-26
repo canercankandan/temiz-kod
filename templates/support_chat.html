@@ -321,8 +321,12 @@ const callStatusText = document.getElementById('callStatusText');
 
 // Initialize chat
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('SessionID:', sessionID); // Debug log
     loadMessages();
     startPolling();
+    
+    // Start signaling polling for incoming admin calls
+    startSignalingPolling();
     
     // Check video call permissions on load
     updateVideoCallButton();
@@ -351,6 +355,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Video call event listeners
     videoCallBtn.addEventListener('click', startVideoCall);
+    
+    // Toggle mute and video buttons event listeners
+    if (toggleMuteBtn) {
+        toggleMuteBtn.addEventListener('click', toggleMute);
+    }
+    if (toggleVideoBtn) {
+        toggleVideoBtn.addEventListener('click', toggleVideo);
+    }
+    
+    // Sayfa ilk açıldığında Görüntülü Ara butonunu görünür yap
+    videoCallBtn.style.display = 'inline-block';
+    
+    // End call button event listener
+    const endCallBtn = document.getElementById('endCallBtn');
+    if (endCallBtn) {
+        endCallBtn.addEventListener('click', endVideoCall);
+    }
 });
 
 // Load existing messages
@@ -587,6 +608,8 @@ async function startVideoCall() {
         
         // Set video source
         localVideo.srcObject = localStream;
+        console.log('Local stream set to video element');
+        console.log('Local stream tracks:', localStream.getTracks());
         
         // Safari-specific video handling
         if (isSafari) {
@@ -614,12 +637,33 @@ async function startVideoCall() {
         
         // Initialize WebRTC peer connection
         await initializePeerConnection();
+        console.log('Peer connection initialized, connection state:', peerConnection.connectionState);
         
         // Start signaling polling
         startSignalingPolling();
         
+        // Create and send offer to admin
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        await sendSignalingMessage({
+            type: 'offer',
+            sdp: offer
+        });
+        
+        console.log('Customer sent offer to admin');
+        
         // Add system message
         addSystemMessage(`Görüntülü görüşme başlatıldı${isSafari ? ' (Safari)' : ''}. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...`);
+        
+        // Görüşme başlatıldıktan sonra endCallBtn'e event listener ekle
+        setTimeout(() => {
+            const endCallBtn = document.getElementById('endCallBtn');
+            if (endCallBtn && !endCallBtn.hasAttribute('data-listener')) {
+                endCallBtn.addEventListener('click', endVideoCall);
+                endCallBtn.setAttribute('data-listener', 'true');
+            }
+        }, 500);
         
     } catch (error) {
         console.error('Video call başlatılamadı:', error);
@@ -747,9 +791,54 @@ async function initializePeerConnection() {
         
         // Handle remote stream
         peerConnection.ontrack = (event) => {
-            console.log('Remote stream received');
-            remoteStream = event.streams[0];
-            remoteVideo.srcObject = remoteStream;
+            console.log('=== REMOTE STREAM EVENT ===');
+            console.log('Event:', event);
+            console.log('Streams:', event.streams);
+            console.log('Tracks:', event.track);
+            
+            if (event.streams && event.streams.length > 0) {
+                remoteStream = event.streams[0];
+                console.log('Remote stream set:', remoteStream);
+                console.log('Remote stream tracks:', remoteStream.getTracks());
+                
+                // Set remote video source
+                if (remoteVideo) {
+                    remoteVideo.srcObject = remoteStream;
+                    console.log('Remote video srcObject set');
+                    
+                    // Force video to play
+                    remoteVideo.play().then(() => {
+                        console.log('Remote video playing successfully');
+                        callStatusText.textContent = 'Bağlantı kuruldu - Video aktif';
+                    }).catch(error => {
+                        console.error('Remote video play error:', error);
+                    });
+                    
+                    // Debug events
+                    remoteVideo.onloadedmetadata = () => {
+                        console.log('Remote video metadata loaded');
+                        console.log('Remote video dimensions:', remoteVideo.videoWidth, 'x', remoteVideo.videoHeight);
+                    };
+                    
+                    remoteVideo.onplay = () => {
+                        console.log('Remote video started playing');
+                        callStatusText.textContent = 'Bağlantı kuruldu - Video aktif';
+                    };
+                    
+                    remoteVideo.onerror = (error) => {
+                        console.error('Remote video error:', error);
+                    };
+                    
+                    remoteVideo.oncanplay = () => {
+                        console.log('Remote video can play');
+                    };
+                } else {
+                    console.error('Remote video element not found!');
+                }
+            } else {
+                console.error('No streams in ontrack event');
+            }
+            
             callStatusText.textContent = 'Bağlantı kuruldu';
         };
         
@@ -813,39 +902,179 @@ async function sendSignalingMessage(message) {
 async function handleSignalingMessage(message) {
     try {
         console.log('Handling signaling message:', message);
+        
         switch (message.type) {
-            case 'offer':
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                sendSignalingMessage({
-                    type: 'answer',
-                    answer: answer
+            case 'call-accepted':
+                console.log('Call accepted by admin');
+                callStatusText.textContent = 'Admin kabul etti, bağlantı kuruluyor...';
+                
+                // Create offer for admin
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                // Send offer to admin
+                await sendSignalingMessage({
+                    type: 'offer',
+                    sdp: offer
                 });
+                break;
+                
+            case 'admin-call-request':
+                console.log('Admin video call request received');
+                
+                // Show admin call request notification
+                showAdminCallRequest();
+                break;
+                
+            case 'offer':
+                console.log('Received offer from admin:', message);
+                console.log('Offer SDP:', message.sdp);
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(message.sdp));
+                console.log('Remote description set successfully');
+                
+                // Create answer
+                const answer = await peerConnection.createAnswer();
+                console.log('Created answer:', answer);
+                await peerConnection.setLocalDescription(answer);
+                console.log('Local description set successfully');
+                
+                // Send answer to admin
+                await sendSignalingMessage({
+                    type: 'answer',
+                    sdp: answer
+                });
+                console.log('Answer sent to admin');
                 break;
                 
             case 'answer':
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                console.log('Received answer from admin:', message);
+                console.log('Answer SDP:', message.sdp);
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(message.sdp));
+                console.log('Remote description updated with answer');
                 break;
                 
             case 'ice-candidate':
-                await peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+                console.log('Received ICE candidate from admin');
+                if (message.candidate) {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(message.candidate));
+                }
                 break;
                 
-            case 'call-accepted':
-                // Admin accepted the call, now create and send offer
-                console.log('Call accepted by admin, creating offer...');
-                const offer = await peerConnection.createOffer();
-                await peerConnection.setLocalDescription(offer);
-                sendSignalingMessage({
-                    type: 'offer',
-                    offer: offer
-                });
-                addSystemMessage('Admin görüşmeyi kabul etti. Bağlantı kuruluyor...');
-                break;
+            default:
+                console.log('Unknown signaling message type:', message.type);
         }
     } catch (error) {
         console.error('Error handling signaling message:', error);
+    }
+}
+
+// Show admin call request notification
+function showAdminCallRequest() {
+    // Create notification modal
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            margin: 20px;
+        ">
+            <div style="margin-bottom: 20px;">
+                <i class="fas fa-video" style="font-size: 48px; color: #007bff; margin-bottom: 15px;"></i>
+                <h4 style="color: #333; margin: 0;">Admin Video Görüşme İstiyor</h4>
+            </div>
+            <p style="color: #666; margin-bottom: 25px; line-height: 1.6;">
+                Destek temsilcisi sizinle görüntülü görüşme yapmak istiyor.
+            </p>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button onclick="acceptAdminCall()" style="
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 500;
+                ">Kabul Et</button>
+                <button onclick="rejectAdminCall()" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: 500;
+                ">Reddet</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Store modal reference
+    window.adminCallModal = modal;
+}
+
+// Accept admin call
+async function acceptAdminCall() {
+    try {
+        // Remove modal
+        if (window.adminCallModal) {
+            document.body.removeChild(window.adminCallModal);
+            window.adminCallModal = null;
+        }
+        
+        // Start video call
+        await startVideoCall();
+        
+        // Send acceptance to admin
+        await sendSignalingMessage({
+            type: 'call-accepted'
+        });
+        
+        addSystemMessage('Admin video görüşme talebini kabul ettiniz.');
+        
+    } catch (error) {
+        console.error('Error accepting admin call:', error);
+        alert('Video görüşme başlatılamadı: ' + error.message);
+    }
+}
+
+// Reject admin call
+async function rejectAdminCall() {
+    try {
+        // Remove modal
+        if (window.adminCallModal) {
+            document.body.removeChild(window.adminCallModal);
+            window.adminCallModal = null;
+        }
+        
+        // Send rejection to admin
+        await sendSignalingMessage({
+            type: 'call-rejected'
+        });
+        
+        addSystemMessage('Admin video görüşme talebini reddettiniz.');
+        
+    } catch (error) {
+        console.error('Error rejecting admin call:', error);
     }
 }
 
@@ -1266,7 +1495,7 @@ let signalingPollInterval;
 function startSignalingPolling() {
     // Poll for signaling messages every 1 second
     signalingPollInterval = setInterval(async () => {
-        if (isCallActive && sessionID) {
+        if (sessionID) { // Always poll if sessionID exists, not just when call is active
             await pollSignalingMessages();
         }
     }, 1000);
@@ -1281,10 +1510,12 @@ function stopSignalingPolling() {
 
 async function pollSignalingMessages() {
     try {
+        console.log('Polling signaling messages for sessionID:', sessionID); // Debug log
         const response = await fetch(`/support/webrtc-signals/${sessionID}`);
         const data = await response.json();
         
         if (data.success && data.messages && data.messages.length > 0) {
+            console.log('Received signaling messages:', data.messages); // Debug log
             for (const message of data.messages) {
                 await handleSignalingMessage(message);
             }

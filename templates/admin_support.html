@@ -30,6 +30,19 @@
                         <i class="fas fa-users me-2"></i>Aktif Sohbetler
                         <span class="badge bg-dark text-white ms-2" id="sessionCount">{{len .sessions}}</span>
                     </h5>
+                    <!-- Arama Kutusu -->
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0" id="sessionSearchInput" 
+                                   placeholder="Kullanıcı adı ara..." onkeyup="filterSessions()">
+                            <button class="btn btn-outline-secondary border-start-0" type="button" onclick="clearSearch()" title="Aramayı Temizle">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0" style="max-height: 600px; overflow-y: auto; background-color: white;">
                     <div id="sessionsList">
@@ -100,6 +113,14 @@
                                 <i class="fas fa-times me-1"></i>Reddet
                             </button>
                             <button id="endAdminCallBtn" class="btn btn-secondary btn-sm" style="display: none;" title="Görüşmeyi Sonlandır">
+                                <i class="fas fa-phone-slash me-1"></i>Sonlandır
+                            </button>
+                        </div>
+                        <div id="adminVideoCallControls" style="display: none;">
+                            <button id="startVideoCallBtn" class="btn btn-success btn-sm me-2" title="Müşteriye Video Görüşme Başlat">
+                                <i class="fas fa-video me-1"></i>Video Görüşme Başlat
+                            </button>
+                            <button id="endAdminCallBtn2" class="btn btn-secondary btn-sm" style="display: none;" title="Görüşmeyi Sonlandır">
                                 <i class="fas fa-phone-slash me-1"></i>Sonlandır
                             </button>
                         </div>
@@ -364,6 +385,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, small {
 <script>
 let currentSessionID = null;
 let pollInterval = null;
+let searchTerm = ''; // Arama terimi için global değişken
 
 // Video Call Variables
 let adminLocalStream = null;
@@ -394,6 +416,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('endAdminCallBtn').addEventListener('click', endAdminVideoCall);
     document.getElementById('adminToggleMuteBtn').addEventListener('click', adminToggleMute);
     document.getElementById('adminToggleVideoBtn').addEventListener('click', adminToggleVideo);
+    
+    // Admin video call başlatma
+    document.getElementById('startVideoCallBtn').addEventListener('click', startAdminVideoCall);
+    document.getElementById('endAdminCallBtn2').addEventListener('click', endAdminVideoCall);
 });
 
 // Load chat for selected session
@@ -406,6 +432,10 @@ function loadChat(sessionID, username) {
         <small class="ms-2">(${sessionID.substring(0, 8)}...)</small>
     `;
     document.getElementById('chatInput').style.display = 'block';
+    
+    // Show admin video call controls
+    document.getElementById('adminVideoCallControls').style.display = 'block';
+    document.getElementById('videoCallControls').style.display = 'none';
     
     // Mark session as active
     document.querySelectorAll('.session-item').forEach(item => {
@@ -566,12 +596,46 @@ function loadSessions() {
     });
 }
 
+// Arama fonksiyonu
+function filterSessions() {
+    const searchInput = document.getElementById('sessionSearchInput');
+    searchTerm = searchInput.value.toLowerCase().trim();
+    
+    // Tüm session itemları al
+    const sessionItems = document.querySelectorAll('.session-item');
+    
+    sessionItems.forEach(item => {
+        const usernameElement = item.querySelector('h6');
+        if (usernameElement) {
+            const username = usernameElement.textContent.toLowerCase();
+            
+            if (searchTerm === '' || username.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        }
+    });
+    
+    // Görünen session sayısını güncelle
+    const visibleSessions = document.querySelectorAll('.session-item[style*="display: block"], .session-item:not([style*="display: none"])');
+    const sessionCount = document.getElementById('sessionCount');
+    sessionCount.textContent = visibleSessions.length;
+}
+
+// Arama temizleme fonksiyonu
+function clearSearch() {
+    const searchInput = document.getElementById('sessionSearchInput');
+    searchInput.value = '';
+    searchTerm = '';
+    filterSessions();
+    searchInput.focus();
+}
+
 // Update sessions list
 function updateSessionsList(sessions) {
     const sessionsList = document.getElementById('sessionsList');
     const sessionCount = document.getElementById('sessionCount');
-    
-    sessionCount.textContent = sessions.length;
     
     if (sessions.length === 0) {
         sessionsList.innerHTML = `
@@ -580,10 +644,13 @@ function updateSessionsList(sessions) {
                 <p>Henüz aktif sohbet yok</p>
             </div>
         `;
+        sessionCount.textContent = '0';
         return;
     }
     
     sessionsList.innerHTML = '';
+    let visibleCount = 0;
+    
     sessions.forEach(session => {
         const sessionDiv = document.createElement('div');
         sessionDiv.className = 'session-item p-3 border-bottom';
@@ -632,7 +699,18 @@ function updateSessionsList(sessions) {
         `;
         
         sessionsList.appendChild(sessionDiv);
+        
+        // Arama terimine göre görünürlüğü kontrol et
+        if (searchTerm === '' || session.username.toLowerCase().includes(searchTerm)) {
+            sessionDiv.style.display = 'block';
+            visibleCount++;
+        } else {
+            sessionDiv.style.display = 'none';
+        }
     });
+    
+    // Görünen session sayısını güncelle
+    sessionCount.textContent = visibleCount;
 }
 
 // Cleanup on page unload
@@ -718,6 +796,81 @@ async function rejectVideoCall(sessionId, username) {
     // Add system message if this is current session
     if (sessionId === currentSessionID) {
         addAdminSystemMessage(`${username} ile video görüşme talebi reddedildi.`);
+    }
+}
+
+// Admin video call başlatma
+async function startAdminVideoCall() {
+    if (!currentSessionID) {
+        alert('Önce bir sohbet seçin');
+        return;
+    }
+    
+    try {
+        // Get session info
+        const sessionElement = document.querySelector(`[data-session-id="${currentSessionID}"]`);
+        const username = sessionElement.querySelector('h6').textContent;
+        
+        // Send admin video call request to backend
+        const response = await fetch('/admin/support/start-video-call', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: currentSessionID
+            })
+        });
+        
+        const data = await response.json();
+        if (!data.success) {
+            alert('Video call talebi gönderilemedi: ' + data.error);
+            return;
+        }
+        
+        // Start video call
+        adminLocalStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
+        
+        document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
+        
+        // Show video call area
+        document.getElementById('adminVideoCallArea').style.display = 'block';
+        document.getElementById('endAdminCallBtn').style.display = 'inline-block';
+        document.getElementById('endAdminCallBtn2').style.display = 'inline-block';
+        document.getElementById('startVideoCallBtn').style.display = 'none';
+        
+        // Adjust chat area height
+        document.getElementById('chatMessages').style.height = '300px';
+        
+        isAdminCallActive = true;
+        document.getElementById('adminCallStatusText').textContent = 'Video görüşme başlatılıyor...';
+        
+        // Initialize WebRTC peer connection
+        await initializeAdminPeerConnection();
+        
+        // Start signaling polling
+        startAdminSignalingPolling();
+        
+        // Create and send offer to customer
+        const offer = await adminPeerConnection.createOffer();
+        await adminPeerConnection.setLocalDescription(offer);
+        
+        await sendAdminSignalingMessage({
+            type: 'offer',
+            sdp: offer
+        });
+        
+        console.log('Admin sent offer to customer');
+        
+        // Add system message
+        addAdminSystemMessage(`${username} ile video görüşme başlatıldı. Müşteri yanıtını bekliyor...`);
+        
+    } catch (error) {
+        console.error('Admin video call başlatılamadı:', error);
+        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
     }
 }
 
@@ -896,18 +1049,18 @@ async function handleAdminSignalingMessage(message) {
         switch (message.type) {
             case 'offer':
                 // Customer sent offer, create answer
-                await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+                await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.sdp));
                 const answer = await adminPeerConnection.createAnswer();
                 await adminPeerConnection.setLocalDescription(answer);
                 sendAdminSignalingMessage({
                     type: 'answer',
-                    answer: answer
+                    sdp: answer
                 });
                 console.log('Admin sent answer to customer offer');
                 break;
                 
             case 'answer':
-                await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+                await adminPeerConnection.setRemoteDescription(new RTCSessionDescription(message.sdp));
                 break;
                 
             case 'ice-candidate':
@@ -984,26 +1137,34 @@ function checkVideoCallRequests() {
                 const sessionId = request.session_id;
                 const username = request.username || 'Misafir';
                 
-                // Show video call buttons for this session
-                const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
-                const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
-                
-                if (buttonsDiv) {
-                    buttonsDiv.style.display = 'block';
-                }
-                
-                if (notificationDiv) {
-                    notificationDiv.style.display = 'block';
-                    // Update notification text with username
-                    const alertDiv = notificationDiv.querySelector('.alert');
-                    if (alertDiv) {
-                        alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
+                // Sadece müşteri arama başlattıysa butonları göster
+                if (request.initiator !== 'admin') {
+                    // Show video call buttons for this session
+                    const buttonsDiv = document.getElementById(`videoCallButtons-${sessionId}`);
+                    const notificationDiv = document.getElementById(`videoCallNotification-${sessionId}`);
+                    
+                    if (buttonsDiv) {
+                        buttonsDiv.style.display = 'block';
                     }
-                }
-                
-                // Add system message if this is a new request for current session
-                if (sessionId === currentSessionID && !isAdminCallActive) {
-                    addAdminSystemMessage(`${username} video görüşme talep ediyor!`);
+                    
+                    if (notificationDiv) {
+                        notificationDiv.style.display = 'block';
+                        // Update notification text with username
+                        const alertDiv = notificationDiv.querySelector('.alert');
+                        if (alertDiv) {
+                            alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
+                        }
+                    }
+                    
+                    // Add system message if this is a new request for current session
+                    if (sessionId === currentSessionID && !isAdminCallActive) {
+                        addAdminSystemMessage(`${username} video görüşme talep ediyor!`);
+                    }
+                } else {
+                    // Admin arama başlattıysa butonları gösterme, sadece bilgi mesajı göster
+                    if (sessionId === currentSessionID && !isAdminCallActive) {
+                        addAdminSystemMessage(`Video görüşme başlatıldı, müşteri yanıtını bekliyor...`);
+                    }
                 }
             });
             

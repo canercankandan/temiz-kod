@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -58,6 +59,7 @@ type DBInterface interface {
 	UpdateVideoCallRequestStatus(sessionID, status string) error
 	EndVideoCallRequest(sessionID string) error
 	GetAllActiveVideoCallRequests() ([]models.VideoCallRequest, error)
+	CreateVideoCallRequestWithInitiator(sessionID, username string, userID *int, initiator string) error
 }
 
 // Handler, HTTP isteklerini yönetir.
@@ -375,6 +377,39 @@ func (h *Handler) AddProduct(c *gin.Context) {
 		imagePath = "/static/uploads/" + filename
 	}
 
+	// Dinamik özellikleri manuel olarak parse et
+	features := make(map[string]string)
+	formValues := c.Request.PostForm
+	
+	for key, values := range formValues {
+		if len(values) > 0 && strings.HasPrefix(key, "features[") && strings.Contains(key, "_key") {
+			// Key'i çıkar
+			keyValue := values[0]
+			// Value'yu bul
+			valueKey := strings.Replace(key, "_key", "_value", 1)
+			if valueValues, exists := formValues[valueKey]; exists && len(valueValues) > 0 {
+				valueValue := valueValues[0]
+				if keyValue != "" && valueValue != "" {
+					features[keyValue] = valueValue
+				}
+			}
+		}
+	}
+
+	// Dinamik özellikleri JSON'a çevir
+	var featuresJSON string
+	if len(features) > 0 {
+		featuresBytes, err := json.Marshal(features)
+		if err != nil {
+			log.Printf("Error marshaling features: %v", err)
+			c.HTML(http.StatusInternalServerError, "admin.html", gin.H{
+				"error": "Özellikler kaydedilirken hata oluştu",
+			})
+			return
+		}
+		featuresJSON = string(featuresBytes)
+	}
+
 	product := &models.Product{
 		Name:        form.Name,
 		Description: form.Description,
@@ -382,6 +417,7 @@ func (h *Handler) AddProduct(c *gin.Context) {
 		Image:       imagePath,
 		Category:    form.Category,
 		Stock:       form.Stock,
+		Features:    featuresJSON,
 	}
 
 	if err := h.db.CreateProduct(product); err != nil {
@@ -1683,10 +1719,30 @@ func (h *Handler) AdminGetVideoCallRequests(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talepleri getirilemedi"})
 		return
 	}
-	
+	// Her request'e initiator ekle
+	var result []map[string]interface{}
+	for _, r := range requests {
+		item := map[string]interface{}{
+			"id": r.ID,
+			"session_id": r.SessionID,
+			"user_id": r.UserID,
+			"username": r.Username,
+			"status": r.Status,
+			"requested_at": r.RequestedAt,
+			"responded_at": r.RespondedAt,
+		}
+		if r.Initiator != "" {
+			item["initiator"] = r.Initiator
+		} else if r.Username == "Admin" {
+			item["initiator"] = "admin"
+		} else {
+			item["initiator"] = "user"
+		}
+		result = append(result, item)
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
-		"requests": requests,
+		"requests": result,
 	})
 }
 
@@ -1796,4 +1852,53 @@ func (h *Handler) GetAdminWebRTCSignals(c *gin.Context) {
 		"success":  true,
 		"messages": messages,
 	})
+}
+
+// AdminStartVideoCall - Admin video call başlatma
+func (h *Handler) AdminStartVideoCall(c *gin.Context) {
+	var request struct {
+		SessionID string `json:"session_id"`
+	}
+	
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
+		return
+	}
+	
+	if request.SessionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
+		return
+	}
+	
+	// Check if session exists
+	session, err := h.db.GetOrCreateSupportSession(request.SessionID, "Admin", nil)
+	if err != nil {
+		log.Printf("AdminStartVideoCall - Error getting session: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Session bulunamadı"})
+		return
+	}
+	
+	// Create video call request (username 'Admin' ve initiator 'admin' olarak kaydet)
+	err = h.db.CreateVideoCallRequestWithInitiator(request.SessionID, session.Username, session.UserID, "admin")
+	if err != nil {
+		log.Printf("AdminStartVideoCall - Error creating video call request: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video call talebi oluşturulamadı"})
+		return
+	}
+	
+	// Send admin-call-request signal to customer
+	signalingMutex.Lock()
+	key := "admin_to_customer_" + request.SessionID
+	if signalingMessages[key] == nil {
+		signalingMessages[key] = []interface{}{}
+	}
+	signalingMessages[key] = append(signalingMessages[key], map[string]interface{}{
+		"type":      "admin-call-request",
+		"timestamp": time.Now().Unix(),
+	})
+	signalingMutex.Unlock()
+	
+	log.Printf("AdminStartVideoCall - Video call request sent to session %s", request.SessionID)
+	
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video call talebi gönderildi"})
 } 
