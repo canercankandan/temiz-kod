@@ -17,9 +17,6 @@
                             <button id="videoCallBtn" class="btn btn-light btn-sm me-2" title="Görüntülü Görüşmeye Geç">
                                 <i class="fas fa-video me-1"></i>Görüntülü Görüşme
                             </button>
-                            <button id="endCallBtn" class="btn btn-danger btn-sm" style="display: none;" title="Görüşmeyi Sonlandır">
-                                <i class="fas fa-phone-slash me-1"></i>Sonlandır
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -29,8 +26,8 @@
                     <div id="videoCallArea" class="video-call-area" style="display: none; height: 300px; background: #000; position: relative;">
                         <video id="localVideo" autoplay muted style="width: 150px; height: 100px; position: absolute; top: 10px; right: 10px; border: 2px solid #fff; border-radius: 8px; z-index: 10;"></video>
                         <video id="remoteVideo" autoplay style="width: 100%; height: 100%; object-fit: cover;"></video>
-                        <div class="video-controls" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10;">
-                            <button id="toggleMuteBtn" class="btn btn-secondary btn-sm me-2" title="Mikrofonu Aç/Kapat">
+                        <div class="video-controls" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; flex-direction: row; gap: 10px;">
+                            <button id="toggleMuteBtn" class="btn btn-secondary btn-sm" title="Mikrofonu Aç/Kapat">
                                 <i class="fas fa-microphone"></i>
                             </button>
                             <button id="toggleVideoBtn" class="btn btn-secondary btn-sm" title="Kamerayı Aç/Kapat">
@@ -304,7 +301,6 @@ const chatMessages = document.getElementById('chatMessages');
 const messageInput = document.getElementById('messageInput');
 const sendButton = document.getElementById('sendButton');
 const videoCallBtn = document.getElementById('videoCallBtn');
-const endCallBtn = document.getElementById('endCallBtn');
 const videoCallArea = document.getElementById('videoCallArea');
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
@@ -344,9 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Video call event listeners
     videoCallBtn.addEventListener('click', startVideoCall);
-    endCallBtn.addEventListener('click', endVideoCall);
-    toggleMuteBtn.addEventListener('click', toggleMute);
-    toggleVideoBtn.addEventListener('click', toggleVideo);
 });
 
 // Load existing messages
@@ -594,7 +587,6 @@ async function startVideoCall() {
         // Show video call area
         videoCallArea.style.display = 'block';
         videoCallBtn.style.display = 'none';
-        endCallBtn.style.display = 'inline-block';
         
         // Adjust chat area height for mobile
         if (isMobile) {
@@ -653,7 +645,6 @@ async function endVideoCall() {
         // Hide video call area
         videoCallArea.style.display = 'none';
         videoCallBtn.style.display = 'inline-block';
-        endCallBtn.style.display = 'none';
         
         // Reset chat area height
         chatMessages.style.height = '400px';
