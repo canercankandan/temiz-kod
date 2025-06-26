@@ -248,20 +248,32 @@
         function startVideoCall() {
             const videoBtn = document.getElementById('videoCallBtn');
             videoBtn.disabled = true;
-            videoBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Gönderiliyor...';
+            videoBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Kamera Açılıyor...';
             
-            console.log('🎥 Video call request gönderiliyor... Session ID:', sessionID);
+            console.log('🎥 Video call başlatılıyor... Session ID:', sessionID);
             
-            // Send video call request
-            fetch('/support/video-call-request', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    session_id: sessionID,
-                    action: 'start'
-                })
+            // First try to get camera access
+            navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            })
+            .then(stream => {
+                console.log('📹 Kamera erişimi başarılı!');
+                
+                // Stop the stream immediately (we just needed permission)
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Now send video call request
+                return fetch('/support/video-call-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionID,
+                        action: 'start'
+                    })
+                });
             })
             .then(response => {
                 console.log('📡 Response status:', response.status);
@@ -289,7 +301,20 @@
             })
             .catch(error => {
                 console.error('❌ Video call error:', error);
-                alert('Video görüşme talebi gönderilemedi: ' + error.message);
+                
+                let errorMessage = 'Video görüşme başlatılamadı. ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Lütfen kamera ve mikrofon izinlerini verin.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'Kamera veya mikrofon bulunamadı.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                alert(errorMessage);
                 resetVideoCallButton();
             });
         }

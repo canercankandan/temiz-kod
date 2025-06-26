@@ -642,6 +642,17 @@ async function acceptVideoCall(sessionId, username) {
     try {
         console.log('✅ Video call kabul ediliyor:', sessionId, username);
         
+        // First try to get camera access
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
+        
+        console.log('📹 Admin kamera erişimi başarılı!');
+        
+        // Stop the stream immediately (we just needed permission)
+        stream.getTracks().forEach(track => track.stop());
+        
         // Send acceptance to customer
         const response = await fetch('/admin/support/video-call-response', {
             method: 'POST',
@@ -677,7 +688,20 @@ async function acceptVideoCall(sessionId, username) {
         
     } catch (error) {
         console.error('❌ Accept video call error:', error);
-        alert('Video görüşme kabul edilirken hata oluştu');
+        
+        let errorMessage = 'Video görüşme kabul edilemedi. ';
+        
+        if (error.name === 'NotAllowedError') {
+            errorMessage += 'Lütfen kamera ve mikrofon izinlerini verin.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage += 'Kamera veya mikrofon bulunamadı.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage += 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
     }
 }
 
