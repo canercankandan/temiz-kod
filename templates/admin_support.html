@@ -1131,8 +1131,8 @@ function loadAdminSessions() {
 // Initialize admin support functionality
 document.addEventListener('DOMContentLoaded', function() {
     loadAdminSessions();
-    setInterval(loadAdminSessions, 5000);
-    setInterval(checkVideoCallRequests, 3000);
+    setInterval(loadAdminSessions, 3000); // Her 3 saniyede bir
+    setInterval(checkVideoCallRequests, 2000); // Her 2 saniyede bir video call request kontrolü
 });
 </script>
 </body>

@@ -250,47 +250,77 @@
             videoBtn.disabled = true;
             videoBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Başlatılıyor...';
             
-            // Request camera and microphone
-            navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
+            console.log('🎥 Video call başlatılıyor... Session ID:', sessionID);
+            
+            // First send video call request
+            fetch('/support/video-call-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session_id: sessionID,
+                    action: 'start'
+                })
             })
-            .then(stream => {
-                // Send video call request
-                return fetch('/support/video-call-request', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        session_id: sessionID,
-                        action: 'start'
-                    })
-                });
+            .then(response => {
+                console.log('📡 Video call request response status:', response.status);
+                return response.json();
             })
-            .then(response => response.json())
             .then(data => {
+                console.log('📞 Video call request response:', data);
                 if (data.success) {
-                    videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüşme Aktif';
-                    videoBtn.style.background = '#dc3545';
-                    videoBtn.onclick = endVideoCall;
+                    console.log('✅ Video call request sent successfully');
                     
-                    // Add system message
-                    const systemMessage = {
-                        message: 'Görüntülü görüşme başlatıldı. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...',
-                        is_admin: false,
-                        created_at: new Date().toISOString()
-                    };
-                    messages.push(systemMessage);
-                    addMessageToDisplay(systemMessage);
-                    scrollToBottom();
+                    // Now try to get camera access
+                    return navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: true
+                    });
                 } else {
-                    throw new Error(data.error);
+                    throw new Error(data.error || 'Video call request failed');
                 }
             })
+            .then(stream => {
+                console.log('📹 Camera access granted');
+                
+                // Update button
+                videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüşme Aktif';
+                videoBtn.style.background = '#dc3545';
+                videoBtn.onclick = endVideoCall;
+                
+                // Add system message
+                const systemMessage = {
+                    message: 'Görüntülü görüşme başlatıldı. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...',
+                    is_admin: false,
+                    created_at: new Date().toISOString()
+                };
+                messages.push(systemMessage);
+                addMessageToDisplay(systemMessage);
+                scrollToBottom();
+                
+                // Stop the stream immediately (we just needed permission)
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Start polling for video call status
+                startVideoCallStatusPolling();
+            })
             .catch(error => {
-                console.error('Video call error:', error);
-                alert('Video görüşme başlatılamadı: ' + error.message);
+                console.error('❌ Video call error:', error);
+                
+                let errorMessage = 'Video görüşme başlatılamadı. ';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += 'Lütfen kamera ve mikrofon izinlerini verin.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += 'Kamera veya mikrofon bulunamadı.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                alert(errorMessage);
                 videoBtn.disabled = false;
                 videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
             });
@@ -350,6 +380,54 @@
             setInterval(() => {
                 loadMessages();
             }, 3000);
+        }
+        
+        // Start polling for video call status
+        function startVideoCallStatusPolling() {
+            if (window.videoCallStatusInterval) {
+                clearInterval(window.videoCallStatusInterval);
+            }
+            
+            window.videoCallStatusInterval = setInterval(() => {
+                checkVideoCallStatus();
+            }, 3000); // Her 3 saniyede bir kontrol et
+        }
+        
+        // Check video call status
+        function checkVideoCallStatus() {
+            fetch(`/support/video-call-status/${sessionID}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('📊 Video call status:', data);
+                if (data.success && data.has_request) {
+                    const request = data.request;
+                    console.log('📞 Video call request status:', request.status);
+                    
+                    if (request.status === 'accepted') {
+                        // Admin accepted the call
+                        clearInterval(window.videoCallStatusInterval);
+                        addSystemMessage('Destek temsilcisi video görüşmeyi kabul etti!');
+                        // TODO: Start actual video call
+                    } else if (request.status === 'rejected') {
+                        // Admin rejected the call
+                        clearInterval(window.videoCallStatusInterval);
+                        addSystemMessage('Destek temsilcisi video görüşmeyi reddetti.');
+                        resetVideoCallButton();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error checking video call status:', error);
+            });
+        }
+        
+        // Reset video call button
+        function resetVideoCallButton() {
+            const videoBtn = document.getElementById('videoCallBtn');
+            videoBtn.disabled = false;
+            videoBtn.innerHTML = '<i class="fas fa-video me-2"></i>Görüntülü Görüşme';
+            videoBtn.style.background = '#007bff';
+            videoBtn.onclick = startVideoCall;
         }
     </script>
 </body>
