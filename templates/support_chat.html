@@ -244,6 +244,19 @@
             });
         }
         
+        // Add system message
+        function addSystemMessage(message) {
+            const systemMessage = {
+                message: message,
+                is_admin: false,
+                username: 'Sistem',
+                created_at: new Date().toISOString()
+            };
+            messages.push(systemMessage);
+            addMessageToDisplay(systemMessage);
+            scrollToBottom();
+        }
+        
         // Start video call
         function startVideoCall() {
             const videoBtn = document.getElementById('videoCallBtn');
