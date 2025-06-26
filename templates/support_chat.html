@@ -365,20 +365,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Load existing messages
 function loadMessages() {
+    console.log('📥 Mesajlar yükleniyor...');
+    
     fetch('/support/messages', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('📡 Messages response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
     .then(data => {
+        console.log('✅ Messages loaded successfully:', data);
+        
         if (data.success) {
             displayMessages(data.messages);
+        } else {
+            console.error('❌ Messages loading failed:', data.error);
         }
     })
     .catch(error => {
-        console.error('Error loading messages:', error);
+        console.error('❌ Error loading messages:', error);
+        
+        // Show user-friendly error message
+        if (error.message.includes('502')) {
+            console.error('🔧 502 Bad Gateway - Sunucu geçici olarak kullanılamıyor');
+            // Don't show alert for 502 errors during polling
+        } else if (error.message.includes('Failed to fetch')) {
+            console.error('🌐 Network error - İnternet bağlantısını kontrol edin');
+        } else {
+            console.error('❌ Unknown error:', error.message);
+        }
     });
 }
 
@@ -524,23 +548,31 @@ function scrollToBottom() {
 
 // Start polling for new messages
 function startPolling() {
+    console.log('🔄 Polling başlatılıyor...');
+    
+    // Clear existing interval
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
+    
     pollInterval = setInterval(() => {
         loadMessages();
-    }, 3000); // Poll every 3 seconds
+    }, 5000); // Poll every 5 seconds (increased from 3)
 }
 
 // Stop polling when page is hidden
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
+        console.log('📱 Sayfa gizlendi, polling durduruluyor...');
         clearInterval(pollInterval);
     } else {
+        console.log('📱 Sayfa görünür oldu, polling yeniden başlatılıyor...');
         startPolling();
     }
 });
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', function() {
-    clearInterval(pollInterval);
     if (isCallActive) {
         endVideoCall();
     }
