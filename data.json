@@ -876,6 +876,15 @@
       "status": "ended",
       "requested_at": "2025-06-26T11:51:39.437928+03:00",
       "responded_at": "2025-06-26T11:51:46.3091568+03:00"
+    },
+    {
+      "id": 29,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "pending",
+      "requested_at": "2025-06-26T13:45:55.9582617+03:00",
+      "responded_at": null
     }
   ]
 }

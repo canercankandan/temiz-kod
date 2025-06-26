@@ -1999,8 +1999,16 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 		
 		log.Printf("📝 HandleVideoCallRequest - Video call request oluşturuluyor: Session=%s, Username=%s", request.SessionID, displayName)
 		
+		// First, end any existing pending request for this session
+		err := h.db.EndVideoCallRequest(request.SessionID)
+		if err != nil {
+			log.Printf("⚠️ HandleVideoCallRequest - Mevcut request temizlenirken hata (normal): %v", err)
+		} else {
+			log.Printf("🧹 HandleVideoCallRequest - Mevcut pending request temizlendi: Session=%s", request.SessionID)
+		}
+		
 		// Create video call request
-		err := h.db.CreateVideoCallRequest(request.SessionID, displayName, userID)
+		err = h.db.CreateVideoCallRequest(request.SessionID, displayName, userID)
 		if err != nil {
 			log.Printf("❌ HandleVideoCallRequest - Video call request oluşturma hatası: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talebi oluşturulamadı"})
