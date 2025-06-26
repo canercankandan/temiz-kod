@@ -174,7 +174,7 @@ footer h5 {
 .product-card .card-img-top {
     transition: transform 0.3s ease;
     height: 200px;
-    object-fit: cover;
+    object-fit: contain;
     width: 100%;
 }
 
@@ -191,7 +191,7 @@ footer h5 {
 /* Home page specific product image styling */
 .home-page .product-card .card-img-top {
     height: 180px;
-    object-fit: cover;
+    object-fit: contain;
     width: 100%;
 }
 
