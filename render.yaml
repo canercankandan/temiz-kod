@@ -5,7 +5,7 @@ services:
     plan: starter
     region: frankfurt
     buildCommand: docker build -t su-aritma-uzmani .
-    startCommand: docker run -p $PORT:8080 su-aritma-uzmani
+    startCommand: ./main
     envVars:
       - key: PORT
         value: 8080

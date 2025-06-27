@@ -13,8 +13,8 @@ RUN go mod download
 # Tüm kaynak kodunu kopyala
 COPY . .
 
-# Uygulamayı derle
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/web
+# Uygulamayı derle (daha detaylı hata mesajları için)
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -a -installsuffix cgo -o main ./cmd/web
 
 # Run stage
 FROM alpine:latest
@@ -30,6 +30,9 @@ COPY --from=builder /app/static ./static
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/data.json .
 COPY --from=builder /app/orders.json .
+
+# Çalıştırma izni ver
+RUN chmod +x main
 
 # Portu belirt
 EXPOSE 8080
