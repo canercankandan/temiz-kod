@@ -111,160 +111,41 @@
     </section>
 
     <!-- Products Grid View -->
-    <div id="gridView">
+    <div id="gridView" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" style="display: block;">
         {{if .products}}
-        <div class="row" id="productsContainer">
-            {{range .products}}
-            <div class="col-xl-4 col-lg-6 col-md-6 mb-4 product-item" 
-                 data-name="{{.Name}}" 
-                 data-category="{{.Category}}" 
-                 data-price="{{.Price}}" 
-                 data-stock="{{.Stock}}"
-                 data-date="{{.CreatedAt.Format "2006-01-02"}}">
-                <div class="product-card h-100">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="position-relative overflow-hidden">
-                            {{if .Image}}
-                            <img src="{{.Image}}" class="card-img-top product-image" alt="{{.Name}}">
-                            {{else}}
-                            <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center product-image">
-                                <i class="fas fa-filter text-white" style="font-size: 4rem; opacity: 0.8;"></i>
-                            </div>
-                            {{end}}
-                            
-                            <!-- Status Badges -->
-                            <div class="position-absolute top-0 start-0 m-3">
-                                {{if eq .Stock 0}}
-                                <span class="badge bg-danger">Tükendi</span>
-                                {{else if lt .Stock 5}}
-                                <span class="badge bg-warning">Son {{.Stock}} adet</span>
-                                {{else}}
-                                <span class="badge bg-success">Stokta</span>
-                                {{end}}
-                            </div>
-                            
-                            <!-- Quick View Button -->
-                            <div class="position-absolute top-0 end-0 m-3">
-                                <button class="btn btn-light btn-sm rounded-circle quick-view-btn" 
-                                        data-bs-toggle="modal" data-bs-target="#quickViewModal"
-                                        data-product-name="{{.Name}}" data-product-description="{{.Description}}"
-                                        data-product-price="{{.Price}}" data-product-category="{{.Category}}"
-                                        data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            
-                            <!-- Hover Overlay -->
-                            <div class="product-overlay">
-                                <div class="d-flex flex-column gap-2">
-                                    {{if gt .Stock 0}}
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-info view-product-btn" 
-                                                data-bs-toggle="modal" data-bs-target="#quickViewModal"
-                                                data-product-name="{{.Name}}" data-product-description="{{.Description}}"
-                                                data-product-price="{{.Price}}" data-product-category="{{.Category}}"
-                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}"
-                                                data-product-features="{{.Features}}">
-                                            <i class="fas fa-eye me-2"></i>Ürünü İncele
-                                        </button>
-                                        <button class="btn btn-primary add-to-cart-btn" 
-                                                data-product-id="{{.ID}}" data-product-name="{{.Name}}">
-                                            <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
-                                        </button>
-                                    </div>
-                                    {{else}}
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-info view-product-btn" 
-                                                data-bs-toggle="modal" data-bs-target="#quickViewModal"
-                                                data-product-name="{{.Name}}" data-product-description="{{.Description}}"
-                                                data-product-price="{{.Price}}" data-product-category="{{.Category}}"
-                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}">
-                                            <i class="fas fa-eye me-2"></i>Ürünü İncele
-                                        </button>
-                                        <button class="btn btn-outline-secondary" disabled>
-                                            <i class="fas fa-times me-2"></i>Stokta Yok
-                                        </button>
-                                    </div>
-                                    {{end}}
-                                </div>
-                            </div>
+        {{range .products}}
+        <div class="col d-flex align-items-stretch">
+            <div class="product-item" data-name="{{.Name}}" data-category="{{.Category}}" data-price="{{.Price}}" data-stock="{{.Stock}}" data-date="{{.CreatedAt.Format "2006-01-02"}}">
+                <div class="product-card h-100 d-flex flex-column">
+                    <img src="{{if .Image}}{{.Image}}{{else}}/static/images/no-image.png{{end}}" class="card-img-top product-image" alt="{{.Name}}">
+                    <div class="card-body d-flex flex-column">
+                        <span class="badge bg-primary mb-2">{{.Category}}</span>
+                        <h5 class="card-title">{{.Name}}</h5>
+                        <p class="card-text flex-grow-1">{{.Description}}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="price-tag text-success">{{.Price}} ₺</span>
+                            <span class="text-warning"><i class="fas fa-star"></i> 4.9</span>
                         </div>
-                        
-                        <div class="card-body d-flex flex-column p-4">
-                            <div class="mb-2">
-                                <span class="badge bg-primary bg-opacity-10 text-primary">{{.Category}}</span>
-                            </div>
-                            <h5 class="card-title fw-bold mb-3" style="color: #000000;">{{.Name}}</h5>
-                            <p class="card-text text-dark flex-grow-1 mb-3">{{.Description}}</p>
-                            
-                            <div class="mt-auto">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="price-tag">
-                                        <span class="text-success fw-bold fs-4">{{.Price}} ₺</span>
-                                    </div>
-                                    <div class="rating">
-                                        <small class="text-warning">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <span class="text-muted ms-1">(4.9)</span>
-                                        </small>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <small class="text-dark">
-                                        <i class="fas fa-calendar me-1"></i>{{.CreatedAt.Format "02.01.2006"}}
-                                    </small>
-                                    <small class="text-dark">
-                                        <i class="fas fa-eye me-1"></i>1,234 görüntüleme
-                                    </small>
-                                </div>
-                                
-                                <!-- Garanti Bilgisi -->
-                                <div class="mb-3">
-                                    {{if eq .Category "Yedek Parça"}}
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-shield-alt text-warning me-2"></i>
-                                        <small class="text-dark fw-semibold">1 Yıl Garanti</small>
-                                    </div>
-                                    {{else}}
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-shield-alt text-success me-2"></i>
-                                        <small class="text-dark fw-semibold">5 Yıl Garanti</small>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-tools text-info me-2"></i>
-                                        <small class="text-dark">Ücretsiz Kurulum</small>
-                                    </div>
-                                    {{end}}
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-headset text-primary me-2"></i>
-                                        <small class="text-dark">24/7 Teknik Destek</small>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-certificate text-success me-2"></i>
-                                        <small class="text-dark">CE Sertifikalı</small>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{.CreatedAt.Format "02.01.2006"}}</small>
+                            <small class="text-muted"><i class="fas fa-eye me-1"></i>1,234</small>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="btn btn-info view-product-btn w-100" data-bs-toggle="modal" data-bs-target="#quickViewModal" data-product-name="{{.Name}}" data-product-description="{{.Description}}" data-product-price="{{.Price}}" data-product-category="{{.Category}}" data-product-stock="{{.Stock}}" data-product-image="{{.Image}}" data-product-features="{{.Features}}"><i class="fas fa-eye me-2"></i>İncele</button>
+                            <button class="btn btn-primary add-to-cart-btn w-100" data-product-id="{{.ID}}" data-product-name="{{.Name}}"><i class="fas fa-cart-plus me-2"></i>Sepete Ekle</button>
                         </div>
                     </div>
                 </div>
             </div>
-            {{end}}
         </div>
+        {{end}}
         {{else}}
-        <div class="empty-state text-center py-5">
+        <div class="col-12 text-center py-5">
             <div class="bg-light rounded-4 p-5">
                 <i class="fas fa-box-open text-muted mb-4" style="font-size: 5rem;"></i>
                 <h3 class="text-muted mb-3">Henüz ürün eklenmemiş</h3>
                 <p class="text-muted mb-4">Yakında en kaliteli su arıtma ürünleri burada olacak!</p>
-                <a href="/contact" class="btn btn-primary">
-                    <i class="fas fa-phone me-2"></i>Bilgi Al
-                </a>
+                <a href="/contact" class="btn btn-primary"><i class="fas fa-phone me-2"></i>Bilgi Al</a>
             </div>
         </div>
         {{end}}
@@ -276,90 +157,51 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover mb-0 align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th class="border-0 fw-semibold">Ürün</th>
-                                <th class="border-0 fw-semibold">Kategori</th>
-                                <th class="border-0 fw-semibold">Fiyat</th>
-                                <th class="border-0 fw-semibold">Stok</th>
-                                <th class="border-0 fw-semibold">Değerlendirme</th>
-                                <th class="border-0 fw-semibold">İşlem</th>
+                                <th>Ürün</th>
+                                <th>Kategori</th>
+                                <th>Fiyat</th>
+                                <th>Stok</th>
+                                <th>Değerlendirme</th>
+                                <th>İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="productsTableBody">
                             {{range .products}}
-                            <tr class="product-item" 
-                                data-name="{{.Name}}" 
-                                data-category="{{.Category}}" 
-                                data-price="{{.Price}}" 
-                                data-stock="{{.Stock}}"
-                                data-date="{{.CreatedAt.Format "2006-01-02"}}">
-                                <td class="py-3">
-                                    <div class="d-flex align-items-center">
-                                        {{if .Image}}
-                                        <img src="{{.Image}}" alt="{{.Name}}" class="rounded me-3 product-thumb">
-                                        {{else}}
-                                        <div class="bg-gradient rounded me-3 product-thumb d-flex align-items-center justify-content-center">
-                                            <i class="fas fa-filter text-white"></i>
-                                        </div>
-                                        {{end}}
+                            <tr class="product-item" data-name="{{.Name}}" data-category="{{.Category}}" data-price="{{.Price}}" data-stock="{{.Stock}}" data-date="{{.CreatedAt.Format "2006-01-02"}}">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{if .Image}}{{.Image}}{{else}}/static/images/no-image.png{{end}}" alt="{{.Name}}" class="product-thumb">
                                         <div>
-                                            <h6 class="mb-1 fw-semibold" style="color: #000000;">{{.Name}}</h6>
-                                            <small class="text-dark">{{.Description}}</small>
+                                            <h6 class="fw-semibold mb-1">{{.Name}}</h6>
+                                            <small class="text-muted">{{.Description}}</small>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="py-3">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary">{{.Category}}</span>
-                                </td>
-                                <td class="py-3">
-                                    <span class="text-success fw-bold fs-5">{{.Price}} ₺</span>
-                                </td>
-                                <td class="py-3">
-                                    {{if gt .Stock 0}}
-                                    <span class="badge bg-success">{{.Stock}} adet</span>
-                                    {{else}}
-                                    <span class="badge bg-danger">Tükendi</span>
-                                    {{end}}
-                                </td>
-                                <td class="py-3">
-                                    <div class="text-warning">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <small class="text-muted ms-1">(4.9)</small>
-                                    </div>
-                                </td>
-                                <td class="py-3">
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-info btn-sm view-product-btn" 
-                                                data-bs-toggle="modal" data-bs-target="#quickViewModal"
-                                                data-product-name="{{.Name}}" data-product-description="{{.Description}}"
-                                                data-product-price="{{.Price}}" data-product-category="{{.Category}}"
-                                                data-product-stock="{{.Stock}}" data-product-image="{{.Image}}"
-                                                data-product-features="{{.Features}}">
-                                            <i class="fas fa-eye me-1"></i>İncele
-                                        </button>
-                                        {{if gt .Stock 0}}
-                                        <button class="btn btn-primary btn-sm add-to-cart-btn" 
-                                                data-product-id="{{.ID}}" data-product-name="{{.Name}}">
-                                            <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
-                                        </button>
-                                        {{else}}
-                                        <button class="btn btn-outline-secondary btn-sm" disabled>
-                                            <i class="fas fa-times me-1"></i>Stokta Yok
-                                        </button>
-                                        {{end}}
-                                    </div>
+                                <td><span class="badge bg-primary">{{.Category}}</span></td>
+                                <td><span class="text-success fw-bold">{{.Price}} ₺</span></td>
+                                <td>{{.Stock}}</td>
+                                <td><span class="text-warning"><i class="fas fa-star"></i> 4.9</span></td>
+                                <td>
+                                    <button class="btn btn-info btn-sm view-product-btn" data-bs-toggle="modal" data-bs-target="#quickViewModal" data-product-name="{{.Name}}" data-product-description="{{.Description}}" data-product-price="{{.Price}}" data-product-category="{{.Category}}" data-product-stock="{{.Stock}}" data-product-image="{{.Image}}" data-product-features="{{.Features}}"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-primary btn-sm add-to-cart-btn" data-product-id="{{.ID}}" data-product-name="{{.Name}}"><i class="fas fa-cart-plus"></i></button>
                                 </td>
                             </tr>
                             {{end}}
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+        {{else}}
+        <div class="text-center py-5">
+            <div class="bg-light rounded-4 p-5">
+                <i class="fas fa-box-open text-muted mb-4" style="font-size: 5rem;"></i>
+                <h3 class="text-muted mb-3">Henüz ürün eklenmemiş</h3>
+                <p class="text-muted mb-4">Yakında en kaliteli su arıtma ürünleri burada olacak!</p>
+                <a href="/contact" class="btn btn-primary"><i class="fas fa-phone me-2"></i>Bilgi Al</a>
             </div>
         </div>
         {{end}}
