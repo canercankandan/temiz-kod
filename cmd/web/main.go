@@ -146,6 +146,10 @@ func main() {
 	r.GET("/reset-password", h.ResetPasswordPage)
 	r.POST("/reset-password", h.HandleResetPassword)
 
+	// Test endpoint'leri (authentication olmadan)
+	r.GET("/test/support/sessions", h.AdminGetSupportSessions)
+	r.GET("/test/support/video-call-requests", h.AdminGetVideoCallRequests)
+
 	// Admin authentication rotaları (korumasız)
 	r.GET("/admin/login", h.AdminLoginPage)
 	r.POST("/admin/login", h.AdminLogin)
