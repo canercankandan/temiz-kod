@@ -75,7 +75,7 @@
                         </select>
                     </div>
                     <div class="col-md-1 d-flex align-items-end">
-                        <div class="btn-group" role="group">
+                        <div class="btn-group view-toggle" role="group">
                             <button type="button" class="btn btn-outline-primary" id="gridViewBtn" onclick="toggleView('grid')" title="Kart Görünümü">
                                 <i class="fas fa-th"></i>
                             </button>
@@ -609,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Filter products
 function filterProducts() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const categoryFilter = document.getElementById('categoryFilter').value;
+    const categoryFilter = document.getElementById('categoryFilter').value.trim().toLowerCase();
     const sortFilter = document.getElementById('sortFilter').value;
     
     let products = Array.from(document.querySelectorAll('.product-item'));
@@ -618,7 +618,7 @@ function filterProducts() {
     // Filter products
     products.forEach(product => {
         const name = product.dataset.name.toLowerCase();
-        const category = product.dataset.category;
+        const category = (product.dataset.category || '').trim().toLowerCase();
         const description = product.querySelector('.card-text, td small')?.textContent.toLowerCase() || '';
         
         const matchesSearch = name.includes(searchTerm) || description.includes(searchTerm);
