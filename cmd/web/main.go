@@ -166,6 +166,8 @@ func main() {
 		admin.POST("/users/delete/:id", h.DeleteUser)
 		admin.GET("/support", h.AdminSupportPage)
 		admin.POST("/support/reply", h.AdminReplyToSupport)
+		admin.GET("/support/sessions", h.AdminGetSupportSessions)
+		admin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
 	}
 
 	// App Engine için HTTP server başlat
