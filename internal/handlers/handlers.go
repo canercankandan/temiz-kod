@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,6 +21,20 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// SEO için yapılar
+type SitemapURL struct {
+	Loc        string `xml:"loc"`
+	Lastmod    string `xml:"lastmod"`
+	Changefreq string `xml:"changefreq"`
+	Priority   string `xml:"priority"`
+}
+
+type Sitemap struct {
+	XMLName xml.Name     `xml:"urlset"`
+	XMLNS   string       `xml:"xmlns,attr"`
+	URLs    []SitemapURL `xml:"url"`
+}
 
 // DBInterface, veritabanı işlemlerini tanımlar.
 type DBInterface interface {
@@ -84,6 +99,114 @@ const (
 	ADMIN_PASSWORD = "admin123"
 )
 
+// SEO Handler'ları
+
+// SitemapHandler, XML sitemap oluşturur
+func (h *Handler) SitemapHandler(c *gin.Context) {
+	baseURL := "https://cenap-water-filters.appspot.com"
+	currentTime := time.Now().Format("2006-01-02")
+	
+	sitemap := Sitemap{
+		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",
+		URLs: []SitemapURL{
+			{
+				Loc:        baseURL + "/",
+				Lastmod:    currentTime,
+				Changefreq: "daily",
+				Priority:   "1.0",
+			},
+			{
+				Loc:        baseURL + "/products",
+				Lastmod:    currentTime,
+				Changefreq: "weekly",
+				Priority:   "0.9",
+			},
+			{
+				Loc:        baseURL + "/about",
+				Lastmod:    currentTime,
+				Changefreq: "monthly",
+				Priority:   "0.8",
+			},
+			{
+				Loc:        baseURL + "/contact",
+				Lastmod:    currentTime,
+				Changefreq: "monthly",
+				Priority:   "0.8",
+			},
+			{
+				Loc:        baseURL + "/track",
+				Lastmod:    currentTime,
+				Changefreq: "weekly",
+				Priority:   "0.7",
+			},
+			{
+				Loc:        baseURL + "/support",
+				Lastmod:    currentTime,
+				Changefreq: "weekly",
+				Priority:   "0.7",
+			},
+		},
+	}
+	
+	// Ürünler için dinamik URL'ler ekle
+	products, err := h.db.GetAllProducts()
+	if err == nil {
+		for _, product := range products {
+			sitemap.URLs = append(sitemap.URLs, SitemapURL{
+				Loc:        fmt.Sprintf("%s/products#product-%d", baseURL, product.ID),
+				Lastmod:    currentTime,
+				Changefreq: "weekly",
+				Priority:   "0.6",
+			})
+		}
+	}
+	
+	c.Header("Content-Type", "application/xml")
+	c.XML(http.StatusOK, sitemap)
+}
+
+// RobotsTxtHandler, robots.txt dosyasını serve eder
+func (h *Handler) RobotsTxtHandler(c *gin.Context) {
+	robotsContent := `User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://cenap-water-filters.appspot.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/logout
+
+# Allow important pages
+Allow: /
+Allow: /products
+Allow: /about
+Allow: /contact
+Allow: /track`
+
+	c.Header("Content-Type", "text/plain")
+	c.String(http.StatusOK, robotsContent)
+}
+
+// SEO için meta data oluşturma fonksiyonu
+func (h *Handler) createSEOMetaData(title, description, keywords string, currentURL string) gin.H {
+	return gin.H{
+		"title":        title,
+		"description":  description,
+		"keywords":     keywords,
+		"current_url":  currentURL,
+		"og_title":     title + " - Su Arıtma Uzmanı",
+		"og_description": description,
+		"og_image":     "https://cenap-water-filters.appspot.com/static/images/og-image.jpg",
+		"og_url":       "https://cenap-water-filters.appspot.com" + currentURL,
+		"canonical":    "https://cenap-water-filters.appspot.com" + currentURL,
+	}
+}
+
 // AuthMiddleware checks if user is authenticated for admin routes
 func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -103,9 +226,13 @@ func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 }
 
 func (h *Handler) AdminLoginPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "admin_login.html", gin.H{
-		"title": "Admin Girişi",
-	})
+	meta := h.createSEOMetaData(
+		"Admin Girişi",
+		"Su arıtma sistemi yönetim paneli giriş sayfası",
+		"admin, yönetim, su arıtma yönetimi",
+		"/admin/login",
+	)
+	c.HTML(http.StatusOK, "admin_login.html", meta)
 }
 
 func (h *Handler) AdminLogin(c *gin.Context) {
@@ -123,10 +250,14 @@ func (h *Handler) AdminLogin(c *gin.Context) {
 	}
 	
 	log.Printf("Login failed for user: %s", username)
-	c.HTML(http.StatusUnauthorized, "admin_login.html", gin.H{
-		"title": "Admin Girişi",
-		"error": "Geçersiz kullanıcı adı veya şifre",
-	})
+	meta := h.createSEOMetaData(
+		"Admin Girişi",
+		"Su arıtma sistemi yönetim paneli giriş sayfası",
+		"admin, yönetim, su arıtma yönetimi",
+		"/admin/login",
+	)
+	meta["error"] = "Geçersiz kullanıcı adı veya şifre"
+	c.HTML(http.StatusUnauthorized, "admin_login.html", meta)
 }
 
 func (h *Handler) AdminLogout(c *gin.Context) {
@@ -153,9 +284,13 @@ func (h *Handler) AuthUserMiddleware() gin.HandlerFunc {
 
 // LoginPage, kullanıcı giriş sayfasını oluşturur.
 func (h *Handler) LoginPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", gin.H{
-		"title": "Giriş Yap",
-	})
+	meta := h.createSEOMetaData(
+		"Giriş Yap",
+		"Su arıtma cihazları için kullanıcı girişi. Güvenli alışveriş için hesabınıza giriş yapın.",
+		"giriş, login, kullanıcı girişi, su arıtma hesap",
+		"/login",
+	)
+	c.HTML(http.StatusOK, "login.html", meta)
 }
 
 // HandleLogin, kullanıcı girişini yönetir.
@@ -166,19 +301,27 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 	user, err := h.db.GetUserByUsername(username)
 	if err != nil {
 		log.Printf("Login failed for user %s: %v", username, err)
-		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
-			"title": "Giriş Yap",
-			"error": "Kullanıcı adı veya parola hatalı.",
-		})
+		meta := h.createSEOMetaData(
+			"Giriş Yap",
+			"Su arıtma cihazları için kullanıcı girişi. Güvenli alışveriş için hesabınıza giriş yapın.",
+			"giriş, login, kullanıcı girişi, su arıtma hesap",
+			"/login",
+		)
+		meta["error"] = "Kullanıcı adı veya parola hatalı."
+		c.HTML(http.StatusUnauthorized, "login.html", meta)
 		return
 	}
 
 	if !database.CheckPasswordHash(password, user.PasswordHash) {
 		log.Printf("Incorrect password for user %s", username)
-		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
-			"title": "Giriş Yap",
-			"error": "Kullanıcı adı veya parola hatalı.",
-		})
+		meta := h.createSEOMetaData(
+			"Giriş Yap",
+			"Su arıtma cihazları için kullanıcı girişi. Güvenli alışveriş için hesabınıza giriş yapın.",
+			"giriş, login, kullanıcı girişi, su arıtma hesap",
+			"/login",
+		)
+		meta["error"] = "Kullanıcı adı veya parola hatalı."
+		c.HTML(http.StatusUnauthorized, "login.html", meta)
 		return
 	}
 
@@ -191,9 +334,13 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 
 // RegisterPage, kullanıcı kayıt sayfasını oluşturur.
 func (h *Handler) RegisterPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "register.html", gin.H{
-		"title": "Kayıt Ol",
-	})
+	meta := h.createSEOMetaData(
+		"Kayıt Ol",
+		"Su arıtma cihazları için ücretsiz hesap oluşturun. Güvenli alışveriş ve özel fırsatlar için kayıt olun.",
+		"kayıt ol, register, üye ol, su arıtma hesap oluştur",
+		"/register",
+	)
+	c.HTML(http.StatusOK, "register.html", meta)
 }
 
 // HandleRegister, kullanıcı kayıt işlemini yönetir.

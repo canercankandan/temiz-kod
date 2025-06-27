@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://cenap-water-filters.appspot.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /admin/login
+Disallow: /admin/logout
+
+# Allow important pages
+Allow: /
+Allow: /products
+Allow: /about
+Allow: /contact
+Allow: /track 
