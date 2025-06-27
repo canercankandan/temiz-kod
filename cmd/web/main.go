@@ -1,16 +1,65 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"html/template"
 	"log"
+	"math/big"
+	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"cenap/internal/database"
 	"cenap/internal/handlers"
 
 	"github.com/gin-gonic/gin"
 )
+
+// generateSelfSignedCert creates a self-signed certificate for HTTPS
+func generateSelfSignedCert() (tls.Certificate, error) {
+	// Create private key
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	// Create certificate template
+	template := x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject: pkix.Name{
+			Organization:  []string{"Cenap Water Filters"},
+			Country:       []string{"TR"},
+			Province:      []string{""},
+			Locality:      []string{"Istanbul"},
+			StreetAddress: []string{""},
+			PostalCode:    []string{""},
+		},
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().Add(365 * 24 * time.Hour), // 1 year
+		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback, net.ParseIP("192.168.1.133")},
+		DNSNames:     []string{"localhost", "*.localhost", "192.168.1.133"},
+	}
+
+	// Create certificate
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	// Encode certificate
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+
+	return tls.X509KeyPair(certPEM, keyPEM)
+}
 
 func main() {
 	// Production modunu aktif et
@@ -29,10 +78,10 @@ func main() {
 
 	h := handlers.NewHandler(db)
 
-	// App Engine için port ayarı
+	// Port'u environment variable'dan al, yoksa default kullan
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081"  // Yerel geliştirme için port 8081
+		port = "9500"
 	}
 
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
@@ -90,10 +139,6 @@ func main() {
 		c.File("./static/favicon.ico")
 	})
 
-	// SEO Route'ları
-	r.GET("/sitemap.xml", h.SitemapHandler)
-	r.GET("/robots.txt", h.RobotsTxtHandler)
-
 	// Chrome DevTools için route ekle
 	r.GET("/.well-known/appspecific/com.chrome.devtools.json", func(c *gin.Context) {
 		c.Status(204) // No content
@@ -146,10 +191,6 @@ func main() {
 	r.GET("/reset-password", h.ResetPasswordPage)
 	r.POST("/reset-password", h.HandleResetPassword)
 
-	// Test endpoint'leri (authentication olmadan)
-	r.GET("/test/support/sessions", h.TestSupportSessions)
-	r.GET("/test/support/video-call-requests", h.TestVideoCallRequests)
-
 	// Admin authentication rotaları (korumasız)
 	r.GET("/admin/login", h.AdminLoginPage)
 	r.POST("/admin/login", h.AdminLogin)
@@ -157,44 +198,100 @@ func main() {
 
 	// Admin paneli rotaları (korumalı)
 	admin := r.Group("/admin")
-	admin.Use(h.AdminAuthMiddleware())
+	admin.Use(h.AuthMiddleware())
 	{
-		admin.GET("/", h.AdminDashboard)
-		admin.GET("/products", h.AdminProducts)
-		admin.GET("/add-product", h.AdminAddProductPage)
-		admin.POST("/products/add", h.AddProduct)
-		admin.POST("/products/edit/:id", h.EditProduct)
-		admin.POST("/products/delete/:id", h.DeleteProduct)
-		admin.GET("/orders", h.AdminOrders)
-		admin.POST("/orders/update-status/:id", h.UpdateOrderStatus)
-		admin.GET("/users", h.AdminUsers)
-		admin.POST("/users/delete/:id", h.DeleteUser)
+		admin.GET("", h.AdminPage)
+		admin.POST("/add-product", h.AddProduct)
+		admin.DELETE("/delete-product/:id", h.DeleteProduct)
+		// Admin sipariş yönetimi
+		admin.GET("/orders", h.AdminGetOrders)
+		admin.GET("/orders/:id", h.AdminGetOrderDetail)
+		admin.PUT("/orders/:id", h.AdminUpdateOrder)
+		admin.DELETE("/orders/:id", h.AdminDeleteOrder)
+		
+		// Admin kullanıcı yönetimi
+		admin.GET("/users", h.AdminGetUsers)
+		admin.DELETE("/users/:id", h.AdminDeleteUser)
+		
+		// Admin support routes
 		admin.GET("/support", h.AdminSupportPage)
-		admin.POST("/support/reply", h.AdminReplyToSupport)
 		admin.GET("/support/sessions", h.AdminGetSupportSessions)
+		admin.GET("/support/messages/:sessionId", h.AdminGetSupportMessages)
+		admin.POST("/support/send/:sessionId", h.AdminSendSupportMessage)
+		admin.POST("/support/video-call-response", h.AdminVideoCallResponse)
+		admin.POST("/support/start-video-call", h.AdminStartVideoCall)
+		admin.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
 		admin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
+		admin.POST("/support/webrtc-signal", h.HandleAdminWebRTCSignal)
+		admin.GET("/support/webrtc-signals/:sessionId", h.GetAdminWebRTCSignals)
 	}
 
-	// App Engine için HTTP server başlat
-	log.Printf("Server başlatılıyor: http://192.168.1.133:%s", port)
-	
-	// HTTPS için SSL sertifikası kontrolü
-	certFile := "cert.pem"
-	keyFile := "key.pem"
-	
-	// SSL sertifikası varsa HTTPS, yoksa HTTP kullan
-	if _, err := os.Stat(certFile); err == nil {
-		if _, err := os.Stat(keyFile); err == nil {
-			log.Printf("HTTPS server başlatılıyor: https://192.168.1.133:%s", port)
-			if err := http.ListenAndServeTLS(":"+port, certFile, keyFile, r); err != nil {
-				log.Fatalf("HTTPS server başlatılamadı: %v", err)
-			}
-		}
+	// User profile routes (protected)
+	user := r.Group("/profile")
+	user.Use(h.AuthUserMiddleware())
+	{
+		user.GET("", h.ProfilePage)
+		user.POST("/change-password", h.HandleChangePassword)
 	}
+
+	// Sipariş geçmişi (protected)
+	orders := r.Group("/orders")
+	orders.Use(h.AuthUserMiddleware())
+	{
+		orders.GET("", h.OrdersPage)
+		orders.GET("/:id", h.GetOrderDetail)
+		orders.DELETE("/:id", h.UserCancelOrder)
+	}
+
+	// Load external certificate files
+	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
+	if err != nil {
+		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
+		// Fallback to self-signed certificate
+		cert, err = generateSelfSignedCert()
+		if err != nil {
+			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
+		}
+	} else {
+		log.Printf("✅ External certificate yüklendi: localhost.crt")
+	}
+
+	// Configure TLS
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	// HTTPS portu
+	httpsPort := "8081"
 	
-	// HTTP server (varsayılan)
-	log.Printf("HTTP server başlatılıyor: http://192.168.1.133:%s", port)
-	if err := http.ListenAndServe(":"+port, r); err != nil {
-		log.Fatalf("Server başlatılamadı: %v", err)
+	// Create HTTPS server
+	httpsServer := &http.Server{
+		Addr:      ":" + httpsPort,
+		Handler:   r,
+		TLSConfig: tlsConfig,
+	}
+
+	// HTTP Server'ı başlat (port 8080'de)
+	httpPort := "8080"
+	
+	// HTTPS Server'ı goroutine'de başlat
+	go func() {
+		log.Printf("🔒 HTTPS Server başlatılıyor...")
+		log.Printf("📱 iPhone Safari desteği için: https://localhost:%s", httpsPort)
+		log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
+		log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
+		
+		if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
+			log.Fatalf("HTTPS Server başlatılamadı: %v", err)
+		}
+	}()
+	
+	// HTTP Server'ı başlat
+	log.Printf("🌐 HTTP Server başlatılıyor...")
+	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
+	log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
+	
+	if err := http.ListenAndServe(":"+httpPort, r); err != nil {
+		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
 } 

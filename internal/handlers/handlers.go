@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,20 +20,6 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
-
-// SEO için yapılar
-type SitemapURL struct {
-	Loc        string `xml:"loc"`
-	Lastmod    string `xml:"lastmod"`
-	Changefreq string `xml:"changefreq"`
-	Priority   string `xml:"priority"`
-}
-
-type Sitemap struct {
-	XMLName xml.Name     `xml:"urlset"`
-	XMLNS   string       `xml:"xmlns,attr"`
-	URLs    []SitemapURL `xml:"url"`
-}
 
 // DBInterface, veritabanı işlemlerini tanımlar.
 type DBInterface interface {
@@ -99,114 +84,6 @@ const (
 	ADMIN_PASSWORD = "admin123"
 )
 
-// SEO Handler'ları
-
-// SitemapHandler, XML sitemap oluşturur
-func (h *Handler) SitemapHandler(c *gin.Context) {
-	baseURL := "https://cenap-water-filters.appspot.com"
-	currentTime := time.Now().Format("2006-01-02")
-	
-	sitemap := Sitemap{
-		XMLNS: "http://www.sitemaps.org/schemas/sitemap/0.9",
-		URLs: []SitemapURL{
-			{
-				Loc:        baseURL + "/",
-				Lastmod:    currentTime,
-				Changefreq: "daily",
-				Priority:   "1.0",
-			},
-			{
-				Loc:        baseURL + "/products",
-				Lastmod:    currentTime,
-				Changefreq: "weekly",
-				Priority:   "0.9",
-			},
-			{
-				Loc:        baseURL + "/about",
-				Lastmod:    currentTime,
-				Changefreq: "monthly",
-				Priority:   "0.8",
-			},
-			{
-				Loc:        baseURL + "/contact",
-				Lastmod:    currentTime,
-				Changefreq: "monthly",
-				Priority:   "0.8",
-			},
-			{
-				Loc:        baseURL + "/track",
-				Lastmod:    currentTime,
-				Changefreq: "weekly",
-				Priority:   "0.7",
-			},
-			{
-				Loc:        baseURL + "/support",
-				Lastmod:    currentTime,
-				Changefreq: "weekly",
-				Priority:   "0.7",
-			},
-		},
-	}
-	
-	// Ürünler için dinamik URL'ler ekle
-	products, err := h.db.GetAllProducts()
-	if err == nil {
-		for _, product := range products {
-			sitemap.URLs = append(sitemap.URLs, SitemapURL{
-				Loc:        fmt.Sprintf("%s/products#product-%d", baseURL, product.ID),
-				Lastmod:    currentTime,
-				Changefreq: "weekly",
-				Priority:   "0.6",
-			})
-		}
-	}
-	
-	c.Header("Content-Type", "application/xml")
-	c.XML(http.StatusOK, sitemap)
-}
-
-// RobotsTxtHandler, robots.txt dosyasını serve eder
-func (h *Handler) RobotsTxtHandler(c *gin.Context) {
-	robotsContent := `User-agent: *
-Allow: /
-
-# Sitemap
-Sitemap: https://cenap-water-filters.appspot.com/sitemap.xml
-
-# Crawl-delay
-Crawl-delay: 1
-
-# Disallow admin areas
-Disallow: /admin/
-Disallow: /admin/login
-Disallow: /admin/logout
-
-# Allow important pages
-Allow: /
-Allow: /products
-Allow: /about
-Allow: /contact
-Allow: /track`
-
-	c.Header("Content-Type", "text/plain")
-	c.String(http.StatusOK, robotsContent)
-}
-
-// SEO için meta data oluşturma fonksiyonu
-func (h *Handler) createSEOMetaData(title, description, keywords string, currentURL string) gin.H {
-	return gin.H{
-		"title":        title,
-		"description":  description,
-		"keywords":     keywords,
-		"current_url":  currentURL,
-		"og_title":     title + " - Su Arıtma Uzmanı",
-		"og_description": description,
-		"og_image":     "https://cenap-water-filters.appspot.com/static/images/og-image.jpg",
-		"og_url":       "https://cenap-water-filters.appspot.com" + currentURL,
-		"canonical":    "https://cenap-water-filters.appspot.com" + currentURL,
-	}
-}
-
 // AuthMiddleware checks if user is authenticated for admin routes
 func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -226,13 +103,9 @@ func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 }
 
 func (h *Handler) AdminLoginPage(c *gin.Context) {
-	meta := h.createSEOMetaData(
-		"Admin Girişi",
-		"Su arıtma sistemi yönetim paneli giriş sayfası",
-		"admin, yönetim, su arıtma yönetimi",
-		"/admin/login",
-	)
-	c.HTML(http.StatusOK, "admin_login.html", meta)
+	c.HTML(http.StatusOK, "admin_login.html", gin.H{
+		"title": "Admin Girişi",
+	})
 }
 
 func (h *Handler) AdminLogin(c *gin.Context) {
@@ -250,14 +123,10 @@ func (h *Handler) AdminLogin(c *gin.Context) {
 	}
 	
 	log.Printf("Login failed for user: %s", username)
-	meta := h.createSEOMetaData(
-		"Admin Girişi",
-		"Su arıtma sistemi yönetim paneli giriş sayfası",
-		"admin, yönetim, su arıtma yönetimi",
-		"/admin/login",
-	)
-	meta["error"] = "Geçersiz kullanıcı adı veya şifre"
-	c.HTML(http.StatusUnauthorized, "admin_login.html", meta)
+	c.HTML(http.StatusUnauthorized, "admin_login.html", gin.H{
+		"title": "Admin Girişi",
+		"error": "Geçersiz kullanıcı adı veya şifre",
+	})
 }
 
 func (h *Handler) AdminLogout(c *gin.Context) {
@@ -284,13 +153,9 @@ func (h *Handler) AuthUserMiddleware() gin.HandlerFunc {
 
 // LoginPage, kullanıcı giriş sayfasını oluşturur.
 func (h *Handler) LoginPage(c *gin.Context) {
-	meta := h.createSEOMetaData(
-		"Giriş Yap",
-		"Su arıtma cihazları için kullanıcı girişi. Güvenli alışveriş için hesabınıza giriş yapın.",
-		"giriş, login, kullanıcı girişi, su arıtma hesap",
-		"/login",
-	)
-	c.HTML(http.StatusOK, "login.html", meta)
+	c.HTML(http.StatusOK, "login.html", gin.H{
+		"title": "Giriş Yap",
+	})
 }
 
 // HandleLogin, kullanıcı girişini yönetir.
@@ -301,27 +166,19 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 	user, err := h.db.GetUserByUsername(username)
 	if err != nil {
 		log.Printf("Login failed for user %s: %v", username, err)
-		meta := h.createSEOMetaData(
-			"Giriş Yap",
-			"Su arıtma cihazları için kullanıcı girişi. Güvenli alışveriş için hesabınıza giriş yapın.",
-			"giriş, login, kullanıcı girişi, su arıtma hesap",
-			"/login",
-		)
-		meta["error"] = "Kullanıcı adı veya parola hatalı."
-		c.HTML(http.StatusUnauthorized, "login.html", meta)
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
+			"title": "Giriş Yap",
+			"error": "Kullanıcı adı veya parola hatalı.",
+		})
 		return
 	}
 
 	if !database.CheckPasswordHash(password, user.PasswordHash) {
 		log.Printf("Incorrect password for user %s", username)
-		meta := h.createSEOMetaData(
-			"Giriş Yap",
-			"Su arıtma cihazları için kullanıcı girişi. Güvenli alışveriş için hesabınıza giriş yapın.",
-			"giriş, login, kullanıcı girişi, su arıtma hesap",
-			"/login",
-		)
-		meta["error"] = "Kullanıcı adı veya parola hatalı."
-		c.HTML(http.StatusUnauthorized, "login.html", meta)
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
+			"title": "Giriş Yap",
+			"error": "Kullanıcı adı veya parola hatalı.",
+		})
 		return
 	}
 
@@ -334,13 +191,9 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 
 // RegisterPage, kullanıcı kayıt sayfasını oluşturur.
 func (h *Handler) RegisterPage(c *gin.Context) {
-	meta := h.createSEOMetaData(
-		"Kayıt Ol",
-		"Su arıtma cihazları için ücretsiz hesap oluşturun. Güvenli alışveriş ve özel fırsatlar için kayıt olun.",
-		"kayıt ol, register, üye ol, su arıtma hesap oluştur",
-		"/register",
-	)
-	c.HTML(http.StatusOK, "register.html", meta)
+	c.HTML(http.StatusOK, "register.html", gin.H{
+		"title": "Kayıt Ol",
+	})
 }
 
 // HandleRegister, kullanıcı kayıt işlemini yönetir.
@@ -1251,13 +1104,13 @@ func (h *Handler) AdminGetUsers(c *gin.Context) {
 
 func (h *Handler) AdminDeleteUser(c *gin.Context) {
 	userIDStr := c.Param("id")
-	id, err := strconv.Atoi(userIDStr)
+	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz kullanıcı ID"})
 		return
 	}
 
-	if err := h.db.DeleteUser(id); err != nil {
+	if err := h.db.DeleteUser(userID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Kullanıcı silinemedi"})
 		return
 	}
@@ -2048,245 +1901,4 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 	log.Printf("AdminStartVideoCall - Video call request sent to session %s", request.SessionID)
 	
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video call talebi gönderildi"})
-}
-
-// AdminAuthMiddleware - Admin kimlik doğrulama middleware'i
-func (h *Handler) AdminAuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if c.Request.URL.Path == "/admin/login" {
-			c.Next()
-			return
-		}
-		
-		session, _ := c.Cookie("admin_session")
-		if session == "" {
-			c.Redirect(http.StatusSeeOther, "/admin/login")
-			c.Abort()
-			return
-		}
-		c.Next()
-	}
-}
-
-// AdminDashboard - Admin ana sayfa
-func (h *Handler) AdminDashboard(c *gin.Context) {
-	meta := h.createSEOMetaData(
-		"Admin Dashboard",
-		"Su arıtma sistemi yönetim paneli",
-		"admin, yönetim, dashboard",
-		"/admin",
-	)
-	c.HTML(http.StatusOK, "admin.html", meta)
-}
-
-// AdminProducts - Admin ürünler sayfası
-func (h *Handler) AdminProducts(c *gin.Context) {
-	products, err := h.db.GetAllProducts()
-	if err != nil {
-		log.Printf("Ürünler yüklenirken hata: %v", err)
-		c.HTML(http.StatusInternalServerError, "admin.html", gin.H{
-			"error": "Ürünler yüklenirken hata oluştu",
-		})
-		return
-	}
-
-	c.HTML(http.StatusOK, "admin.html", gin.H{
-		"products": products,
-		"title":    "Admin - Ürün Yönetimi",
-	})
-}
-
-// AdminAddProductPage, ürün ekleme sayfasını gösterir
-func (h *Handler) AdminAddProductPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "admin.html", gin.H{
-		"title": "Admin - Ürün Ekle",
-		"showAddForm": true,
-	})
-}
-
-// EditProduct - Ürün düzenleme
-func (h *Handler) EditProduct(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ürün ID"})
-		return
-	}
-	
-	product, err := h.db.GetProductByID(id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Ürün bulunamadı"})
-		return
-	}
-	
-	// Form verilerini al
-	name := c.PostForm("name")
-	description := c.PostForm("description")
-	priceStr := c.PostForm("price")
-	category := c.PostForm("category")
-	
-	price, err := strconv.ParseFloat(priceStr, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz fiyat"})
-		return
-	}
-	
-	// Ürünü güncelle
-	product.Name = name
-	product.Description = description
-	product.Price = price
-	product.Category = category
-	
-	// Resim yükleme işlemi
-	file, err := c.FormFile("image")
-	if err == nil && file != nil {
-		// Resim kaydetme işlemi
-		filename := uuid.New().String() + filepath.Ext(file.Filename)
-		filepath := filepath.Join("static", "uploads", filename)
-		
-		if err := c.SaveUploadedFile(file, filepath); err == nil {
-			product.ImageURL = "/static/uploads/" + filename
-		}
-	}
-	
-	// Veritabanını güncelle (bu fonksiyon database.go'da implement edilmeli)
-	// h.db.UpdateProduct(product)
-	
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Ürün güncellendi"})
-}
-
-// AdminOrders - Admin siparişler sayfası
-func (h *Handler) AdminOrders(c *gin.Context) {
-	orders, err := h.db.GetAllOrders()
-	if err != nil {
-		log.Printf("AdminOrders - Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Siparişler getirilemedi"})
-		return
-	}
-	
-	meta := h.createSEOMetaData(
-		"Sipariş Yönetimi",
-		"Su arıtma siparişlerini yönetin",
-		"admin, sipariş yönetimi, su arıtma siparişleri",
-		"/admin/orders",
-	)
-	meta["orders"] = orders
-	c.HTML(http.StatusOK, "admin.html", meta)
-}
-
-// UpdateOrderStatus - Sipariş durumu güncelleme
-func (h *Handler) UpdateOrderStatus(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz sipariş ID"})
-		return
-	}
-	
-	status := c.PostForm("status")
-	if status == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Durum belirtilmedi"})
-		return
-	}
-	
-	err = h.db.UpdateOrderStatus(id, status)
-	if err != nil {
-		log.Printf("UpdateOrderStatus - Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Sipariş durumu güncellenemedi"})
-		return
-	}
-	
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Sipariş durumu güncellendi"})
-}
-
-// AdminUsers - Admin kullanıcılar sayfası
-func (h *Handler) AdminUsers(c *gin.Context) {
-	users, err := h.db.GetAllUsers()
-	if err != nil {
-		log.Printf("AdminUsers - Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcılar getirilemedi"})
-		return
-	}
-	
-	meta := h.createSEOMetaData(
-		"Kullanıcı Yönetimi",
-		"Su arıtma sistemi kullanıcılarını yönetin",
-		"admin, kullanıcı yönetimi, su arıtma kullanıcıları",
-		"/admin/users",
-	)
-	meta["users"] = users
-	c.HTML(http.StatusOK, "admin.html", meta)
-}
-
-// DeleteUser - Kullanıcı silme
-func (h *Handler) DeleteUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz kullanıcı ID"})
-		return
-	}
-	
-	err = h.db.DeleteUser(id)
-	if err != nil {
-		log.Printf("DeleteUser - Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcı silinemedi"})
-		return
-	}
-	
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Kullanıcı silindi"})
-}
-
-// AdminReplyToSupport - Admin destek yanıtı
-func (h *Handler) AdminReplyToSupport(c *gin.Context) {
-	var request struct {
-		SessionID string `json:"session_id"`
-		Message   string `json:"message"`
-	}
-	
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
-		return
-	}
-	
-	if request.SessionID == "" || request.Message == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID ve mesaj gerekli"})
-		return
-	}
-	
-	// Mesajı kaydet
-	message := &models.Message{
-		SessionID: request.SessionID,
-		Content:   request.Message,
-		IsUser:    false,
-		Timestamp: time.Now(),
-	}
-	
-	err := h.db.SaveMessage(message)
-	if err != nil {
-		log.Printf("AdminReplyToSupport - Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Mesaj gönderilemedi"})
-		return
-	}
-	
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Yanıt gönderildi"})
-}
-
-// ... existing code ...
-
-// Test handlers for debugging
-func (h *Handler) TestSupportSessions(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"success":  true,
-		"sessions": []string{},
-		"message":  "Test endpoint working",
-	})
-}
-
-func (h *Handler) TestVideoCallRequests(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"success":  true,
-		"requests": []string{},
-		"message":  "Test endpoint working",
-	})
-}
+} 

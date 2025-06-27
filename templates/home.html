@@ -1,109 +1,375 @@
 {{template "base.html" .}}
 
 {{define "content"}}
-<div class="home-page">
-<!-- Hero Section -->
-<div class="hero-section bg-primary text-white py-5 rounded mb-5">
-    <div class="row align-items-center">
-        <div class="col-md-6">
-            <h1 class="display-4 fw-bold">Su Arıtma Uzmanı</h1>
-            <p class="lead">Temiz ve sağlıklı su için profesyonel su arıtma çözümleri.</p>
-            <a href="/products" class="btn btn-light btn-lg">Ürünlerimizi İnceleyin</a>
-        </div>
-        <div class="col-md-6 text-center">
-            <i class="fas fa-tint display-1"></i>
-        </div>
-    </div>
-</div>
-
-<!-- Category Sections -->
-<div class="row mb-5">
-    <div class="col-12">
-        <h2 class="text-center mb-4" style="color:#007bff;">Ürün Kategorilerimiz</h2>
-    </div>
-    
-    <!-- Su Arıtma Ürünleri -->
-    <div class="col-md-6 mb-4">
-        <div class="card category-card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <i class="fas fa-filter text-white mb-3" style="font-size: 3rem;"></i>
-                <h4 class="card-title text-white">Su Arıtma Ürünleri</h4>
-                <p class="card-text text-white">Ev ve işyerleri için profesyonel su arıtma cihazları, filtreler ve sistemler.</p>
-                <a href="/products?category=Su Arıtma Ürünleri" class="btn btn-light">Ürünleri Görüntüle</a>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Yedek Parça -->
-    <div class="col-md-6 mb-4">
-        <div class="card category-card h-100 shadow-sm">
-            <div class="card-body text-center">
-                <i class="fas fa-cogs text-white mb-3" style="font-size: 3rem;"></i>
-                <h4 class="card-title text-white">Yedek Parça</h4>
-                <p class="card-text text-white">Su arıtma cihazlarınız için kaliteli yedek parçalar ve aksesuarlar.</p>
-                <a href="/products?category=Yedek Parça" class="btn btn-light">Ürünleri Görüntüle</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Featured Products -->
-<div class="row mb-5">
-    <div class="col-12">
-        <h2 class="text-center mb-4" style="color:#007bff;">Öne Çıkan Ürünler</h2>
-    </div>
-    {{if .products}}
-        {{range .products}}
-        <div class="col-md-4 mb-4">
-            <div class="card product-card h-100 shadow-sm">
-                {{if .Image}}
-                <img src="{{.Image}}" class="card-img-top" alt="{{.Name}}">
-                {{else}}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center">
-                    <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section text-center py-5 mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-dark mb-4">Temiz Su, Sağlıklı Yaşam</h1>
+                <p class="lead mb-4">Türkiye'nin en güvenilir su arıtma uzmanı olarak, ailenizin sağlığı için en kaliteli çözümleri sunuyoruz. 10 yılı aşkın deneyimimizle 15,000+ mutlu müşterimizin güveni.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="/products" class="btn btn-primary btn-lg">
+                        <i class="fas fa-filter me-2"></i>Ürünleri İncele
+                    </a>
+                    <a href="/contact" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-phone me-2"></i><span class="text-dark">Ücretsiz Danışmanlık</span>
+                    </a>
                 </div>
-                {{end}}
-                <div class="card-body">
-                    <h5 class="card-title">{{.Name}}</h5>
-                    <p class="card-text">{{.Description}}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge bg-primary">{{.Category}}</span>
-                        <span class="text-success fw-bold">{{.Price}} ₺</span>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="hero-image position-relative">
+                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                         style="width: 300px; height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;">
+                        <i class="fas fa-tint text-white" style="font-size: 8rem; opacity: 0.9;"></i>
+                    </div>
+                    <!-- Floating badges -->
+                    <div class="position-absolute top-0 start-0 bg-success text-white px-3 py-2 rounded-pill">
+                        <small><i class="fas fa-check me-1"></i>ISO 9001</small>
+                    </div>
+                    <div class="position-absolute bottom-0 end-0 bg-warning text-dark px-3 py-2 rounded-pill">
+                        <small><i class="fas fa-award me-1"></i>5 Yıl Garanti</small>
                     </div>
                 </div>
-                <div class="card-footer">
-                    <small class="text-muted">Stok: {{.Stock}} adet</small>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section py-5 mb-5">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-primary mb-3">
+                        <i class="fas fa-users" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-primary">15,000+</h3>
+                                            <p class="text-dark mb-0">Mutlu Müşteri</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-success mb-3">
+                        <i class="fas fa-calendar-alt" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-success">10+</h3>
+                                            <p class="text-dark mb-0">Yıllık Deneyim</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-warning mb-3">
+                        <i class="fas fa-headset" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-warning">24/7</h3>
+                                            <p class="text-dark mb-0">Teknik Destek</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-info mb-3">
+                        <i class="fas fa-thumbs-up" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-info">99%</h3>
+                                            <p class="text-dark mb-0">Memnuniyet Oranı</p>
                 </div>
             </div>
         </div>
-        {{end}}
-    {{else}}
-        <div class="col-12 text-center">
-            <p class="text-muted">Henüz ürün eklenmemiş.</p>
+    </section>
+
+    <!-- Category Sections -->
+    <section class="categories-section mb-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3" style="color: #1e3a8a;">Ürün Kategorilerimiz</h2>
+                <p class="lead" style="color: #1e3a8a;">Ev ve işyerleri için profesyonel su arıtma çözümleri</p>
+            </div>
         </div>
-    {{end}}
+        
+        <div class="row">
+            <!-- Su Arıtma Ürünleri -->
+            <div class="col-md-6 mb-4">
+                <div class="category-card h-100 shadow-lg">
+                    <div class="card-body text-center">
+                        <div class="category-icon mb-4">
+                            <i class="fas fa-filter text-white" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 class="card-title text-white fw-bold mb-3">Su Arıtma Ürünleri</h4>
+                        <p class="card-text text-white mb-4">Ev ve işyerleri için profesyonel su arıtma cihazları, filtreler ve sistemler. En son teknoloji ile temiz su garantisi.</p>
+                        <a href="/products?category=Su Arıtma Ürünleri" class="btn btn-light btn-lg">
+                            <i class="fas fa-arrow-right me-2"></i>Ürünleri Görüntüle
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Yedek Parça -->
+            <div class="col-md-6 mb-4">
+                <div class="category-card h-100 shadow-lg">
+                    <div class="card-body text-center">
+                        <div class="category-icon mb-4">
+                            <i class="fas fa-cogs text-white" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 class="card-title text-white fw-bold mb-3">Yedek Parça & Aksesuarlar</h4>
+                        <p class="card-text text-white mb-4">Su arıtma cihazlarınız için kaliteli yedek parçalar ve aksesuarlar. Uzun ömürlü ve güvenilir çözümler.</p>
+                        <a href="/products?category=Yedek Parça" class="btn btn-light btn-lg">
+                            <i class="fas fa-arrow-right me-2"></i>Ürünleri Görüntüle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured-products mb-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3 text-dark">Öne Çıkan Ürünler</h2>
+                <p class="lead text-dark">En çok tercih edilen su arıtma çözümlerimiz</p>
+            </div>
+        </div>
+        
+        {{if .products}}
+            <div class="row">
+                {{range .products}}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="product-card h-100 shadow-sm">
+                        {{if .Image}}
+                        <img src="{{.Image}}" class="card-img-top" alt="{{.Name}}" style="height: 250px; object-fit: cover;">
+                        {{else}}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                            <i class="fas fa-filter text-primary" style="font-size: 4rem; opacity: 0.3;"></i>
+                        </div>
+                        {{end}}
+                        <div class="card-body">
+                                                            <h5 class="card-title fw-bold" style="color: #1e3a8a;">{{.Name}}</h5>
+                            <p class="card-text text-muted">{{.Description}}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-primary">{{.Category}}</span>
+                                <span class="text-success fw-bold fs-5">{{.Price}} ₺</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-dark">Stok: {{.Stock}} adet</small>
+                                <button class="btn btn-success btn-sm">
+                                    <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        {{else}}
+            <div class="col-12 text-center py-5">
+                <div class="bg-light rounded-4 p-5">
+                    <i class="fas fa-box-open text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted">Yakında Ürünler Eklenecek</h4>
+                    <p class="text-muted">En kaliteli su arıtma ürünleri için bizi takip edin.</p>
+                </div>
+            </div>
+        {{end}}
+        
+        <div class="text-center mt-4">
+            <a href="/products" class="btn btn-primary btn-lg">
+                <i class="fas fa-eye me-2"></i>Tüm Ürünleri Görüntüle
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section rounded-4">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="fw-bold mb-3">Neden Su Arıtma Uzmanı?</h2>
+                    <p class="lead">Müşterilerimize sunduğumuz benzersiz avantajlar</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Güvenli Su</h4>
+                    <p>Aileniz için en güvenli ve temiz su arıtma çözümleri. Uluslararası kalite standartlarında üretim.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Kaliteli Ürünler</h4>
+                    <p>En kaliteli su arıtma cihazları ve yedek parçalar. Test edilmiş ve onaylanmış ürünler.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Teknik Destek</h4>
+                    <p>Kurulum ve bakım için profesyonel teknik destek. 7/24 müşteri hizmetleri.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Hızlı Teslimat</h4>
+                    <p>Siparişleriniz 24-48 saat içinde ücretsiz kargo ile kapınızda.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Sertifikalı Ürünler</h4>
+                    <p>Tüm ürünlerimiz TSE, CE ve ISO sertifikalarına sahiptir.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Güven</h4>
+                    <p>15,000+ mutlu müşterimizin güveni ve %99 memnuniyet oranı.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Reviews Section -->
+    <section class="reviews-section py-5 mb-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3" style="color: #1e3a8a;">Müşteri Yorumları</h2>
+                <p class="lead" style="color: #1e3a8a;">Müşterilerimizin deneyimleri bizim en büyük motivasyonumuz</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stars text-warning mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                                            <p class="mb-3 fst-italic" style="color: #1e3a8a;">"3 yıldır kullanıyorum, su kalitesi gerçekten çok iyi. Ailecek çok memnunuz. Servis hizmeti de mükemmel, her sorunumuzda hemen yardımcı oluyorlar."</p>
+                    <div class="reviewer d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Mehmet Yılmaz</h6>
+                            <small class="text-muted">İstanbul</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stars text-warning mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                                            <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Kurulum çok profesyoneldi. Teknik ekip çok bilgiliydi ve her şeyi detaylı anlattılar. Su tadı gerçekten değişti, çok daha temiz ve lezzetli."</p>
+                    <div class="reviewer d-flex align-items-center">
+                        <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Ayşe Kaya</h6>
+                            <small class="text-muted">Ankara</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stars text-warning mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                                            <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Fiyat performans açısından çok başarılı. 2 yıldır hiç sorun yaşamadık. Kesinlikle tavsiye ederim, kaliteli ürün ve hizmet."</p>
+                    <div class="reviewer d-flex align-items-center">
+                        <div class="avatar bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Ali Demir</h6>
+                            <small class="text-muted">İzmir</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section text-center py-5 mb-5">
+        <div class="bg-primary text-white rounded-4 p-5">
+            <h2 class="fw-bold mb-3">Hemen Başlayın!</h2>
+            <p class="lead mb-4">Ailenizin sağlığı için en doğru seçimi yapın. Ücretsiz danışmanlık için hemen iletişime geçin.</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/contact" class="btn btn-light btn-lg">
+                    <i class="fas fa-phone me-2"></i>Hemen Ara
+                </a>
+                                        <a href="https://wa.me/905448113105" class="btn btn-success btn-lg" target="_blank">
+                    <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
 </div>
 
-<!-- Features Section -->
-<div class="row mb-5">
-    <div class="col-12">
-        <h2 class="text-center mb-4" style="color:#007bff;">Neden Su Arıtma Uzmanı?</h2>
-    </div>
-    <div class="col-md-4 text-center mb-4">
-        <i class="fas fa-shield-alt text-primary mb-3" style="font-size: 3rem;"></i>
-        <h4 style="color:#007bff;">Güvenli Su</h4>
-        <p style="color:#007bff;">Aileniz için en güvenli ve temiz su arıtma çözümleri.</p>
-    </div>
-    <div class="col-md-4 text-center mb-4">
-        <i class="fas fa-medal text-primary mb-3" style="font-size: 3rem;"></i>
-        <h4 style="color:#007bff;">Kaliteli Ürünler</h4>
-        <p style="color:#007bff;">En kaliteli su arıtma cihazları ve yedek parçalar.</p>
-    </div>
-    <div class="col-md-4 text-center mb-4">
-        <i class="fas fa-tools text-primary mb-3" style="font-size: 3rem;"></i>
-        <h4 style="color:#007bff;">Teknik Destek</h4>
-        <p style="color:#007bff;">Kurulum ve bakım için profesyonel teknik destek.</p>
-    </div>
-</div>
-</div>
+<style>
+.hero-section {
+    padding: 4rem 0;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    border-color: #667eea;
+}
+
+.review-card {
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+
+.cta-section .bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .hero-image > div {
+        width: 200px !important;
+        height: 200px !important;
+    }
+    
+    .hero-image i {
+        font-size: 5rem !important;
+    }
+}
+</style>
 {{end}} 
