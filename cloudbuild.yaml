@@ -1,12 +1,4 @@
 steps:
-  # Build the Go application
-  - name: 'gcr.io/cloud-builders/go'
-    args: ['build', '-o', 'main', './cmd/web']
-    env:
-      - 'CGO_ENABLED=0'
-      - 'GOOS=linux'
-      - 'GOARCH=amd64'
-
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/cenap:$COMMIT_SHA', '.']
