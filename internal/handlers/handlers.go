@@ -2083,19 +2083,25 @@ func (h *Handler) AdminDashboard(c *gin.Context) {
 func (h *Handler) AdminProducts(c *gin.Context) {
 	products, err := h.db.GetAllProducts()
 	if err != nil {
-		log.Printf("AdminProducts - Error: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ürünler getirilemedi"})
+		log.Printf("Ürünler yüklenirken hata: %v", err)
+		c.HTML(http.StatusInternalServerError, "admin.html", gin.H{
+			"error": "Ürünler yüklenirken hata oluştu",
+		})
 		return
 	}
-	
-	meta := h.createSEOMetaData(
-		"Ürün Yönetimi",
-		"Su arıtma ürünlerini yönetin",
-		"admin, ürün yönetimi, su arıtma ürünleri",
-		"/admin/products",
-	)
-	meta["products"] = products
-	c.HTML(http.StatusOK, "admin.html", meta)
+
+	c.HTML(http.StatusOK, "admin.html", gin.H{
+		"products": products,
+		"title":    "Admin - Ürün Yönetimi",
+	})
+}
+
+// AdminAddProductPage, ürün ekleme sayfasını gösterir
+func (h *Handler) AdminAddProductPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin.html", gin.H{
+		"title": "Admin - Ürün Ekle",
+		"showAddForm": true,
+	})
 }
 
 // EditProduct - Ürün düzenleme

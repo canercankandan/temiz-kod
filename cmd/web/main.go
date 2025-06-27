@@ -161,6 +161,7 @@ func main() {
 	{
 		admin.GET("/", h.AdminDashboard)
 		admin.GET("/products", h.AdminProducts)
+		admin.GET("/add-product", h.AdminAddProductPage)
 		admin.POST("/products/add", h.AddProduct)
 		admin.POST("/products/edit/:id", h.EditProduct)
 		admin.POST("/products/delete/:id", h.DeleteProduct)
@@ -175,9 +176,24 @@ func main() {
 	}
 
 	// App Engine için HTTP server başlat
-	log.Printf("Server başlatılıyor port %s", port)
+	log.Printf("Server başlatılıyor: http://192.168.1.133:%s", port)
 	
-	// App Engine için uygun server başlatma
+	// HTTPS için SSL sertifikası kontrolü
+	certFile := "cert.pem"
+	keyFile := "key.pem"
+	
+	// SSL sertifikası varsa HTTPS, yoksa HTTP kullan
+	if _, err := os.Stat(certFile); err == nil {
+		if _, err := os.Stat(keyFile); err == nil {
+			log.Printf("HTTPS server başlatılıyor: https://192.168.1.133:%s", port)
+			if err := http.ListenAndServeTLS(":"+port, certFile, keyFile, r); err != nil {
+				log.Fatalf("HTTPS server başlatılamadı: %v", err)
+			}
+		}
+	}
+	
+	// HTTP server (varsayılan)
+	log.Printf("HTTP server başlatılıyor: http://192.168.1.133:%s", port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatalf("Server başlatılamadı: %v", err)
 	}
