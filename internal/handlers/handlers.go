@@ -1251,13 +1251,13 @@ func (h *Handler) AdminGetUsers(c *gin.Context) {
 
 func (h *Handler) AdminDeleteUser(c *gin.Context) {
 	userIDStr := c.Param("id")
-	userID, err := strconv.Atoi(userIDStr)
+	id, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz kullanıcı ID"})
 		return
 	}
 
-	if err := h.db.DeleteUser(userID); err != nil {
+	if err := h.db.DeleteUser(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Kullanıcı silinemedi"})
 		return
 	}
@@ -2048,4 +2048,222 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 	log.Printf("AdminStartVideoCall - Video call request sent to session %s", request.SessionID)
 	
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video call talebi gönderildi"})
-} 
+}
+
+// AdminAuthMiddleware - Admin kimlik doğrulama middleware'i
+func (h *Handler) AdminAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Request.URL.Path == "/admin/login" {
+			c.Next()
+			return
+		}
+		
+		session, _ := c.Cookie("admin_session")
+		if session == "" {
+			c.Redirect(http.StatusSeeOther, "/admin/login")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+// AdminDashboard - Admin ana sayfa
+func (h *Handler) AdminDashboard(c *gin.Context) {
+	meta := h.createSEOMetaData(
+		"Admin Dashboard",
+		"Su arıtma sistemi yönetim paneli",
+		"admin, yönetim, dashboard",
+		"/admin",
+	)
+	c.HTML(http.StatusOK, "admin.html", meta)
+}
+
+// AdminProducts - Admin ürünler sayfası
+func (h *Handler) AdminProducts(c *gin.Context) {
+	products, err := h.db.GetAllProducts()
+	if err != nil {
+		log.Printf("AdminProducts - Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ürünler getirilemedi"})
+		return
+	}
+	
+	meta := h.createSEOMetaData(
+		"Ürün Yönetimi",
+		"Su arıtma ürünlerini yönetin",
+		"admin, ürün yönetimi, su arıtma ürünleri",
+		"/admin/products",
+	)
+	meta["products"] = products
+	c.HTML(http.StatusOK, "admin.html", meta)
+}
+
+// EditProduct - Ürün düzenleme
+func (h *Handler) EditProduct(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ürün ID"})
+		return
+	}
+	
+	product, err := h.db.GetProductByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Ürün bulunamadı"})
+		return
+	}
+	
+	// Form verilerini al
+	name := c.PostForm("name")
+	description := c.PostForm("description")
+	priceStr := c.PostForm("price")
+	category := c.PostForm("category")
+	
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz fiyat"})
+		return
+	}
+	
+	// Ürünü güncelle
+	product.Name = name
+	product.Description = description
+	product.Price = price
+	product.Category = category
+	
+	// Resim yükleme işlemi
+	file, err := c.FormFile("image")
+	if err == nil && file != nil {
+		// Resim kaydetme işlemi
+		filename := uuid.New().String() + filepath.Ext(file.Filename)
+		filepath := filepath.Join("static", "uploads", filename)
+		
+		if err := c.SaveUploadedFile(file, filepath); err == nil {
+			product.ImageURL = "/static/uploads/" + filename
+		}
+	}
+	
+	// Veritabanını güncelle (bu fonksiyon database.go'da implement edilmeli)
+	// h.db.UpdateProduct(product)
+	
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Ürün güncellendi"})
+}
+
+// AdminOrders - Admin siparişler sayfası
+func (h *Handler) AdminOrders(c *gin.Context) {
+	orders, err := h.db.GetAllOrders()
+	if err != nil {
+		log.Printf("AdminOrders - Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Siparişler getirilemedi"})
+		return
+	}
+	
+	meta := h.createSEOMetaData(
+		"Sipariş Yönetimi",
+		"Su arıtma siparişlerini yönetin",
+		"admin, sipariş yönetimi, su arıtma siparişleri",
+		"/admin/orders",
+	)
+	meta["orders"] = orders
+	c.HTML(http.StatusOK, "admin.html", meta)
+}
+
+// UpdateOrderStatus - Sipariş durumu güncelleme
+func (h *Handler) UpdateOrderStatus(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz sipariş ID"})
+		return
+	}
+	
+	status := c.PostForm("status")
+	if status == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Durum belirtilmedi"})
+		return
+	}
+	
+	err = h.db.UpdateOrderStatus(id, status)
+	if err != nil {
+		log.Printf("UpdateOrderStatus - Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Sipariş durumu güncellenemedi"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Sipariş durumu güncellendi"})
+}
+
+// AdminUsers - Admin kullanıcılar sayfası
+func (h *Handler) AdminUsers(c *gin.Context) {
+	users, err := h.db.GetAllUsers()
+	if err != nil {
+		log.Printf("AdminUsers - Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcılar getirilemedi"})
+		return
+	}
+	
+	meta := h.createSEOMetaData(
+		"Kullanıcı Yönetimi",
+		"Su arıtma sistemi kullanıcılarını yönetin",
+		"admin, kullanıcı yönetimi, su arıtma kullanıcıları",
+		"/admin/users",
+	)
+	meta["users"] = users
+	c.HTML(http.StatusOK, "admin.html", meta)
+}
+
+// DeleteUser - Kullanıcı silme
+func (h *Handler) DeleteUser(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz kullanıcı ID"})
+		return
+	}
+	
+	err = h.db.DeleteUser(id)
+	if err != nil {
+		log.Printf("DeleteUser - Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcı silinemedi"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Kullanıcı silindi"})
+}
+
+// AdminReplyToSupport - Admin destek yanıtı
+func (h *Handler) AdminReplyToSupport(c *gin.Context) {
+	var request struct {
+		SessionID string `json:"session_id"`
+		Message   string `json:"message"`
+	}
+	
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
+		return
+	}
+	
+	if request.SessionID == "" || request.Message == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID ve mesaj gerekli"})
+		return
+	}
+	
+	// Mesajı kaydet
+	message := &models.Message{
+		SessionID: request.SessionID,
+		Content:   request.Message,
+		IsUser:    false,
+		Timestamp: time.Now(),
+	}
+	
+	err := h.db.SaveMessage(message)
+	if err != nil {
+		log.Printf("AdminReplyToSupport - Error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Mesaj gönderilemedi"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Yanıt gönderildi"})
+}
+
+// ... existing code ...

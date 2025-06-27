@@ -9,9 +9,12 @@ type Message struct {
 	Username  string    `json:"username" db:"username"`   // Kullanıcı adı
 	SessionID string    `json:"session_id" db:"session_id"` // Session ID
 	Message   string    `json:"message" db:"message"`
+	Content   string    `json:"content" db:"content"`     // Mesaj içeriği (alternatif alan)
 	IsAdmin   bool      `json:"is_admin" db:"is_admin"`   // Admin mesajı mı?
+	IsUser    bool      `json:"is_user" db:"is_user"`     // Kullanıcı mesajı mı?
 	IsRead    bool      `json:"is_read" db:"is_read"`     // Okundu mu?
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	Timestamp time.Time `json:"timestamp" db:"timestamp"` // Zaman damgası
 }
 
 // SupportSession - Destek oturumu

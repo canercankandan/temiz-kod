@@ -1,5 +1,8 @@
 # Build stage
-FROM golang:1.24-alpine AS builder
+FROM golang:1.21-alpine AS builder
+
+# Gerekli paketleri yükle
+RUN apk add --no-cache git ca-certificates tzdata
 
 WORKDIR /app
 
@@ -11,23 +14,25 @@ RUN go mod download
 COPY . .
 
 # Uygulamayı derle
-RUN go build -o main ./cmd/web
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/web
 
 # Run stage
 FROM alpine:latest
+
+# Gerekli paketleri yükle
+RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
 
 # Gerekli dosyaları kopyala
 COPY --from=builder /app/main .
-COPY static ./static
-COPY templates ./templates
-COPY data.json .
-COPY orders.json .
+COPY --from=builder /app/static ./static
+COPY --from=builder /app/templates ./templates
+COPY --from=builder /app/data.json .
+COPY --from=builder /app/orders.json .
 
 # Portu belirt
 EXPOSE 8080
-EXPOSE 8081
 
 # Uygulamayı başlat
 CMD ["./main"] 
