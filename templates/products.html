@@ -55,7 +55,7 @@
                         <label class="form-label fw-semibold">
                             <i class="fas fa-layer-group me-2"></i>Kategori
                         </label>
-                        <select class="form-select" id="categoryFilter" onchange="filterProducts()">
+                        <select class="form-select" id="categoryFilter" onchange="filterProducts(); updateURL();">
                             <option value="">Tüm Kategoriler</option>
                             {{range .categories}}
                             <option value="{{.}}" {{if eq . $.selectedCategory}}selected{{end}}>{{.}}</option>
@@ -589,6 +589,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize add to cart buttons
     initAddToCartButtons();
+    
+    // Check if there's a category parameter in URL and set the filter
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    if (categoryParam) {
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (categoryFilter) {
+            categoryFilter.value = categoryParam;
+        }
+    }
+    
+    // Apply initial filtering
+    setTimeout(() => {
+        filterProducts();
+    }, 100);
 });
 
 // Filter products
@@ -835,6 +850,18 @@ function updateCartCount() {
             }
         })
         .catch(error => console.error('Cart count error:', error));
+}
+
+// Update URL with category parameter
+function updateURL() {
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const url = new URL(window.location.href);
+    if (categoryFilter && categoryFilter !== '') {
+        url.searchParams.set('category', categoryFilter);
+    } else {
+        url.searchParams.delete('category');
+    }
+    window.history.replaceState(null, '', url.toString());
 }
 </script>
 {{end}} 
