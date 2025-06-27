@@ -2267,3 +2267,20 @@ func (h *Handler) AdminReplyToSupport(c *gin.Context) {
 }
 
 // ... existing code ...
+
+// Test handlers for debugging
+func (h *Handler) TestSupportSessions(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"success":  true,
+		"sessions": []string{},
+		"message":  "Test endpoint working",
+	})
+}
+
+func (h *Handler) TestVideoCallRequests(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"success":  true,
+		"requests": []string{},
+		"message":  "Test endpoint working",
+	})
+}
