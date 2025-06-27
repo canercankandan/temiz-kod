@@ -32,7 +32,7 @@ func main() {
 	// App Engine için port ayarı
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"  // App Engine varsayılan portu
+		port = "8081"  // Yerel geliştirme için port 8081
 	}
 
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
