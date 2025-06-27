@@ -32,7 +32,7 @@ func main() {
 	// App Engine için port ayarı
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081"  // Varsayılan portu 8081 olarak değiştir
+		port = "8080"  // App Engine varsayılan portu
 	}
 
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
@@ -177,11 +177,8 @@ func main() {
 	// App Engine için HTTP server başlat
 	log.Printf("Server başlatılıyor port %s", port)
 	
-	// Sabit IP adresi kullan
-	serverAddr := "192.168.1.133:8081"  // Sabit IP ve port
-	log.Printf("Server adresi: %s", serverAddr)
-	
-	if err := http.ListenAndServe(serverAddr, r); err != nil {
+	// App Engine için uygun server başlatma
+	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatalf("Server başlatılamadı: %v", err)
 	}
 } 
