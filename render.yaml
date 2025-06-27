@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: su-aritma-uzmani
+    env: docker
+    plan: starter
+    region: frankfurt
+    buildCommand: docker build -t su-aritma-uzmani .
+    startCommand: docker run -p $PORT:8080 su-aritma-uzmani
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        value: irmaksuaritmam@gmail.com
+      - key: SMTP_PASS
+        value: znpg ejga sekw bmsw
+    healthCheckPath: /
+    autoDeploy: true 
