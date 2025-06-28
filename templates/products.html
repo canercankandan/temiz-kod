@@ -39,7 +39,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
                 <div class="row g-4">
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <label class="form-label fw-semibold">
                             <i class="fas fa-search me-2"></i>Ürün Ara
                         </label>
@@ -74,16 +74,6 @@
                             <option value="stock">Stok Durumu</option>
                         </select>
                     </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <div class="btn-group view-toggle" role="group">
-                            <button type="button" class="btn btn-outline-primary" id="gridViewBtn" onclick="toggleView('grid')" title="Kart Görünümü">
-                                <i class="fas fa-th"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-primary" id="listViewBtn" onclick="toggleView('list')" title="Liste Görünümü">
-                                <i class="fas fa-list"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -110,106 +100,38 @@
         </div>
     </section>
 
-    <!-- Products Grid View -->
-    <div id="gridView" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" style="display: block;">
+    <!-- Products Simple List View -->
+    <div id="productsContainer" class="row">
         {{if .products}}
         {{range .products}}
-        <div class="col d-flex align-items-stretch">
-            <div class="product-item" data-name="{{.Name}}" data-category="{{.Category}}" data-price="{{.Price}}" data-stock="{{.Stock}}" data-date="{{.CreatedAt.Format "2006-01-02"}}">
-                <div class="product-card h-100 d-flex flex-column">
-                    <img src="{{if .Image}}{{.Image}}{{else}}/static/images/no-image.png{{end}}" class="card-img-top product-image" alt="{{.Name}}">
-                    <div class="card-body d-flex flex-column">
-                        <span class="badge bg-primary mb-2">{{.Category}}</span>
-                        <h5 class="card-title">{{.Name}}</h5>
-                        <p class="card-text flex-grow-1">{{.Description}}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="price-tag text-success">{{.Price}} ₺</span>
-                            <span class="text-warning"><i class="fas fa-star"></i> 4.9</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{.CreatedAt.Format "02.01.2006"}}</small>
-                            <small class="text-muted"><i class="fas fa-eye me-1"></i>1,234</small>
-                        </div>
-                        <div class="d-flex gap-2 mt-3">
-                            <button class="btn btn-info view-product-btn w-100" data-bs-toggle="modal" data-bs-target="#quickViewModal" data-product-name="{{.Name}}" data-product-description="{{.Description}}" data-product-price="{{.Price}}" data-product-category="{{.Category}}" data-product-stock="{{.Stock}}" data-product-image="{{.Image}}" data-product-features="{{.Features}}"><i class="fas fa-eye me-2"></i>İncele</button>
-                            <button class="btn btn-primary add-to-cart-btn w-100" data-product-id="{{.ID}}" data-product-name="{{.Name}}"><i class="fas fa-cart-plus me-2"></i>Sepete Ekle</button>
-                        </div>
-                    </div>
+        <div class="col-12 mb-3 product-item" data-name="{{.Name}}" data-category="{{.Category}}" data-price="{{.Price}}" data-stock="{{.Stock}}" data-date="{{.CreatedAt.Format "2006-01-02"}}" data-description="{{.Description}}" data-image="{{.Image}}" data-id="{{.ID}}">
+            <div class="d-flex align-items-center border rounded p-3">
+                {{if .Image}}
+                <img src="{{.Image}}" alt="{{.Name}}" style="width: 80px; height: 80px; object-fit: cover; margin-right: 15px; cursor: pointer;" onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
+                {{else}}
+                <div class="bg-light d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; margin-right: 15px; cursor: pointer;" onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
+                    <i class="fas fa-image text-muted"></i>
                 </div>
+                {{end}}
+                <div class="flex-grow-1" style="cursor: pointer;" onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
+                    <div class="fw-bold" style="font-size: 1.1rem;">{{.Name}}</div>
+                    <div class="small" style="color: #1e3a8a;">{{.Category}}</div>
+                </div>
+                <div class="fw-bold text-primary" style="font-size: 1.1rem; min-width: 70px; text-align: right; margin-right: 15px;">{{.Price}} ₺</div>
+                <button class="btn btn-primary btn-sm" onclick="addToCart('{{.ID}}', '{{.Name}}', '{{.Price}}')">
+                    <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
+                </button>
             </div>
         </div>
         {{end}}
         {{else}}
-        <div class="col-12 text-center py-5">
-            <div class="bg-light rounded-4 p-5">
-                <i class="fas fa-box-open text-muted mb-4" style="font-size: 5rem;"></i>
-                <h3 class="text-muted mb-3">Henüz ürün eklenmemiş</h3>
-                <p class="text-muted mb-4">Yakında en kaliteli su arıtma ürünleri burada olacak!</p>
-                <a href="/contact" class="btn btn-primary"><i class="fas fa-phone me-2"></i>Bilgi Al</a>
-            </div>
-        </div>
-        {{end}}
-    </div>
-
-    <!-- Products List View -->
-    <div id="listView" style="display: none;">
-        {{if .products}}
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Ürün</th>
-                                <th>Kategori</th>
-                                <th>Fiyat</th>
-                                <th>Stok</th>
-                                <th>Değerlendirme</th>
-                                <th>İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productsTableBody">
-                            {{range .products}}
-                            <tr class="product-item" data-name="{{.Name}}" data-category="{{.Category}}" data-price="{{.Price}}" data-stock="{{.Stock}}" data-date="{{.CreatedAt.Format "2006-01-02"}}">
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <img src="{{if .Image}}{{.Image}}{{else}}/static/images/no-image.png{{end}}" alt="{{.Name}}" class="product-thumb">
-                                        <div>
-                                            <h6 class="fw-semibold mb-1">{{.Name}}</h6>
-                                            <small class="text-muted">{{.Description}}</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-primary">{{.Category}}</span></td>
-                                <td><span class="text-success fw-bold">{{.Price}} ₺</span></td>
-                                <td>{{.Stock}}</td>
-                                <td><span class="text-warning"><i class="fas fa-star"></i> 4.9</span></td>
-                                <td>
-                                    <button class="btn btn-info btn-sm view-product-btn" data-bs-toggle="modal" data-bs-target="#quickViewModal" data-product-name="{{.Name}}" data-product-description="{{.Description}}" data-product-price="{{.Price}}" data-product-category="{{.Category}}" data-product-stock="{{.Stock}}" data-product-image="{{.Image}}" data-product-features="{{.Features}}"><i class="fas fa-eye"></i></button>
-                                    <button class="btn btn-primary btn-sm add-to-cart-btn" data-product-id="{{.ID}}" data-product-name="{{.Name}}"><i class="fas fa-cart-plus"></i></button>
-                                </td>
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        {{else}}
-        <div class="text-center py-5">
-            <div class="bg-light rounded-4 p-5">
-                <i class="fas fa-box-open text-muted mb-4" style="font-size: 5rem;"></i>
-                <h3 class="text-muted mb-3">Henüz ürün eklenmemiş</h3>
-                <p class="text-muted mb-4">Yakında en kaliteli su arıtma ürünleri burada olacak!</p>
-                <a href="/contact" class="btn btn-primary"><i class="fas fa-phone me-2"></i>Bilgi Al</a>
-            </div>
-        </div>
+        <div class="col-12 text-center text-muted py-5">Ürün bulunamadı.</div>
         {{end}}
     </div>
 </div>
 
-<!-- Quick View Modal -->
-<div class="modal fade" id="quickViewModal" tabindex="-1">
+<!-- Product Details Modal -->
+<div class="modal fade" id="productDetailsModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header border-0">
@@ -219,11 +141,13 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <img id="modalProductImage" src="" alt="" class="img-fluid rounded">
+                        <div class="modal-image-container">
+                            <img id="modalProductImage" src="" alt="" class="img-fluid rounded modal-product-image">
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <h4 id="modalProductName" class="fw-bold mb-3" style="color: #1e3a8a;"></h4>
-                        <p id="modalProductDescription" class="text-primary mb-3"></p>
+                        <p id="modalProductDescription" class="text-muted mb-3"></p>
                         <div class="mb-3">
                             <span class="badge bg-primary" id="modalProductCategory"></span>
                         </div>
@@ -236,7 +160,11 @@
                         <div class="features mb-4">
                             <h6 class="fw-semibold mb-2" style="color: #1e3a8a;">Özellikler:</h6>
                             <ul class="list-unstyled" id="modalProductFeatures">
-                                <!-- Dinamik özellikler buraya eklenecek -->
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Yüksek kalite malzeme</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Uzun ömürlü kullanım</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Kolay kurulum</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Ücretsiz teknik destek</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>2 yıl garanti</li>
                             </ul>
                         </div>
                         <button class="btn btn-primary btn-lg w-100" id="modalAddToCart">
@@ -250,6 +178,7 @@
 </div>
 
 <style>
+/* Professional Product Image Styling */
 .products-hero {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 20px;
@@ -265,199 +194,191 @@
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
+/* Simple Product Card Styling - Like Home Page */
 .product-card {
     transition: all 0.3s ease;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
 }
 
 .product-card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
 }
 
-.product-card:hover .card {
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
-}
-
-.product-image {
-    height: 280px;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.bg-gradient {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.product-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
+/* Simple Image Styling */
+.card-img-top {
     transition: all 0.3s ease;
 }
 
-.product-card:hover .product-overlay {
-    opacity: 1;
-}
-
-.product-card:hover .product-image {
+.product-card:hover .card-img-top {
     transform: scale(1.05);
 }
 
-.quick-view-btn {
-    opacity: 0;
+/* Product Badges */
+.badge {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Price Styling */
+.text-success {
+    color: #28a745 !important;
+}
+
+/* Button Styling */
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
     transition: all 0.3s ease;
 }
 
-.product-card:hover .quick-view-btn {
-    opacity: 1;
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    transform: translateY(-2px);
 }
 
-.product-thumb {
-    width: 60px;
-    height: 60px;
+/* Responsive Design */
+@media (max-width: 768px) {
+    .product-card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-img-top {
+        height: 200px !important;
+    }
+}
+
+/* Modal Styling */
+.modal-image-container {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.modal-product-image {
+    width: 100%;
+    height: 300px;
     object-fit: cover;
 }
 
-.price-tag {
-    position: relative;
+/* Search and Filter Styling */
+.search-filter-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
 }
 
-.price-tag::before {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(45deg, #4CAF50, #45a049);
-    border-radius: 1px;
+.filter-controls {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
-.empty-state {
-    min-height: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.filter-section .form-label {
-    color: #495057;
-    margin-bottom: 0.5rem;
-}
-
-.btn-group .btn.active,
-.btn-group .btn:hover {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-color: #667eea;
+/* Product Count Badge */
+.product-count-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-@media (max-width: 768px) {
-    .product-overlay {
-        position: static;
-        opacity: 1;
-        background: transparent;
-        padding: 1rem 0 0;
-    }
-    
-    .quick-view-btn {
-        opacity: 1;
-    }
-    
-    .product-image {
-        height: 220px;
-    }
+/* Empty State Styling */
+.empty-state {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.empty-state i {
+    color: #6c757d;
+    opacity: 0.5;
 }
 
 /* Loading Animation */
 .loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(0,0,0,.1);
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
     border-radius: 50%;
-    border-top-color: #007bff;
-    animation: spin 1s ease-in-out infinite;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>
 
 <script>
-let currentView = 'grid';
-
-// Toggle between grid and list view
-function toggleView(view) {
-    currentView = view;
-    const gridView = document.getElementById('gridView');
-    const listView = document.getElementById('listView');
-    const gridBtn = document.getElementById('gridViewBtn');
-    const listBtn = document.getElementById('listViewBtn');
+// Show product details modal
+function showProductDetails(id, name, description, category, price, stock, image) {
+    // Set modal content
+    document.getElementById('modalProductName').textContent = name;
+    document.getElementById('modalProductDescription').textContent = description;
+    document.getElementById('modalProductCategory').textContent = category;
+    document.getElementById('modalProductPrice').textContent = price + ' ₺';
+    document.getElementById('modalProductStock').textContent = stock;
     
-    if (view === 'grid') {
-        gridView.style.display = 'block';
-        listView.style.display = 'none';
-        gridBtn.classList.add('active');
-        listBtn.classList.remove('active');
+    if (image) {
+        document.getElementById('modalProductImage').src = image;
+        document.getElementById('modalProductImage').alt = name;
     } else {
-        gridView.style.display = 'none';
-        listView.style.display = 'block';
-        listBtn.classList.add('active');
-        gridBtn.classList.remove('active');
+        document.getElementById('modalProductImage').src = '/static/images/placeholder.jpg';
+        document.getElementById('modalProductImage').alt = 'Ürün resmi yok';
     }
     
-    // Save preference
-    localStorage.setItem('productsView', view);
+    // Set modal add to cart button
+    document.getElementById('modalAddToCart').onclick = function() {
+        addToCart(id, name, price);
+    };
     
-    // Re-apply filtering after view change
-    setTimeout(() => {
-        filterProducts();
-    }, 100);
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('productDetailsModal'));
+    modal.show();
 }
 
-// Load saved view preference
-document.addEventListener('DOMContentLoaded', function() {
-    const savedView = localStorage.getItem('productsView') || 'grid';
-    toggleView(savedView);
-    
-    // Initialize quick view modal
-    initQuickViewModal();
-    
-    // Initialize view product buttons
-    initViewProductButtons();
-    
-    // Initialize add to cart buttons
-    initAddToCartButtons();
-    
-    // Check if there's a category parameter in URL and set the filter
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryParam = urlParams.get('category');
-    if (categoryParam) {
-        const categoryFilter = document.getElementById('categoryFilter');
-        if (categoryFilter) {
-            categoryFilter.value = categoryParam;
+// Add to cart function
+function addToCart(productId, productName, productPrice) {
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('success', `${productName} sepete eklendi!`);
+            updateCartCount();
+        } else {
+            showToast('error', data.message || 'Ürün sepete eklenirken hata oluştu.');
         }
-    }
-    
-    // Apply initial filtering after a short delay to ensure DOM is ready
-    setTimeout(() => {
-        console.log('Initial filtering...');
-        filterProducts();
-    }, 500);
-});
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Ürün sepete eklenirken hata oluştu.');
+    });
+}
 
 // Filter products
 function filterProducts() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const categoryFilter = document.getElementById('categoryFilter').value.trim().toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value.trim();
     const sortFilter = document.getElementById('sortFilter').value;
     
     let products = Array.from(document.querySelectorAll('.product-item'));
@@ -470,21 +391,20 @@ function filterProducts() {
     });
     
     // Filter products
-    products.forEach(product => {
+    products.forEach((product, index) => {
         const name = (product.dataset.name || '').toLowerCase();
-        const category = (product.dataset.category || '').trim().toLowerCase();
-        const description = product.querySelector('.card-text, td small')?.textContent.toLowerCase() || '';
+        const category = (product.dataset.category || '').trim();
         
-        const matchesSearch = !searchTerm || name.includes(searchTerm) || description.includes(searchTerm);
-        const matchesCategory = !categoryFilter || category === categoryFilter;
-        
-        console.log('Product:', {
+        // Debug: Her ürünün kategori bilgisini logla
+        console.log(`Product ${index + 1}:`, {
             name: product.dataset.name,
-            category: product.dataset.category,
-            matchesSearch,
-            matchesCategory,
-            shouldShow: matchesSearch && matchesCategory
+            category: category,
+            categoryFilter: categoryFilter,
+            matchesCategory: !categoryFilter || category === categoryFilter
         });
+        
+        const matchesSearch = !searchTerm || name.includes(searchTerm);
+        const matchesCategory = !categoryFilter || category === categoryFilter;
         
         if (matchesSearch && matchesCategory) {
             product.style.display = '';
@@ -499,14 +419,22 @@ function filterProducts() {
     sortProducts(visibleProducts, sortFilter);
     
     // Update count
-    document.getElementById('productCount').textContent = visibleCount;
+    const countElement = document.getElementById('productCount');
+    if (countElement) {
+        countElement.textContent = visibleCount;
+    }
+    
+    console.log('Filtering completed. Visible products:', visibleCount);
 }
 
 // Sort products
 function sortProducts(products, sortBy) {
-    const container = currentView === 'grid' ? 
-        document.getElementById('productsContainer') : 
-        document.getElementById('productsTableBody');
+    const container = document.getElementById('productsContainer');
+    
+    if (!container) {
+        console.error('Container not found');
+        return;
+    }
     
     products.sort((a, b) => {
         switch(sortBy) {
@@ -524,155 +452,33 @@ function sortProducts(products, sortBy) {
     });
     
     // Reorder in DOM
-    products.forEach(product => container.appendChild(product));
-}
-
-// Quick view modal
-function initQuickViewModal() {
-    document.querySelectorAll('.quick-view-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const name = this.dataset.productName;
-            const description = this.dataset.productDescription;
-            const price = this.dataset.productPrice;
-            const category = this.dataset.productCategory;
-            const stock = this.dataset.productStock;
-            const image = this.dataset.productImage;
-            
-            document.getElementById('modalProductName').textContent = name;
-            document.getElementById('modalProductDescription').textContent = description;
-            document.getElementById('modalProductPrice').textContent = price + ' ₺';
-            document.getElementById('modalProductCategory').textContent = category;
-            document.getElementById('modalProductStock').textContent = stock;
-            
-            // Dinamik özellikleri yükle
-            loadProductFeatures(this.dataset.productFeatures, category);
-            
-            const modalImage = document.getElementById('modalProductImage');
-            if (image) {
-                modalImage.src = image;
-                modalImage.alt = name;
-            } else {
-                modalImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0yMDAgMTUwQzIwNSAxNTAgMjEwIDE0NSAyMTAgMTQwQzIxMCAxMzUgMjA1IDEzMCAyMDAgMTMwQzE5NSAxMzAgMTkwIDEzNSAxOTAgMTQwQzE5MCAxNDUgMTk1IDE1MCAyMDAgMTUwWiIgZmlsbD0iIzY2N0VFQSIvPgo8L3N2Zz4K';
-                modalImage.alt = 'Ürün Görseli';
-            }
-        });
-    });
-}
-
-// Dinamik özellikleri yükle
-function loadProductFeatures(featuresJson, category) {
-    const featuresContainer = document.getElementById('modalProductFeatures');
-    let featuresHtml = '';
-    
-    // Varsayılan özellikler
-    if (category === 'Yedek Parça') {
-        featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>1 Yıl Garanti</li>';
-    } else {
-        featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>5 Yıl Garanti</li>';
-        featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>Ücretsiz Kurulum</li>';
-    }
-    
-    featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>24/7 Teknik Destek</li>';
-    featuresHtml += '<li class="text-primary"><i class="fas fa-check text-success me-2"></i>CE Sertifikalı</li>';
-    
-    // Dinamik özellikleri ekle
-    if (featuresJson) {
-        try {
-            const features = JSON.parse(featuresJson);
-            for (const [key, value] of Object.entries(features)) {
-                featuresHtml += `<li class="text-primary"><i class="fas fa-check text-success me-2"></i>${key}: ${value}</li>`;
-            }
-        } catch (e) {
-            console.error('Özellikler parse edilemedi:', e);
+    products.forEach(product => {
+        if (container.contains(product)) {
+            container.appendChild(product);
         }
+    });
+}
+
+// Load saved view preference
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if there's a category parameter in URL and set the filter
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    if (categoryParam) {
+        const categoryFilter = document.getElementById('categoryFilter');
+        if (categoryFilter) {
+            // URL-encoded kategori parametresini decode et
+            const decodedCategory = decodeURIComponent(categoryParam);
+            categoryFilter.value = decodedCategory;
+            console.log('URL category parameter:', categoryParam, 'decoded:', decodedCategory);
+            // Kategori select ayarlandıktan sonra filtreyi tetikle
+            filterProducts();
+        }
+    } else {
+        // Sayfa ilk açıldığında da ürünleri göster
+        filterProducts();
     }
-    
-    featuresContainer.innerHTML = featuresHtml;
-}
-
-// View product buttons
-function initViewProductButtons() {
-    document.querySelectorAll('.view-product-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const name = this.dataset.productName;
-            const description = this.dataset.productDescription;
-            const price = this.dataset.productPrice;
-            const category = this.dataset.productCategory;
-            const stock = this.dataset.productStock;
-            const image = this.dataset.productImage;
-            const features = this.dataset.productFeatures; // Yeni özellik
-            
-            document.getElementById('modalProductName').textContent = name;
-            document.getElementById('modalProductDescription').textContent = description;
-            document.getElementById('modalProductPrice').textContent = price + ' ₺';
-            document.getElementById('modalProductCategory').textContent = category;
-            document.getElementById('modalProductStock').textContent = stock;
-            
-            // Dinamik özellikleri yükle
-            loadProductFeatures(features, category);
-            
-            const modalImage = document.getElementById('modalProductImage');
-            if (image) {
-                modalImage.src = image;
-                modalImage.alt = name;
-            } else {
-                modalImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDQwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjhGOUZBIi8+CjxwYXRoIGQ9Ik0yMDAgMTUwQzIwNSAxNTAgMjEwIDE0NSAyMTAgMTQwQzIxMCAxMzUgMjA1IDEzMCAyMDAgMTMwQzE5NSAxMzAgMTkwIDEzNSAxOTAgMTQwQzE5MCAxNDUgMTk1IDE1MCAyMDAgMTUwWiIgZmlsbD0iIzY2N0VFQSIvPgo8L3N2Zz4K';
-                modalImage.alt = 'Ürün Görseli';
-            }
-        });
-    });
-}
-
-// Add to cart functionality
-function initAddToCartButtons() {
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const productId = this.dataset.productId;
-            const productName = this.dataset.productName;
-            
-            // Show loading state
-            const originalText = this.innerHTML;
-            this.innerHTML = '<span class="loading-spinner me-2"></span>Ekleniyor...';
-            this.disabled = true;
-            
-            // Simulate API call
-            fetch('/cart/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    product_id: parseInt(productId),
-                    quantity: 1
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Reset button
-                this.innerHTML = originalText;
-                this.disabled = false;
-                
-                if (data.success) {
-                    // Show success message
-                    showToast('success', productName + ' sepete eklendi!');
-                    
-                    // Update cart count
-                    updateCartCount();
-                } else {
-                    showToast('error', data.message || 'Bir hata oluştu');
-                }
-            })
-            .catch(error => {
-                // Reset button
-                this.innerHTML = originalText;
-                this.disabled = false;
-                
-                showToast('error', 'Bir hata oluştu, lütfen tekrar deneyin');
-                console.error('Error:', error);
-            });
-        });
-    });
-}
+});
 
 // Show toast notification
 function showToast(type, message) {
