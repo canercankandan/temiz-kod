@@ -776,6 +776,76 @@
       "is_admin": false,
       "is_read": true,
       "created_at": "2025-06-29T18:00:56.0882464+03:00"
+    },
+    {
+      "id": 66,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T18:30:03.6847701+03:00"
+    },
+    {
+      "id": 67,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T18:30:43.5544406+03:00"
+    },
+    {
+      "id": 68,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T18:34:51.2653079+03:00"
+    },
+    {
+      "id": 69,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T18:40:24.3437834+03:00"
+    },
+    {
+      "id": 70,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T18:41:50.695748+03:00"
+    },
+    {
+      "id": 71,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "merhaba,",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T18:42:17.6248797+03:00"
+    },
+    {
+      "id": 72,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "nasılsın",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-06-29T18:42:25.6974454+03:00"
     }
   ],
   "support_sessions": [
@@ -895,7 +965,7 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "status": "active",
-      "last_message_at": "2025-06-29T18:00:56.0882464+03:00",
+      "last_message_at": "2025-06-29T18:42:25.6974454+03:00",
       "created_at": "2025-06-26T15:00:12.7976583+03:00",
       "unread_count": 0
     },
@@ -2299,6 +2369,56 @@
       "status": "ended",
       "requested_at": "2025-06-29T18:00:57.0471358+03:00",
       "responded_at": "2025-06-29T18:02:50.0421058+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 139,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T18:30:04.7039835+03:00",
+      "responded_at": "2025-06-29T18:30:16.7334527+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 140,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T18:30:44.6099027+03:00",
+      "responded_at": "2025-06-29T18:32:09.3664422+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 141,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T18:34:52.2555695+03:00",
+      "responded_at": "2025-06-29T18:36:35.816112+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 142,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T18:40:25.380497+03:00",
+      "responded_at": "2025-06-29T18:41:38.1521024+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 143,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T18:41:51.604923+03:00",
+      "responded_at": "2025-06-29T18:46:06.5461872+03:00",
       "initiator": ""
     }
   ]
