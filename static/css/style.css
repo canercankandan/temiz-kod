@@ -446,24 +446,28 @@ footer h5 {
 .hero-bg {
     min-height: 520px;
     width: 100%;
-    background: url('/static/uploads/bebek.jpeg') center center/cover no-repeat;
+    background: url('/static/uploads/bebek.jpeg') center center/cover no-repeat !important;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     padding: 0;
+    border-radius: 16px;
+    margin: 20px 0;
 }
 .hero-content {
     position: relative;
     z-index: 2;
-    background: none;
-    border-radius: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
     padding: 32px 24px;
     margin: 0;
     margin-right: 50px;
     color: #F5F5DC;
     text-shadow: 0 2px 16px rgba(245,245,220,0.6);
     text-align: right;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 .hero-content h1, .hero-content p {
     color: #F5F5DC;
@@ -475,11 +479,13 @@ footer h5 {
         min-height: 320px;
         background-size: cover;
         justify-content: center;
+        margin: 10px 0;
     }
     .hero-content {
         text-align: center;
         margin: 0;
         padding: 16px;
+        margin: 0 10px;
     }
     .hero-content h1, .hero-content p {
         text-align: center;
