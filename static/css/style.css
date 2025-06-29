@@ -446,7 +446,7 @@ footer h5 {
 .hero-bg {
     min-height: 520px;
     width: 100%;
-    background: url('../uploads/bebek.jpeg') center center/cover no-repeat !important;
+    background: url('/static/uploads/bebek.jpeg') center center/cover no-repeat !important;
     position: relative;
     display: flex;
     align-items: center;
