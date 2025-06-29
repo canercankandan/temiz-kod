@@ -3,33 +3,14 @@
 {{define "content"}}
 <div class="container">
     <!-- Hero Section -->
-    <section class="hero-section text-center py-5 mb-5">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold text-dark mb-4">Temiz Su, Sağlıklı Yaşam</h1>
-                <p class="lead mb-4">Türkiye'nin en güvenilir su arıtma uzmanı olarak, ailenizin sağlığı için en kaliteli çözümleri sunuyoruz. 10 yılı aşkın deneyimimizle 15,000+ mutlu müşterimizin güveni.</p>
-                <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="/products" class="btn btn-primary btn-lg">
-                        <i class="fas fa-filter me-2"></i>Ürünleri İncele
-                    </a>
-                    <a href="/contact" class="btn btn-outline-primary btn-lg">
-                        <i class="fas fa-phone me-2"></i><span class="text-dark">Ücretsiz Danışmanlık</span>
-                    </a>
-                </div>
-            </div>
-            <div class="col-lg-6 text-center">
-                <div class="hero-image position-relative">
-                    <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
-                         style="width: 300px; height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;">
-                        <i class="fas fa-tint text-white" style="font-size: 8rem; opacity: 0.9;"></i>
-                    </div>
-                    <!-- Floating badges -->
-                    <div class="position-absolute top-0 start-0 bg-success text-white px-3 py-2 rounded-pill">
-                        <small><i class="fas fa-check me-1"></i>ISO 9001</small>
-                    </div>
-                    <div class="position-absolute bottom-0 end-0 bg-warning text-dark px-3 py-2 rounded-pill">
-                        <small><i class="fas fa-award me-1"></i>5 Yıl Garanti</small>
-                    </div>
+    <section class="hero-section text-center py-5 mb-5 hero-bg">
+        <div class="container hero-bg d-flex align-items-center justify-content-center" style="min-height: 520px;">
+            <div class="row w-100 align-items-center">
+                <div class="col-lg-6 col-md-12 hero-content text-start">
+                    <h1 class="display-4 fw-bold mb-3">Su Arıtma Sistemleri</h1>
+                    <p class="lead mb-4">Ev ve iş yeriniz için sağlıklı, güvenli ve ekonomik su arıtma çözümleri.</p>
+                    <a href="/products" class="btn btn-primary btn-lg me-2">Ürünleri İncele</a>
+                    <a href="/contact" class="btn btn-outline-primary btn-lg">İletişim</a>
                 </div>
             </div>
         </div>
@@ -44,7 +25,7 @@
                         <i class="fas fa-users" style="font-size: 3rem;"></i>
                     </div>
                     <h3 class="fw-bold text-primary">15,000+</h3>
-                                            <p class="text-dark mb-0">Mutlu Müşteri</p>
+                    <p class="text-dark mb-0">Mutlu Müşteri</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
@@ -53,7 +34,7 @@
                         <i class="fas fa-calendar-alt" style="font-size: 3rem;"></i>
                     </div>
                     <h3 class="fw-bold text-success">10+</h3>
-                                            <p class="text-dark mb-0">Yıllık Deneyim</p>
+                    <p class="text-dark mb-0">Yıllık Deneyim</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
@@ -62,7 +43,7 @@
                         <i class="fas fa-headset" style="font-size: 3rem;"></i>
                     </div>
                     <h3 class="fw-bold text-warning">24/7</h3>
-                                            <p class="text-dark mb-0">Teknik Destek</p>
+                    <p class="text-dark mb-0">Teknik Destek</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-4">
@@ -71,7 +52,7 @@
                         <i class="fas fa-thumbs-up" style="font-size: 3rem;"></i>
                     </div>
                     <h3 class="fw-bold text-info">99%</h3>
-                                            <p class="text-dark mb-0">Memnuniyet Oranı</p>
+                    <p class="text-dark mb-0">Memnuniyet Oranı</p>
                 </div>
             </div>
         </div>
@@ -92,22 +73,29 @@
                 <div class="col-lg-4 col-md-6 mb-4">
                     <div class="product-card h-100 shadow-sm">
                         {{if .Image}}
-                        <img src="{{.Image}}" class="card-img-top" alt="{{.Name}}" style="height: 250px; object-fit: cover;">
+                        <img src="{{.Image}}" class="card-img-top" alt="{{.Name}}" style="height: 250px; object-fit: cover; cursor: pointer;" 
+                             onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
                         {{else}}
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px; cursor: pointer;" 
+                             onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
                             <i class="fas fa-filter text-primary" style="font-size: 4rem; opacity: 0.3;"></i>
                         </div>
                         {{end}}
                         <div class="card-body">
-                                                            <h5 class="card-title fw-bold" style="color: #1e3a8a;">{{.Name}}</h5>
-                            <p class="card-text text-muted">{{.Description}}</p>
+                            <h5 class="card-title fw-bold" style="color: #1e3a8a; cursor: pointer;" 
+                                onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Name}}</h5>
+                            <p class="card-text text-muted" style="cursor: pointer;" 
+                               onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Description}}</p>
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge bg-primary">{{.Category}}</span>
-                                <span class="text-success fw-bold fs-5">{{.Price}} ₺</span>
+                                <span class="badge bg-primary" style="cursor: pointer;" 
+                                      onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Category}}</span>
+                                <span class="text-success fw-bold fs-5" style="cursor: pointer;" 
+                                      onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Price}} ₺</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-dark">Stok: {{.Stock}} adet</small>
-                                <button class="btn btn-success btn-sm">
+                                <small class="text-dark" style="cursor: pointer;" 
+                                       onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">Stok: {{.Stock}} adet</small>
+                                <button class="btn btn-success btn-sm" onclick="addToCart('{{.ID}}', '{{.Name}}', '{{.Price}}')">
                                     <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
                                 </button>
                             </div>
@@ -209,7 +197,7 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                                            <p class="mb-3 fst-italic" style="color: #1e3a8a;">"3 yıldır kullanıyorum, su kalitesi gerçekten çok iyi. Ailecek çok memnunuz. Servis hizmeti de mükemmel, her sorunumuzda hemen yardımcı oluyorlar."</p>
+                    <p class="mb-3 fst-italic" style="color: #1e3a8a;">"3 yıldır kullanıyorum, su kalitesi gerçekten çok iyi. Ailecek çok memnunuz. Servis hizmeti de mükemmel, her sorunumuzda hemen yardımcı oluyorlar."</p>
                     <div class="reviewer d-flex align-items-center">
                         <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
                             <i class="fas fa-user"></i>
@@ -231,7 +219,7 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                                            <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Kurulum çok profesyoneldi. Teknik ekip çok bilgiliydi ve her şeyi detaylı anlattılar. Su tadı gerçekten değişti, çok daha temiz ve lezzetli."</p>
+                    <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Kurulum çok profesyoneldi. Teknik ekip çok bilgiliydi ve her şeyi detaylı anlattılar. Su tadı gerçekten değişti, çok daha temiz ve lezzetli."</p>
                     <div class="reviewer d-flex align-items-center">
                         <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
                             <i class="fas fa-user"></i>
@@ -253,7 +241,7 @@
                         <i class="fas fa-star"></i>
                         <i class="fas fa-star"></i>
                     </div>
-                                            <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Fiyat performans açısından çok başarılı. 2 yıldır hiç sorun yaşamadık. Kesinlikle tavsiye ederim, kaliteli ürün ve hizmet."</p>
+                    <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Fiyat performans açısından çok başarılı. 2 yıldır hiç sorun yaşamadık. Kesinlikle tavsiye ederim, kaliteli ürün ve hizmet."</p>
                     <div class="reviewer d-flex align-items-center">
                         <div class="avatar bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
                             <i class="fas fa-user"></i>
@@ -277,13 +265,169 @@
                 <a href="/contact" class="btn btn-light btn-lg">
                     <i class="fas fa-phone me-2"></i>Hemen Ara
                 </a>
-                                        <a href="https://wa.me/905448113105" class="btn btn-success btn-lg" target="_blank">
+                <a href="https://wa.me/905448113105" class="btn btn-success btn-lg" target="_blank">
                     <i class="fab fa-whatsapp me-2"></i>WhatsApp
                 </a>
             </div>
         </div>
     </section>
 </div>
+
+<!-- Product Detail Modal -->
+<div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productDetailModalLabel">Ürün Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modalProductImage" src="" alt="Ürün Resmi" class="img-fluid rounded" style="height: 300px; object-fit: cover; width: 100%;">
+                    </div>
+                    <div class="col-md-6">
+                        <h4 id="modalProductName" class="fw-bold mb-2" style="color: #1e3a8a;"></h4>
+                        <p id="modalProductDescription" class="text-muted mb-3"></p>
+                        <div class="mb-3">
+                            <span id="modalProductCategory" class="badge bg-primary"></span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-success fw-bold fs-4" id="modalProductPrice"></span>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Stok: <span id="modalProductStock"></span> adet</small>
+                        </div>
+                        <div class="features mb-4">
+                            <h6 class="fw-semibold mb-2" style="color: #1e3a8a;">Özellikler:</h6>
+                            <ul class="list-unstyled" id="modalProductFeatures">
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Yüksek kalite malzeme</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Uzun ömürlü kullanım</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Kolay kurulum</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Ücretsiz teknik destek</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>2 yıl garanti</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-success w-100" id="modalAddToCartBtn">
+                            <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Bildirim</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+        </div>
+    </div>
+</div>
+
+<script>
+// Show product details modal
+function showProductDetails(id, name, description, category, price, stock, image) {
+    document.getElementById('modalProductName').textContent = name;
+    document.getElementById('modalProductDescription').textContent = description;
+    document.getElementById('modalProductCategory').textContent = category;
+    document.getElementById('modalProductPrice').textContent = price + ' ₺';
+    document.getElementById('modalProductStock').textContent = stock;
+    document.getElementById('modalProductImage').src = image;
+    
+    // Fiyatı mutlaka sayı olarak al
+    var numericPrice = Number(price);
+
+    // Set up add to cart button
+    document.getElementById('modalAddToCartBtn').onclick = function() {
+        addToCart(id, name, numericPrice);
+    };
+    
+    // Show modal
+    var modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+    modal.show();
+}
+
+// Add to cart function
+function addToCart(productId, productName, productPrice) {
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: parseInt(productId),
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Sadece sepet sayısını güncelle
+            updateCartCount();
+        }
+        // Başarısızlıkta veya hatada hiçbir şey gösterme
+    })
+    .catch(error => {
+        // Hata durumunda da hiçbir şey gösterme
+    });
+}
+
+// Show toast notification
+function showToast(type, message) {
+    let toast = document.getElementById('toast');
+    let toastTitle = document.getElementById('toastTitle');
+    let toastMessage = document.getElementById('toastMessage');
+    if (!toast) {
+        // Create toast container if not exists
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.innerHTML = `
+            <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto" id="toastTitle">Bildirim</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="toastMessage"></div>
+            </div>
+        `;
+        document.body.appendChild(toastContainer);
+        toast = document.getElementById('toast');
+        toastTitle = document.getElementById('toastTitle');
+        toastMessage = document.getElementById('toastMessage');
+    }
+    toastTitle.textContent = type === 'success' ? 'Başarılı!' : 'Hata!';
+    toastMessage.textContent = message;
+    toast.className = `toast ${type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'}`;
+    const bsToast = new bootstrap.Toast(toast, { delay: 2000 });
+    bsToast.show();
+}
+
+// Update cart count
+function updateCartCount() {
+    fetch('/cart/count')
+        .then(response => response.json())
+        .then(data => {
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = data.count;
+                if (data.count > 0) {
+                    cartCountElement.style.display = 'inline';
+                } else {
+                    cartCountElement.style.display = 'none';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating cart count:', error);
+        });
+}
+</script>
 
 <style>
 .hero-section {

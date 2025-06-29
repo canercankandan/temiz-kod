@@ -372,6 +372,7 @@
                                                 <option value="">Kategori Seçin</option>
                                                 <option value="Su Arıtma Ürünleri">Su Arıtma Ürünleri</option>
                                                 <option value="Yedek Parça">Yedek Parça</option>
+                                                <option value="Aksesuarlar">Aksesuarlar</option>
                                             </select>
                                         </div>
                                     </div>
@@ -467,6 +468,9 @@
                                                 </td>
                                                 <td><small class="text-muted">{{.CreatedAt.Format "02.01.2006"}}</small></td>
                                                 <td>
+                                                    <button class="action-btn btn-edit me-2" onclick="editProduct({{.ID}}, '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
+                                                        <i class="fas fa-edit me-1"></i>Güncelle
+                                                    </button>
                                                     <button class="action-btn btn-delete" onclick="deleteProduct({{.ID}})">
                                                         <i class="fas fa-trash me-1"></i>Sil
                                                     </button>
@@ -593,6 +597,64 @@
                 <div class="card-body">
                     <iframe src="/admin/support" style="width: 100%; height: 600px; border: none; border-radius: 10px;" frameborder="0"></iframe>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Update Modal -->
+<div class="modal fade" id="productUpdateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Ürün Güncelle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productUpdateForm">
+                    <input type="hidden" id="updateProductId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="updateProductName" class="form-label">Ürün Adı</label>
+                            <input type="text" class="form-control" id="updateProductName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="updateProductCategory" class="form-label">Kategori</label>
+                            <select class="form-select" id="updateProductCategory" required>
+                                <option value="Su Arıtma Ürünleri">Su Arıtma Ürünleri</option>
+                                <option value="Yedek Parça">Yedek Parça</option>
+                                <option value="Aksesuarlar">Aksesuarlar</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="updateProductDescription" class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="updateProductDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="updateProductPrice" class="form-label">Fiyat (₺)</label>
+                            <input type="number" class="form-control" id="updateProductPrice" step="0.01" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="updateProductStock" class="form-label">Stok</label>
+                            <input type="number" class="form-control" id="updateProductStock" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="updateProductImage" class="form-label">Ürün Görseli</label>
+                        <input type="file" class="form-control" id="updateProductImage" accept="image/*">
+                        <small class="text-muted">Yeni görsel seçmezseniz mevcut görsel korunacaktır.</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="updateProduct()">
+                    <i class="fas fa-save me-1"></i>Güncelle
+                </button>
             </div>
         </div>
     </div>
@@ -1102,6 +1164,52 @@ const adminPanel = new AdminPanel();
 // Legacy functions for compatibility
 function loadOrders(status) {
     adminPanel.loadOrders(status);
+}
+
+function editProduct(id, name, description, category, price, stock, image) {
+    document.getElementById('updateProductId').value = id;
+    document.getElementById('updateProductName').value = name;
+    document.getElementById('updateProductDescription').value = description;
+    document.getElementById('updateProductCategory').value = category;
+    document.getElementById('updateProductPrice').value = price;
+    document.getElementById('updateProductStock').value = stock;
+    
+    const modal = new bootstrap.Modal(document.getElementById('productUpdateModal'));
+    modal.show();
+}
+
+function updateProduct() {
+    const formData = new FormData();
+    formData.append('id', document.getElementById('updateProductId').value);
+    formData.append('name', document.getElementById('updateProductName').value);
+    formData.append('description', document.getElementById('updateProductDescription').value);
+    formData.append('category', document.getElementById('updateProductCategory').value);
+    formData.append('price', document.getElementById('updateProductPrice').value);
+    formData.append('stock', document.getElementById('updateProductStock').value);
+    
+    const imageFile = document.getElementById('updateProductImage').files[0];
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    
+    fetch('/admin/update-product', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Ürün başarıyla güncellendi!');
+            bootstrap.Modal.getInstance(document.getElementById('productUpdateModal')).hide();
+            location.reload();
+        } else {
+            alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu!');
+    });
 }
 
 function deleteProduct(id) {

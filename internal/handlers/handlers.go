@@ -60,6 +60,7 @@ type DBInterface interface {
 	EndVideoCallRequest(sessionID string) error
 	GetAllActiveVideoCallRequests() ([]models.VideoCallRequest, error)
 	CreateVideoCallRequestWithInitiator(sessionID, username string, userID *int, initiator string) error
+	UpdateProduct(product *models.Product) error
 }
 
 // Handler, HTTP isteklerini yönetir.
@@ -316,6 +317,7 @@ func (h *Handler) ProductsPage(c *gin.Context) {
 	categories := []string{
 		"Su Arıtma Ürünleri",
 		"Yedek Parça",
+		"Aksesuarlar",
 	}
 	
 	username, _ := c.Cookie("username")
@@ -435,30 +437,103 @@ func (h *Handler) DeleteProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ürün ID'si"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ürün ID"})
 		return
 	}
 
-	product, err := h.db.GetProductByID(id)
+	err = h.db.DeleteProduct(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Ürün bulunamadı"})
-		return
-	}
-
-	if product.Image != "" {
-		imagePath := filepath.Join(".", product.Image)
-		if _, err := os.Stat(imagePath); err == nil {
-			os.Remove(imagePath)
-		}
-	}
-
-	if err := h.db.DeleteProduct(id); err != nil {
 		log.Printf("Error deleting product: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ürün silinirken hata oluştu"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Ürün başarıyla silindi"})
+}
+
+func (h *Handler) UpdateProduct(c *gin.Context) {
+	idStr := c.PostForm("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz ürün ID"})
+		return
+	}
+
+	// Mevcut ürünü al
+	existingProduct, err := h.db.GetProductByID(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Ürün bulunamadı"})
+		return
+	}
+
+	// Form verilerini al
+	name := c.PostForm("name")
+	description := c.PostForm("description")
+	category := c.PostForm("category")
+	priceStr := c.PostForm("price")
+	stockStr := c.PostForm("stock")
+
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz fiyat"})
+		return
+	}
+
+	stock, err := strconv.Atoi(stockStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz stok miktarı"})
+		return
+	}
+
+	// Ürün bilgilerini güncelle
+	existingProduct.Name = name
+	existingProduct.Description = description
+	existingProduct.Category = category
+	existingProduct.Price = price
+	existingProduct.Stock = stock
+
+	// Yeni görsel yüklendiyse işle
+	file, header, err := c.Request.FormFile("image")
+	if err == nil && file != nil {
+		defer file.Close()
+
+		// Dosya uzantısını kontrol et
+		ext := filepath.Ext(header.Filename)
+		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Sadece jpg, jpeg, png ve gif dosyaları kabul edilir"})
+			return
+		}
+
+		// Yeni dosya adı oluştur
+		filename := uuid.New().String() + ext
+		uploadPath := filepath.Join("static", "uploads", filename)
+
+		// Dosyayı kaydet
+		err = c.SaveUploadedFile(header, uploadPath)
+		if err != nil {
+			log.Printf("Error saving uploaded file: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Dosya yüklenirken hata oluştu"})
+			return
+		}
+
+		// Eski görseli sil (varsa)
+		if existingProduct.Image != "" {
+			oldImagePath := filepath.Join("static", "uploads", existingProduct.Image)
+			os.Remove(oldImagePath)
+		}
+
+		existingProduct.Image = filename
+	}
+
+	// Veritabanını güncelle
+	err = h.db.UpdateProduct(existingProduct)
+	if err != nil {
+		log.Printf("Error updating product: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ürün güncellenirken hata oluştu"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Ürün başarıyla güncellendi"})
 }
 
 func (h *Handler) AboutPage(c *gin.Context) {
@@ -1625,6 +1700,18 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talebi oluşturulamadı"})
 			return
 		}
+		
+		// Send email notification to admin
+		adminEmail := os.Getenv("ADMIN_EMAIL")
+		if adminEmail == "" {
+			adminEmail = "irmaksuaritmam@gmail.com" // Default admin email
+		}
+		
+		go func() {
+			if err := h.email.SendVideoCallNotification(adminEmail, displayName, request.SessionID); err != nil {
+				log.Printf("HandleVideoCallRequest - Error sending email notification: %v", err)
+			}
+		}()
 		
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme talebi gönderildi"})
 		

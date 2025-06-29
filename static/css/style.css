@@ -1,12 +1,12 @@
 /* Custom Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1e3a8a; /* Blue */
-    color: #ffffff; /* White */
+    background-color: #f8f9fa; /* Light background */
+    color: #222222; /* Dark text for contrast */
 }
 
 .hero-section {
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); /* Blue Gradient */
+    background: transparent !important;
 }
 
 .card {
@@ -439,5 +439,85 @@ footer h5 {
     #listView .product-thumb {
         width: 36px;
         height: 36px;
+    }
+}
+
+/* Hero arka planı tamamen bebek resmi */
+.hero-bg {
+    min-height: 520px;
+    width: 100%;
+    background: url('/static/uploads/bebek.jpeg') center center/cover no-repeat;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0;
+}
+.hero-content {
+    position: relative;
+    z-index: 2;
+    background: none;
+    border-radius: 0;
+    padding: 32px 24px;
+    margin: 0;
+    margin-right: 50px;
+    color: #F5F5DC;
+    text-shadow: 0 2px 16px rgba(245,245,220,0.6);
+    text-align: right;
+}
+.hero-content h1, .hero-content p {
+    color: #F5F5DC;
+    text-shadow: 0 2px 16px rgba(245,245,220,0.6);
+    text-align: right;
+}
+@media (max-width: 768px) {
+    .hero-bg {
+        min-height: 320px;
+        background-size: cover;
+        justify-content: center;
+    }
+    .hero-content {
+        text-align: center;
+        margin: 0;
+        padding: 16px;
+    }
+    .hero-content h1, .hero-content p {
+        text-align: center;
+    }
+}
+
+/* Hero bebek çerçevesi */
+.hero-frame-wrapper {
+    min-height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.hero-frame {
+    background: #fff;
+    border-radius: 48px;
+    box-shadow: 0 0 0 16px #fff, 0 4px 32px 0 rgba(0,0,0,0.08);
+    padding: 24px;
+    display: inline-block;
+}
+.hero-baby-img {
+    width: 600px;
+    height: 600px;
+    object-fit: cover;
+    border-radius: 48px;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+}
+@media (max-width: 768px) {
+    .hero-baby-img {
+        width: 300px;
+        height: 300px;
+        border-radius: 24px;
+    }
+    
+    .hero-frame {
+        width: 300px;
+        height: 300px;
+        padding: 12px;
+        border-radius: 24px;
     }
 } 

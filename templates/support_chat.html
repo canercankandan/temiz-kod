@@ -14,8 +14,8 @@
                             <small>Sorularınız için 7/24 buradayız!</small>
                         </div>
                         <div>
-                            <button id="videoCallBtn" class="btn btn-light btn-sm me-2" title="Görüntülü Görüşmeye Geç">
-                                <i class="fas fa-video me-1"></i>Görüntülü Görüşme
+                            <button id="videoCallBtn" class="btn btn-success btn-lg" title="Görüntülü Görüşmeye Geç" style="font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3); animation: pulse-glow 2s infinite;">
+                                <i class="fas fa-video me-2"></i>📞 Görüntülü Görüşme
                             </button>
                         </div>
                     </div>
@@ -48,6 +48,12 @@
                         <div class="text-center text-muted">
                             <i class="fas fa-comments fa-3x mb-3"></i>
                             <p>Merhaba! Size nasıl yardımcı olabiliriz?</p>
+                            <div class="mt-3">
+                                <button id="videoCallBtn2" class="btn btn-success btn-md" onclick="startVideoCall()" style="font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.2);">
+                                    <i class="fas fa-video me-2"></i>📞 Hızlı Görüntülü Görüşme
+                                </button>
+                                <p class="mt-2 small text-muted">Mesaj yazmadan direkt görüntülü görüşme başlatabilirsiniz!</p>
+                            </div>
                         </div>
                     </div>
                     
@@ -78,7 +84,7 @@
                 <ul class="mb-0 mt-2">
                     <li>iOS 11.3+ veya macOS High Sierra+ gereklidir</li>
                     <li>Kamera ve mikrofon izni vermeniz gerekecek</li>
-                    <li>Yerel ağda test için: <code>http://192.168.1.133:9394</code></li>
+                    <li>Yerel ağda test için: <code>https://192.168.1.133:8081</code></li>
                     <li>Sorun yaşarsanız Chrome veya Firefox deneyebilirsiniz</li>
                 </ul>
             </div>
@@ -194,6 +200,28 @@
 /* Video Call Styles */
 .video-call-area {
     border-bottom: 1px solid #dee2e6;
+}
+
+/* Video Call Button Animation */
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 6px 16px rgba(40, 167, 69, 0.6);
+        transform: scale(1.05);
+    }
+    100% {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        transform: scale(1);
+    }
+}
+
+#videoCallBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.8);
+    transition: all 0.3s ease;
 }
 
 .video-controls {

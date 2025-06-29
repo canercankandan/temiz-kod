@@ -202,6 +202,7 @@ func main() {
 	{
 		admin.GET("", h.AdminPage)
 		admin.POST("/add-product", h.AddProduct)
+		admin.POST("/update-product", h.UpdateProduct)
 		admin.DELETE("/delete-product/:id", h.DeleteProduct)
 		// Admin sipariş yönetimi
 		admin.GET("/orders", h.AdminGetOrders)

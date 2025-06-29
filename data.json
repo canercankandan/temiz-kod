@@ -7,34 +7,10 @@
       "price": 6,
       "image": "/static/uploads/75d45004-bf34-4c2c-99bf-9167885f8391.jpg",
       "category": "Su Arıtma Ürünleri",
-      "stock": 6,
+      "stock": 55,
       "features": "",
       "created_at": "2025-06-20T20:26:00.1966359+03:00",
-      "updated_at": "2025-06-20T20:26:00.1966359+03:00"
-    },
-    {
-      "id": 3,
-      "name": "oke",
-      "description": "6",
-      "price": 66,
-      "image": "/static/uploads/965a71d9-cc66-46ed-96a2-12646a7745f8.jpg",
-      "category": "Yedek Parça",
-      "stock": 66,
-      "features": "",
-      "created_at": "2025-06-20T21:25:45.2237057+03:00",
-      "updated_at": "2025-06-20T21:25:45.2237057+03:00"
-    },
-    {
-      "id": 4,
-      "name": "su arıtma musluğu",
-      "description": "rwrrtt",
-      "price": 300,
-      "image": "/static/uploads/278f51e2-7d7e-4125-91cf-6963f9d14bbd.jpg",
-      "category": "Yedek Parça",
-      "stock": 76,
-      "features": "",
-      "created_at": "2025-06-20T21:27:35.4512827+03:00",
-      "updated_at": "2025-06-20T21:27:35.4512827+03:00"
+      "updated_at": "2025-06-29T02:10:19.8551977+03:00"
     },
     {
       "id": 5,
@@ -47,18 +23,6 @@
       "features": "",
       "created_at": "2025-06-20T21:39:14.7761704+03:00",
       "updated_at": "2025-06-20T21:39:14.7761704+03:00"
-    },
-    {
-      "id": 6,
-      "name": "mebrab",
-      "description": "mebrab kalıte",
-      "price": 500,
-      "image": "/static/uploads/0756580e-4d30-4f22-bf76-c00ab8748f10.jpg",
-      "category": "Yedek Parça",
-      "stock": 20,
-      "features": "",
-      "created_at": "2025-06-26T22:55:56.455161+03:00",
-      "updated_at": "2025-06-26T22:55:56.455161+03:00"
     },
     {
       "id": 7,
@@ -85,16 +49,40 @@
       "updated_at": "2025-06-29T00:55:00+03:00"
     },
     {
-      "id": 11,
+      "id": 12,
+      "name": "KIL",
+      "description": "RR",
+      "price": 22,
+      "image": "/static/uploads/9f3cf0c9-c457-4c56-9f9e-badb5cc3ccb8.jpg",
+      "category": "Yedek Parça",
+      "stock": 2,
+      "features": "{\"2\":\"2\"}",
+      "created_at": "2025-06-29T02:02:54.6293487+03:00",
+      "updated_at": "2025-06-29T02:10:43.5281584+03:00"
+    },
+    {
+      "id": 13,
       "name": ".deneme",
-      "description": "ER",
-      "price": 3,
-      "image": "/static/uploads/28452b7e-fae4-4bb1-935b-c154f9b57770.png",
-      "category": "Su Arıtma Ürünleri",
-      "stock": 3,
-      "features": "{\"3\":\"3\"}",
-      "created_at": "2025-06-29T01:49:05.5567884+03:00",
-      "updated_at": "2025-06-29T01:49:05.5567884+03:00"
+      "description": "555",
+      "price": 89,
+      "image": "/static/uploads/9d0d1309-3a9f-4560-a9cb-a1bff44975c6.png",
+      "category": "Yedek Parça",
+      "stock": 9,
+      "features": "{\"5\":\"5\"}",
+      "created_at": "2025-06-29T13:15:01.7993525+03:00",
+      "updated_at": "2025-06-29T13:15:01.7993525+03:00"
+    },
+    {
+      "id": 14,
+      "name": ".2 deneme",
+      "description": "rr",
+      "price": 4,
+      "image": "/static/uploads/ad423f2f-de7a-4be9-af56-d3e3d2380380.jpg",
+      "category": "Aksesuarlar",
+      "stock": 44,
+      "features": "{\"4\":\"4\"}",
+      "created_at": "2025-06-29T13:43:59.1483754+03:00",
+      "updated_at": "2025-06-29T13:43:59.1483754+03:00"
     }
   ],
   "users": [
@@ -648,6 +636,26 @@
       "is_admin": false,
       "is_read": true,
       "created_at": "2025-06-29T01:47:38.8837347+03:00"
+    },
+    {
+      "id": 52,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "merhaba",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T13:45:00.8155057+03:00"
+    },
+    {
+      "id": 53,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "44",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T15:52:49.39462+03:00"
     }
   ],
   "support_sessions": [
@@ -767,7 +775,7 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "status": "active",
-      "last_message_at": "2025-06-29T01:47:38.8837347+03:00",
+      "last_message_at": "2025-06-29T15:52:49.39462+03:00",
       "created_at": "2025-06-26T15:00:12.7976583+03:00",
       "unread_count": 0
     },
@@ -2002,6 +2010,96 @@
       "requested_at": "2025-06-29T01:47:43.8031767+03:00",
       "responded_at": "2025-06-29T01:47:59.0658573+03:00",
       "initiator": "admin"
+    },
+    {
+      "id": 122,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-06-29T02:10:58.1893454+03:00",
+      "responded_at": "2025-06-29T02:11:02.0962304+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 123,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-06-29T13:45:05.3230245+03:00",
+      "responded_at": "2025-06-29T13:45:41.0145373+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 124,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T15:52:03.5655576+03:00",
+      "responded_at": "2025-06-29T15:52:56.4170942+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 125,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "rejected",
+      "requested_at": "2025-06-29T15:56:43.1118436+03:00",
+      "responded_at": "2025-06-29T15:56:51.3040888+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 126,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "rejected",
+      "requested_at": "2025-06-29T15:57:43.4522641+03:00",
+      "responded_at": "2025-06-29T15:57:48.3320865+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 127,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T16:02:36.2555765+03:00",
+      "responded_at": "2025-06-29T16:02:58.4033991+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 128,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "rejected",
+      "requested_at": "2025-06-29T16:08:37.4398439+03:00",
+      "responded_at": "2025-06-29T16:09:08.4441166+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 129,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "rejected",
+      "requested_at": "2025-06-29T16:11:15.7889158+03:00",
+      "responded_at": "2025-06-29T16:11:24.0596442+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 130,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T16:12:46.1410652+03:00",
+      "responded_at": "2025-06-29T16:13:13.109093+03:00",
+      "initiator": ""
     }
   ]
 }

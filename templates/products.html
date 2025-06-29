@@ -97,6 +97,11 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-6 text-end">
+                <a href="/admin" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>Güncelle
+                </a>
+            </div>
         </div>
     </section>
 
@@ -350,21 +355,33 @@ function showProductDetails(id, name, description, category, price, stock, image
 
 // Add to cart function
 function addToCart(productId, productName, productPrice) {
+    console.log('Adding to cart:', { productId, productName, productPrice });
+    
     fetch('/cart/add', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            product_id: productId,
+            product_id: parseInt(productId),
             quantity: 1
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
-            showToast('success', `${productName} sepete eklendi!`);
+            // Sepet sayısını güncelle
             updateCartCount();
+            // Modal'ı kapat
+            const modal = bootstrap.Modal.getInstance(document.getElementById('productDetailsModal'));
+            if (modal) {
+                modal.hide();
+            }
         } else {
             showToast('error', data.message || 'Ürün sepete eklenirken hata oluştu.');
         }
@@ -482,24 +499,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Show toast notification
 function showToast(type, message) {
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.remove();
-        }
-    }, 3000);
+    let toast = document.getElementById('toast');
+    let toastTitle = document.getElementById('toastTitle');
+    let toastMessage = document.getElementById('toastMessage');
+    if (!toast) {
+        // Create toast container if not exists
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.innerHTML = `
+            <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto" id="toastTitle">Bildirim</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="toastMessage"></div>
+            </div>
+        `;
+        document.body.appendChild(toastContainer);
+        toast = document.getElementById('toast');
+        toastTitle = document.getElementById('toastTitle');
+        toastMessage = document.getElementById('toastMessage');
+    }
+    toastTitle.textContent = type === 'success' ? 'Başarılı!' : 'Hata!';
+    toastMessage.textContent = message;
+    toast.className = `toast ${type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'}`;
+    const bsToast = new bootstrap.Toast(toast, { delay: 2000 });
+    bsToast.show();
 }
 
 // Update cart count
@@ -507,13 +532,13 @@ function updateCartCount() {
     fetch('/cart/count')
         .then(response => response.json())
         .then(data => {
-            const badge = document.getElementById('cartBadge');
-            if (badge) {
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = data.count;
                 if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'flex';
+                    cartCountElement.style.display = 'inline';
                 } else {
-                    badge.style.display = 'none';
+                    cartCountElement.style.display = 'none';
                 }
             }
         })
