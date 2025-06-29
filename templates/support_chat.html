@@ -728,6 +728,14 @@ async function startVideoCall() {
         // Add system message
         addSystemMessage(`Görüntülü görüşme başlatıldı${isSafari ? ' (Safari)' : ''}. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...`);
         
+        // Video call talebi mesajını gizle
+        const videoCallMessages = document.querySelectorAll('.message.system');
+        videoCallMessages.forEach(msg => {
+            if (msg.textContent.includes('Görüntülü görüşme talebi gönderildi')) {
+                msg.style.display = 'none';
+            }
+        });
+        
         // Görüşme başlatıldıktan sonra endCallBtn'e event listener ekle
         setTimeout(() => {
             const endCallBtn = document.getElementById('endCallBtn');
@@ -808,6 +816,14 @@ async function endVideoCall() {
         
         // Add system message
         addSystemMessage('Görüntülü görüşme sonlandırıldı.');
+        
+        // Video call talebi mesajını tekrar göster (eğer hala talep varsa)
+        const videoCallMessages = document.querySelectorAll('.message.system');
+        videoCallMessages.forEach(msg => {
+            if (msg.textContent.includes('Görüntülü görüşme talebi gönderildi')) {
+                msg.style.display = 'block';
+            }
+        });
         
     } catch (error) {
         console.error('Video call sonlandırma hatası:', error);
