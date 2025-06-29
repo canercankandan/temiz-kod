@@ -732,36 +732,11 @@ async function acceptVideoCall(sessionId, username) {
         // Load chat for this session first
         await loadChat(sessionId, username);
         
-        // Check permissions first
-        const permissions = await checkAdminMediaPermissions();
-        
-        if (!permissions.supported) {
-            showAdminPermissionDialog(permissions.message);
-            await sendVideoCallResponse('reject', sessionId);
-            return;
-        }
-        
-        if (!permissions.granted && permissions.message) {
-            showAdminPermissionDialog(permissions.message);
-            await sendVideoCallResponse('reject', sessionId);
-            return;
-        }
-        
-        // Start video call with better constraints
-        const constraints = {
-            video: {
-                width: { ideal: 1280, max: 1920 },
-                height: { ideal: 720, max: 1080 },
-                frameRate: { ideal: 30, max: 30 }
-            },
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-            }
-        };
-        
-        adminLocalStream = await navigator.mediaDevices.getUserMedia(constraints);
+        // Start video call
+        adminLocalStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
         
         document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
         
@@ -797,12 +772,22 @@ async function acceptVideoCall(sessionId, username) {
         await sendVideoCallResponse('accept', sessionId);
         
         // Add system message
-        addAdminSystemMessage(`${username} ile video görüşme başlatıldı.`);
+        addAdminSystemMessage(`${username} ile video görüşme başlatıldı. Müşteri yanıtını bekliyor...`);
+        
+        // Video call talebi mesajını gizle
+        const videoCallNotification = document.getElementById(`videoCallNotification-${currentSessionID}`);
+        const videoCallButtons = document.getElementById(`videoCallButtons-${currentSessionID}`);
+        
+        if (videoCallNotification) {
+            videoCallNotification.style.display = 'none';
+        }
+        if (videoCallButtons) {
+            videoCallButtons.style.display = 'none';
+        }
         
     } catch (error) {
         console.error('Video call kabul edilemedi:', error);
-        const errorMessage = getAdminErrorMessage(error.name);
-        showAdminPermissionDialog(errorMessage);
+        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
         await sendVideoCallResponse('reject', sessionId);
     }
 }
@@ -837,19 +822,6 @@ async function startAdminVideoCall() {
         const sessionElement = document.querySelector(`[data-session-id="${currentSessionID}"]`);
         const username = sessionElement.querySelector('h6').textContent;
         
-        // Check permissions first
-        const permissions = await checkAdminMediaPermissions();
-        
-        if (!permissions.supported) {
-            showAdminPermissionDialog(permissions.message);
-            return;
-        }
-        
-        if (!permissions.granted && permissions.message) {
-            showAdminPermissionDialog(permissions.message);
-            return;
-        }
-        
         // Send admin video call request to backend
         const response = await fetch('/admin/support/start-video-call', {
             method: 'POST',
@@ -867,21 +839,11 @@ async function startAdminVideoCall() {
             return;
         }
         
-        // Start video call with better constraints
-        const constraints = {
-            video: {
-                width: { ideal: 1280, max: 1920 },
-                height: { ideal: 720, max: 1080 },
-                frameRate: { ideal: 30, max: 30 }
-            },
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-            }
-        };
-        
-        adminLocalStream = await navigator.mediaDevices.getUserMedia(constraints);
+        // Start video call
+        adminLocalStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
         
         document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
         
@@ -917,10 +879,20 @@ async function startAdminVideoCall() {
         // Add system message
         addAdminSystemMessage(`${username} ile video görüşme başlatıldı. Müşteri yanıtını bekliyor...`);
         
+        // Video call talebi mesajını gizle
+        const videoCallNotification = document.getElementById(`videoCallNotification-${currentSessionID}`);
+        const videoCallButtons = document.getElementById(`videoCallButtons-${currentSessionID}`);
+        
+        if (videoCallNotification) {
+            videoCallNotification.style.display = 'none';
+        }
+        if (videoCallButtons) {
+            videoCallButtons.style.display = 'none';
+        }
+        
     } catch (error) {
         console.error('Admin video call başlatılamadı:', error);
-        const errorMessage = getAdminErrorMessage(error.name);
-        showAdminPermissionDialog(errorMessage);
+        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
     }
 }
 
@@ -968,6 +940,11 @@ async function endAdminVideoCall() {
         
         // Add system message
         addAdminSystemMessage('Video görüşme sonlandırıldı.');
+        
+        // Video call talebi mesajını tekrar göster (eğer hala talep varsa)
+        setTimeout(() => {
+            checkVideoCallRequests();
+        }, 1000);
         
     } catch (error) {
         console.error('Video call sonlandırma hatası:', error);
@@ -1216,6 +1193,19 @@ function checkVideoCallRequests() {
                         addAdminSystemMessage(`Video görüşme başlatıldı, müşteri yanıtını bekliyor...`);
                     }
                 }
+                
+                // Eğer görüntülü görüşme aktifse, talep mesajını gizle
+                if (sessionId === currentSessionID && isAdminCallActive) {
+                    const videoCallNotification = document.getElementById(`videoCallNotification-${sessionId}`);
+                    const videoCallButtons = document.getElementById(`videoCallButtons-${sessionId}`);
+                    
+                    if (videoCallNotification) {
+                        videoCallNotification.style.display = 'none';
+                    }
+                    if (videoCallButtons) {
+                        videoCallButtons.style.display = 'none';
+                    }
+                }
             });
             
             // Play notification sound if there are new requests
@@ -1335,189 +1325,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(loadAdminSessions, 5000);
     setInterval(checkVideoCallRequests, 3000);
 });
-
-// Check admin camera and microphone permissions
-async function checkAdminMediaPermissions() {
-    try {
-        // Enhanced WebRTC support check
-        const hasWebRTC = !!(window.RTCPeerConnection || 
-                           window.webkitRTCPeerConnection || 
-                           window.mozRTCPeerConnection ||
-                           window.RTCPeerConnection);
-        
-        if (!hasWebRTC) {
-            return {
-                supported: false,
-                message: 'Bu tarayıcı WebRTC video görüşme teknolojisini desteklemiyor.\n\n• Chrome, Firefox veya Edge kullanmayı deneyin\n• Tarayıcınızı güncelleyin'
-            };
-        }
-        
-        // Enhanced getUserMedia support check
-        const hasGetUserMedia = !!(
-            (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) || 
-            navigator.getUserMedia || 
-            navigator.webkitGetUserMedia || 
-            navigator.mozGetUserMedia ||
-            navigator.msGetUserMedia
-        );
-        
-        if (!hasGetUserMedia) {
-            return {
-                supported: false,
-                message: 'getUserMedia desteklenmiyor'
-            };
-        }
-        
-        // Try to get permissions with simpler constraints first
-        const simpleConstraints = {
-            video: true,
-            audio: true
-        };
-        
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
-                stream.getTracks().forEach(track => track.stop());
-                return { supported: true, granted: true };
-            } catch (error) {
-                console.error('Permission check failed:', error);
-                return {
-                    supported: true,
-                    granted: false,
-                    error: error.name,
-                    message: getAdminErrorMessage(error.name)
-                };
-            }
-        }
-        
-        // Fallback for older browsers
-        return new Promise((resolve) => {
-            const getUserMedia = navigator.getUserMedia || 
-                               navigator.webkitGetUserMedia || 
-                               navigator.mozGetUserMedia ||
-                               navigator.msGetUserMedia;
-            
-            if (!getUserMedia) {
-                resolve({
-                    supported: false,
-                    message: 'getUserMedia desteklenmiyor'
-                });
-                return;
-            }
-            
-            getUserMedia.call(navigator, simpleConstraints,
-                (stream) => {
-                    stream.getTracks().forEach(track => track.stop());
-                    resolve({ supported: true, granted: true });
-                },
-                (error) => {
-                    console.error('Fallback permission check failed:', error);
-                    resolve({ 
-                        supported: true, 
-                        granted: false, 
-                        error: error.name,
-                        message: getAdminErrorMessage(error.name)
-                    });
-                }
-            );
-        });
-        
-    } catch (error) {
-        console.error('Permission check error:', error);
-        return {
-            supported: true,
-            granted: false,
-            error: error.name,
-            message: getAdminErrorMessage(error.name)
-        };
-    }
-}
-
-// Admin-specific error messages
-function getAdminErrorMessage(errorName) {
-    switch (errorName) {
-        case 'NotAllowedError':
-            return 'Kamera ve mikrofon erişimi reddedildi.\n\nÇözüm:\n• Tarayıcı adres çubuğundaki kamera/mikrofon ikonuna tıklayın\n• "İzin Ver" seçeneğini seçin\n• Sayfayı yenileyin ve tekrar deneyin';
-        case 'NotFoundError':
-            return 'Kamera veya mikrofon bulunamadı.\n\nÇözüm:\n• Bilgisayarınızda kamera ve mikrofon olduğundan emin olun\n• Başka bir uygulama kamera/mikrofonu kullanıyor olabilir\n• Tarayıcıyı yeniden başlatın';
-        case 'NotReadableError':
-            return 'Kamera veya mikrofon başka bir uygulama tarafından kullanılıyor.\n\nÇözüm:\n• Diğer uygulamaları kapatın (Zoom, Teams, vb.)\n• Tarayıcıyı yeniden başlatın\n• Bilgisayarı yeniden başlatın';
-        case 'OverconstrainedError':
-            return 'Kamera ayarları uygun değil.\n\nÇözüm:\n• Farklı bir kamera seçin\n• Tarayıcıyı yeniden başlatın';
-        case 'SecurityError':
-            return 'Güvenlik hatası.\n\nÇözüm:\n• HTTPS bağlantısı kullandığınızdan emin olun\n• Tarayıcıyı yeniden başlatın';
-        case 'AbortError':
-            return 'İşlem iptal edildi.\n\nÇözüm:\n• Sayfayı yenileyin\n• Tekrar deneyin';
-        case 'SyntaxError':
-            return 'JavaScript hatası.\n\nÇözüm:\n• Sayfayı yenileyin (F5)\n• Tarayıcı önbelleğini temizleyin\n• Farklı bir tarayıcı deneyin';
-        default:
-            return 'Bilinmeyen hata: ' + errorName + '\n\nÇözüm:\n• Tarayıcıyı yeniden başlatın\n• Farklı bir tarayıcı deneyin\n• Bilgisayarı yeniden başlatın';
-    }
-}
-
-// Show admin permission dialog
-function showAdminPermissionDialog(message) {
-    try {
-        // Remove existing dialog if any
-        if (window.adminPermissionDialog) {
-            closeAdminPermissionDialog();
-        }
-        
-        // Create modal backdrop
-        const backdrop = document.createElement('div');
-        backdrop.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;';
-        
-        // Create modal content
-        const modal = document.createElement('div');
-        modal.style.cssText = 'background: white; border-radius: 10px; padding: 20px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);';
-        
-        modal.innerHTML = '<div style="text-align: center; margin-bottom: 20px;"><i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f39c12; margin-bottom: 15px;"></i><h4 style="color: #333; margin: 0;">Admin Video Görüşme Hatası</h4></div><div style="white-space: pre-line; line-height: 1.6; color: #666; margin-bottom: 20px;">' + message + '</div><div style="text-align: center;"><button onclick="closeAdminPermissionDialog()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-right: 10px;">Anladım</button><button onclick="retryAdminVideoCall()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px;">Tekrar Dene</button></div>';
-        
-        backdrop.appendChild(modal);
-        document.body.appendChild(backdrop);
-        
-        // Store reference for closing
-        window.adminPermissionDialog = backdrop;
-        
-    } catch (error) {
-        console.error('Error showing permission dialog:', error);
-        // Fallback to simple alert
-        alert('Video görüşme hatası: ' + message);
-    }
-}
-
-// Close admin permission dialog
-function closeAdminPermissionDialog() {
-    try {
-        if (window.adminPermissionDialog) {
-            document.body.removeChild(window.adminPermissionDialog);
-            window.adminPermissionDialog = null;
-        }
-    } catch (error) {
-        console.error('Error closing permission dialog:', error);
-    }
-}
-
-// Retry admin video call
-function retryAdminVideoCall() {
-    try {
-        closeAdminPermissionDialog();
-        if (pendingVideoCallSession) {
-            // Retry accepting the call
-            const sessionElement = document.querySelector('[data-session-id="' + pendingVideoCallSession + '"]');
-            if (sessionElement) {
-                const username = sessionElement.querySelector('h6').textContent;
-                acceptVideoCall(pendingVideoCallSession, username);
-            }
-        } else if (currentSessionID) {
-            // Retry starting a call
-            startAdminVideoCall();
-        }
-    } catch (error) {
-        console.error('Error retrying video call:', error);
-        alert('Video görüşme yeniden başlatılamadı. Sayfayı yenileyin.');
-    }
-}
 </script>
 </body>
 </html>
