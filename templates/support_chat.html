@@ -334,6 +334,7 @@ let peerConnection = null;
 let isCallActive = false;
 let isMuted = false;
 let isVideoOff = false;
+let videoCallRequested = false; // Video call talebi gönderildi mi?
 
 // DOM Elements
 const chatMessages = document.getElementById('chatMessages');
@@ -477,6 +478,15 @@ async function sendAutoMessage() {
         if (data.success) {
             addMessage(data.message);
             scrollToBottom();
+            
+            // Video call butonunu devre dışı bırak
+            videoCallRequested = true;
+            videoCallBtn.disabled = true;
+            videoCallBtn.innerHTML = '<i class="fas fa-phone-slash"></i> Talep Gönderildi';
+            videoCallBtn.style.backgroundColor = '#6c757d';
+            videoCallBtn.style.cursor = 'not-allowed';
+            videoCallBtn.style.opacity = '0.7';
+            videoCallBtn.style.animation = 'none';
         } else {
             console.error('Auto message failed:', data.error);
         }
@@ -568,6 +578,12 @@ window.addEventListener('beforeunload', function() {
 
 // Video Call Functions
 async function startVideoCall() {
+    // Eğer video call talebi zaten gönderildiyse, fonksiyonu durdur
+    if (videoCallRequested) {
+        console.log('Video call talebi zaten gönderildi');
+        return;
+    }
+    
     try {
         // Check permissions first
         const permissions = await checkMediaPermissions();
@@ -768,6 +784,15 @@ async function endVideoCall() {
         isCallActive = false;
         isMuted = false;
         isVideoOff = false;
+        videoCallRequested = false; // Video call talebini sıfırla
+        
+        // Video call butonunu tekrar aktif hale getir
+        videoCallBtn.disabled = false;
+        videoCallBtn.innerHTML = '<i class="fas fa-video"></i> Görüntülü Ara';
+        videoCallBtn.style.backgroundColor = '#28a745';
+        videoCallBtn.style.cursor = 'pointer';
+        videoCallBtn.style.opacity = '1';
+        videoCallBtn.style.animation = 'pulse-glow 2s infinite';
         
         // Stop signaling polling
         stopSignalingPolling();
