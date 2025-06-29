@@ -879,17 +879,6 @@ async function startAdminVideoCall() {
         // Add system message
         addAdminSystemMessage(`${username} ile video görüşme başlatıldı. Müşteri yanıtını bekliyor...`);
         
-        // Video call talebi mesajını gizle
-        const videoCallNotification = document.getElementById(`videoCallNotification-${currentSessionID}`);
-        const videoCallButtons = document.getElementById(`videoCallButtons-${currentSessionID}`);
-        
-        if (videoCallNotification) {
-            videoCallNotification.style.display = 'none';
-        }
-        if (videoCallButtons) {
-            videoCallButtons.style.display = 'none';
-        }
-        
     } catch (error) {
         console.error('Admin video call başlatılamadı:', error);
         alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
@@ -940,11 +929,6 @@ async function endAdminVideoCall() {
         
         // Add system message
         addAdminSystemMessage('Video görüşme sonlandırıldı.');
-        
-        // Video call talebi mesajını tekrar göster (eğer hala talep varsa)
-        setTimeout(() => {
-            checkVideoCallRequests();
-        }, 1000);
         
     } catch (error) {
         console.error('Video call sonlandırma hatası:', error);
@@ -1182,28 +1166,10 @@ function checkVideoCallRequests() {
                             alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                         }
                     }
-                    
-                    // Add system message if this is a new request for current session
-                    if (sessionId === currentSessionID && !isAdminCallActive) {
-                        addAdminSystemMessage(`${username} video görüşme talep ediyor!`);
-                    }
                 } else {
                     // Admin arama başlattıysa butonları gösterme, sadece bilgi mesajı göster
                     if (sessionId === currentSessionID && !isAdminCallActive) {
                         addAdminSystemMessage(`Video görüşme başlatıldı, müşteri yanıtını bekliyor...`);
-                    }
-                }
-                
-                // Eğer görüntülü görüşme aktifse, talep mesajını gizle
-                if (sessionId === currentSessionID && isAdminCallActive) {
-                    const videoCallNotification = document.getElementById(`videoCallNotification-${sessionId}`);
-                    const videoCallButtons = document.getElementById(`videoCallButtons-${sessionId}`);
-                    
-                    if (videoCallNotification) {
-                        videoCallNotification.style.display = 'none';
-                    }
-                    if (videoCallButtons) {
-                        videoCallButtons.style.display = 'none';
                     }
                 }
             });

@@ -736,6 +736,36 @@
       "is_admin": false,
       "is_read": true,
       "created_at": "2025-06-29T17:50:37.4752937+03:00"
+    },
+    {
+      "id": 62,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T17:54:23.7554508+03:00"
+    },
+    {
+      "id": 63,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-06-29T17:55:43.1769261+03:00"
+    },
+    {
+      "id": 64,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "message": "reter",
+      "is_admin": false,
+      "is_read": false,
+      "created_at": "2025-06-29T17:56:38.1973274+03:00"
     }
   ],
   "support_sessions": [
@@ -855,7 +885,7 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "status": "active",
-      "last_message_at": "2025-06-29T17:50:37.4752937+03:00",
+      "last_message_at": "2025-06-29T17:56:38.1973274+03:00",
       "created_at": "2025-06-26T15:00:12.7976583+03:00",
       "unread_count": 0
     },
@@ -2229,6 +2259,26 @@
       "status": "ended",
       "requested_at": "2025-06-29T17:50:38.378296+03:00",
       "responded_at": "2025-06-29T17:53:12.0643885+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 136,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-06-29T17:54:21.5795218+03:00",
+      "responded_at": "2025-06-29T17:54:36.3653838+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 137,
+      "session_id": "d84bd133-7dd2-4ea9-9e76-211bea6b29a4",
+      "user_id": null,
+      "username": "Misafir-d84bd133",
+      "status": "ended",
+      "requested_at": "2025-06-29T17:55:44.1475782+03:00",
+      "responded_at": "2025-06-29T17:56:20.3751521+03:00",
       "initiator": ""
     }
   ]
