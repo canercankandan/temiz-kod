@@ -1106,6 +1106,13 @@ async function sendVideoCallResponse(action, sessionId = null) {
 }
 
 function addAdminSystemMessage(message) {
+    // Video görüşme talebi mesajlarını gizle
+    if (message.includes('Görüntülü görüşme talebi gönderildi') || 
+        message.includes('Video görüşme talebi gönderildi') ||
+        message.includes('📞 Görüntülü görüşme talebi gönderildi')) {
+        return; // Bu mesajları gösterme
+    }
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message system';
     messageDiv.style.textAlign = 'center';

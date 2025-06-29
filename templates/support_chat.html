@@ -688,9 +688,6 @@ async function startVideoCall() {
         
         console.log('Customer sent offer to admin');
         
-        // Add system message
-        addSystemMessage(`Görüntülü görüşme başlatıldı${isSafari ? ' (Safari)' : ''}. Destek temsilcisi bağlantıyı kabul etmesini bekliyor...`);
-        
         // Görüşme başlatıldıktan sonra endCallBtn'e event listener ekle
         setTimeout(() => {
             const endCallBtn = document.getElementById('endCallBtn');
@@ -768,9 +765,6 @@ async function endVideoCall() {
         
         // Send end call notification
         await sendVideoCallEnd();
-        
-        // Add system message
-        addSystemMessage('Görüntülü görüşme sonlandırıldı.');
         
     } catch (error) {
         console.error('Video call sonlandırma hatası:', error);
@@ -1093,8 +1087,6 @@ async function acceptAdminCall() {
             type: 'call-accepted'
         });
         
-        addSystemMessage('Admin video görüşme talebini kabul ettiniz.');
-        
     } catch (error) {
         console.error('Error accepting admin call:', error);
         alert('Video görüşme başlatılamadı: ' + error.message);
@@ -1114,8 +1106,6 @@ async function rejectAdminCall() {
         await sendSignalingMessage({
             type: 'call-rejected'
         });
-        
-        addSystemMessage('Admin video görüşme talebini reddettiniz.');
         
     } catch (error) {
         console.error('Error rejecting admin call:', error);
@@ -1164,26 +1154,6 @@ async function sendVideoCallEnd() {
     } catch (error) {
         console.error('Error sending video call end:', error);
     }
-}
-
-function addSystemMessage(message) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message system';
-    messageDiv.style.textAlign = 'center';
-    messageDiv.style.marginBottom = '15px';
-    
-    const bubbleDiv = document.createElement('div');
-    bubbleDiv.style.display = 'inline-block';
-    bubbleDiv.style.background = '#17a2b8';
-    bubbleDiv.style.color = 'white';
-    bubbleDiv.style.padding = '8px 16px';
-    bubbleDiv.style.borderRadius = '15px';
-    bubbleDiv.style.fontSize = '0.9em';
-    bubbleDiv.innerHTML = '<i class="fas fa-info-circle me-2"></i>' + message;
-    
-    messageDiv.appendChild(bubbleDiv);
-    chatMessages.appendChild(messageDiv);
-    scrollToBottom();
 }
 
 // Show permission dialog with detailed instructions
