@@ -460,6 +460,31 @@ function sendMessage() {
     });
 }
 
+// Otomatik mesaj gönder - görüntülü arama için
+async function sendAutoMessage() {
+    try {
+        const response = await fetch('/support/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: '📞 Görüntülü görüşme talebi gönderildi. Lütfen bekleyin...'
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            addMessage(data.message);
+            scrollToBottom();
+        } else {
+            console.error('Auto message failed:', data.error);
+        }
+    } catch (error) {
+        console.error('Error sending auto message:', error);
+    }
+}
+
 // Display messages
 function displayMessages(messages) {
     // Clear loading message
@@ -558,6 +583,9 @@ async function startVideoCall() {
             callStatusText.textContent = 'İzin gerekli';
             return;
         }
+        
+        // Otomatik mesaj gönder - kullanıcının admin panelinde görünmesi için
+        await sendAutoMessage();
         
         // Detect mobile device and browser
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
