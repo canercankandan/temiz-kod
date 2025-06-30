@@ -1,9 +1,10 @@
-package main
+package handler
 
 import (
 	"context"
 	"net/http"
 	"os"
+	"html/template"
 
 	"cenap/internal/database"
 	"cenap/internal/handlers"
