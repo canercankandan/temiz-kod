@@ -6,13 +6,9 @@
       "use": "@vercel/go"
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "cmd/web/main.go"
+  "functions": {
+    "cmd/web/main.go": {
+      "runtime": "go1.21"
     }
-  ],
-  "env": {
-    "PORT": "8080"
   }
 } 
