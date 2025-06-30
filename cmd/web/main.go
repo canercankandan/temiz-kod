@@ -258,7 +258,21 @@ func main() {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	// HTTPS portu
+	// Render.com için ortam değişkeni kontrolü
+	port := os.Getenv("PORT")
+	if port != "" {
+		// Render ortamı: Sadece HTTP başlat
+		log.Printf("🚀 Render.com ortamı tespit edildi")
+		log.Printf("🌐 HTTP Server başlatılıyor (port: %s)...", port)
+		log.Printf("📱 Erişim için: http://localhost:%s", port)
+		
+		if err := r.Run(":" + port); err != nil {
+			log.Fatalf("HTTP Server başlatılamadı: %v", err)
+		}
+		return
+	}
+
+	// Lokal geliştirme: HTTPS ve HTTP yönlendirme
 	httpsPort := "8081"
 	httpPort := "8080"
 	
