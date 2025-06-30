@@ -12,6 +12,9 @@ var TemplateFuncs = template.FuncMap{
 	"add": func(a, b int) int {
 		return a + b
 	},
+	"sub": func(a, b int) int {
+		return a - b
+	},
 }
 
 // HTMLRenderer, her sayfa için ayrı template setlerini yönetir.
