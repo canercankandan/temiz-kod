@@ -25,9 +25,9 @@ COPY templates ./templates
 COPY data.json .
 COPY orders.json .
 
-# Portu belirt
-EXPOSE 8080
-EXPOSE 8081
+# Render için port belirtme - Render kendi PORT environment variable'ını kullanır
+# EXPOSE 8080
+# EXPOSE 8081
 
 # Uygulamayı başlat
 CMD ["./main"] 

@@ -89,6 +89,7 @@ func main() {
 	r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 
 	// Her sayfa için ayrı template setleri oluştur
+	log.Printf("📄 Template'ler yükleniyor...")
 	templates := map[string]*template.Template{}
 	
 	templateFiles := map[string][]string{
@@ -113,13 +114,28 @@ func main() {
 	}
 	
 	for name, files := range templateFiles {
+		log.Printf("📄 Template yükleniyor: %s", name)
+		log.Printf("📁 Dosyalar: %v", files)
+		
+		// Dosyaların varlığını kontrol et
+		for _, file := range files {
+			if _, err := os.Stat(file); os.IsNotExist(err) {
+				log.Printf("❌ Template dosyası bulunamadı: %s", file)
+			} else {
+				log.Printf("✅ Template dosyası mevcut: %s", file)
+			}
+		}
+		
 		tmpl, err := template.New(name).Funcs(handlers.TemplateFuncs).ParseFiles(files...)
 		if err != nil {
+			log.Printf("❌ Template yüklenemedi %s: %v", name, err)
 			log.Fatalf("Template yüklenemedi %s: %v", name, err)
 		}
 		templates[name] = tmpl
-		log.Printf("Template yüklendi: %s", name)
+		log.Printf("✅ Template yüklendi: %s", name)
 	}
+	
+	log.Printf("🎯 Toplam %d template yüklendi", len(templates))
 	
 	r.HTMLRender = &handlers.HTMLRenderer{
 		Templates: templates,
@@ -149,6 +165,16 @@ func main() {
 		c.Status(204) // No content
 	})
 
+	// ANA SAYFA ROUTE'U - EN BAŞTA OLMALI
+	log.Printf("🏠 Ana sayfa route'u tanımlanıyor: /")
+	r.GET("/", h.HomePage)
+	log.Printf("✅ Ana sayfa route'u tanımlandı")
+
+	// Diğer ana sayfa rotaları
+	r.GET("/products", h.ProductsPage)
+	r.GET("/about", h.AboutPage)
+	r.GET("/contact", h.ContactPage)
+
 	// Order tracking routes (public) - ÖNCELİKLE KAYDET!
 	log.Printf("Registering order tracking routes...")
 	r.GET("/track", h.OrderTrackingPage)
@@ -168,12 +194,6 @@ func main() {
 	r.POST("/support/ping", h.SupportPing)
 	r.POST("/support/leave", h.SupportLeave)
 	log.Printf("Support chat routes registered successfully")
-
-	// Ana sayfa rotaları
-	r.GET("/", h.HomePage)
-	r.GET("/products", h.ProductsPage)
-	r.GET("/about", h.AboutPage)
-	r.GET("/contact", h.ContactPage)
 
 	// Sepet rotaları
 	r.GET("/cart", h.CartPage)

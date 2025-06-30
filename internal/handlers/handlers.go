@@ -278,21 +278,39 @@ func (h *Handler) ProfilePage(c *gin.Context) {
 }
 
 func (h *Handler) HomePage(c *gin.Context) {
+	log.Printf("🔍 HomePage çağrıldı - URL: %s", c.Request.URL.Path)
+	
+	// Veritabanından ürünleri al
+	log.Printf("📦 Ürünler veritabanından alınıyor...")
 	products, err := h.db.GetAllProducts()
 	if err != nil {
-		log.Printf("Error getting products: %v", err)
+		log.Printf("❌ Ürünler alınırken hata: %v", err)
 		products = []models.Product{}
+	} else {
+		log.Printf("✅ %d ürün başarıyla alındı", len(products))
 	}
 	
+	// Kullanıcı bilgilerini al
 	username, _ := c.Cookie("username")
 	isLoggedIn := username != ""
-
-	c.HTML(http.StatusOK, "home.html", gin.H{
+	log.Printf("👤 Kullanıcı durumu - Username: %s, IsLoggedIn: %t", username, isLoggedIn)
+	
+	// Template verilerini hazırla
+	templateData := gin.H{
 		"products":   products,
-		"title":      "suarıtama uzmanı com - Ana Sayfa",
+		"title":      "Su Arıtma Uzmanı - Ana Sayfa",
 		"isLoggedIn": isLoggedIn,
 		"username":   username,
-	})
+		"current_url": c.Request.URL.Path,
+	}
+	
+	log.Printf("📄 Template render ediliyor: home.html")
+	log.Printf("📊 Template verileri: %+v", templateData)
+	
+	// Template'i render et
+	c.HTML(http.StatusOK, "home.html", templateData)
+	
+	log.Printf("✅ HomePage başarıyla tamamlandı")
 }
 
 func (h *Handler) ProductsPage(c *gin.Context) {
