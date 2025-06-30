@@ -13,6 +13,9 @@ Disallow: /orders/
 Disallow: /profile/
 Disallow: /support/leave
 Disallow: /support/ping
+Disallow: /static/uploads/
+Disallow: /static/js/
+Disallow: /static/css/
 
 # Allow important pages
 Allow: /products
@@ -21,6 +24,11 @@ Allow: /contact
 Allow: /support
 Allow: /login
 Allow: /register
+Allow: /static/images/
+Allow: /static/favicon.ico
 
 # Crawl delay (optional)
-Crawl-delay: 1 
+Crawl-delay: 1
+
+# Host
+Host: https://xn--suartmauzman-44bi.com 

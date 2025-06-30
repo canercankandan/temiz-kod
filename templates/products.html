@@ -6,9 +6,9 @@
 {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  "name": "Su Arıtma Cihazları",
-  "description": "Ailenizin sağlığı için en kaliteli su arıtma çözümleri",
-  "url": "https://suarıtmauzmanı.com/products",
+  "name": "Su Aritma Cihazlari",
+  "description": "Ailenizin sagligi icin en kaliteli su aritma cozumleri",
+  "url": "https://xn--suartmauzman-44bi.com/products",
   "numberOfItems": {{if .products}}{{len .products}}{{else}}0{{end}},
   "itemListElement": [
     {{if .products}}
@@ -23,7 +23,7 @@
         "category": "{{$product.Category}}",
         "brand": {
           "@type": "Brand",
-          "name": "Su Arıtma Uzmanı"
+          "name": "Su Aritma Uzmani"
         },
         "offers": {
           "@type": "Offer",
@@ -32,17 +32,43 @@
           "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
           "seller": {
             "@type": "Organization",
-            "name": "Su Arıtma Uzmanı"
-          }
+            "name": "Su Aritma Uzmani",
+            "url": "https://xn--suartmauzman-44bi.com"
+          },
+          "url": "https://xn--suartmauzman-44bi.com/products"
         },
         {{if $product.Image}}
         "image": "{{$product.Image}}",
         {{end}}
-        "url": "https://suarıtmauzmanı.com/products"
+        "url": "https://xn--suartmauzman-44bi.com/products",
+        "sku": "{{$product.ID}}",
+        "mpn": "{{$product.ID}}"
       }
     }{{if not (eq $index (sub (len $.products) 1))}},{{end}}
     {{end}}
     {{end}}
+  ]
+}
+</script>
+
+<!-- Breadcrumb Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana Sayfa",
+      "item": "https://xn--suartmauzman-44bi.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Urunler",
+      "item": "https://xn--suartmauzman-44bi.com/products"
+    }
   ]
 }
 </script>
