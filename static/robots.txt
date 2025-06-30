@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://xn--suartmauzman-44bi.com/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /admin_login
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /orders/
+Disallow: /profile/
+Disallow: /support/leave
+Disallow: /support/ping
+
+# Allow important pages
+Allow: /products
+Allow: /about
+Allow: /contact
+Allow: /support
+Allow: /login
+Allow: /register
+
+# Crawl delay (optional)
+Crawl-delay: 1 

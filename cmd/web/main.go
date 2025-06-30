@@ -128,6 +128,17 @@ func main() {
 	// Static dosyaları serve et
 	r.Static("/static", "./static")
 	
+	// SEO için özel route'lar
+	r.GET("/sitemap.xml", func(c *gin.Context) {
+		c.Header("Content-Type", "application/xml")
+		c.File("./templates/sitemap.xml")
+	})
+	
+	r.GET("/robots.txt", func(c *gin.Context) {
+		c.Header("Content-Type", "text/plain")
+		c.File("./static/robots.txt")
+	})
+	
 	// Favicon için route ekle - static dosya olarak serve et
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.File("./static/favicon.ico")
