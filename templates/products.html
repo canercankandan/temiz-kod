@@ -1,6 +1,52 @@
 {{template "base.html" .}}
 
 {{define "content"}}
+<!-- Google Structured Data for Products -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Su Arıtma Cihazları",
+  "description": "Ailenizin sağlığı için en kaliteli su arıtma çözümleri",
+  "url": "https://suarıtmauzmanı.com/products",
+  "numberOfItems": {{if .products}}{{len .products}}{{else}}0{{end}},
+  "itemListElement": [
+    {{if .products}}
+    {{range $index, $product := .products}}
+    {
+      "@type": "ListItem",
+      "position": {{add $index 1}},
+      "item": {
+        "@type": "Product",
+        "name": "{{$product.Name}}",
+        "description": "{{$product.Description}}",
+        "category": "{{$product.Category}}",
+        "brand": {
+          "@type": "Brand",
+          "name": "Su Arıtma Uzmanı"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "{{$product.Price}}",
+          "priceCurrency": "TRY",
+          "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
+          "seller": {
+            "@type": "Organization",
+            "name": "Su Arıtma Uzmanı"
+          }
+        },
+        {{if $product.Image}}
+        "image": "{{$product.Image}}",
+        {{end}}
+        "url": "https://suarıtmauzmanı.com/products"
+      }
+    }{{if not (eq $index (sub (len $.products) 1))}},{{end}}
+    {{end}}
+    {{end}}
+  ]
+}
+</script>
+
 <div class="container">
     <!-- Hero Section -->
     <section class="products-hero text-center py-5 mb-5">

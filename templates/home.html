@@ -1,6 +1,45 @@
 {{template "base.html" .}}
 
 {{define "content"}}
+<!-- Google Structured Data for Homepage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Su Arıtma Uzmanı",
+  "url": "https://suarıtmauzmanı.com",
+  "logo": "https://suarıtmauzmanı.com/static/images/logo.png",
+  "description": "Ev ve iş yeriniz için sağlıklı, güvenli ve ekonomik su arıtma çözümleri",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "TR"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "availableLanguage": "Turkish"
+  },
+  "sameAs": [
+    "https://suarıtmauzmanı.com"
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Su Arıtma Uzmanı",
+  "url": "https://suarıtmauzmanı.com",
+  "description": "Su arıtma sistemleri ve çözümleri",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://suarıtmauzmanı.com/products?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
 <div class="container">
     <!-- Hero Section -->
     <section class="hero-section text-center py-5 mb-5 hero-bg">
