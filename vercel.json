@@ -2,13 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/index.go",
+      "src": "cmd/web/main.go",
       "use": "@vercel/go"
     }
   ],
-  "functions": {
-    "api/index.go": {
-      "runtime": "go1.21"
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/cmd/web/main.go"
     }
-  }
+  ]
 } 

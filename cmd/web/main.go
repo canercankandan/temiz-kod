@@ -304,8 +304,8 @@ func main() {
 	}
 
 	// Lokal geliştirme: HTTPS ve HTTP yönlendirme
-	httpsPort := "8081"
-	httpPort := "8080"
+	httpsPort := "8083"
+	httpPort := "8082"
 	
 	// Create HTTPS server
 	httpsServer := &http.Server{
