@@ -260,6 +260,7 @@ func main() {
 
 	// HTTPS portu
 	httpsPort := "8081"
+	httpPort := "8080"
 	
 	// Create HTTPS server
 	httpsServer := &http.Server{
@@ -267,6 +268,30 @@ func main() {
 		Handler:   r,
 		TLSConfig: tlsConfig,
 	}
+
+	// HTTP'den HTTPS'e yönlendirme için handler
+	httpHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		// HTTPS'e yönlendir
+		httpsURL := "https://" + req.Host + ":" + httpsPort + req.RequestURI
+		http.Redirect(w, req, httpsURL, http.StatusMovedPermanently)
+	})
+
+	// HTTP server
+	httpServer := &http.Server{
+		Addr:    ":" + httpPort,
+		Handler: httpHandler,
+	}
+
+	// HTTP Server'ı goroutine'de başlat
+	go func() {
+		log.Printf("🌐 HTTP Server başlatılıyor (HTTPS'e yönlendirme)...")
+		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
+		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
+		
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("HTTP Server hatası: %v", err)
+		}
+	}()
 
 	// HTTPS Server'ı başlat
 	log.Printf("🔒 HTTPS Server başlatılıyor...")
