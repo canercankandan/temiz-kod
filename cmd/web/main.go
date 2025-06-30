@@ -113,7 +113,7 @@ func main() {
 	}
 	
 	for name, files := range templateFiles {
-		tmpl, err := template.ParseFiles(files...)
+		tmpl, err := template.New(name).Funcs(handlers.TemplateFuncs).ParseFiles(files...)
 		if err != nil {
 			log.Fatalf("Template yüklenemedi %s: %v", name, err)
 		}

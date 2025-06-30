@@ -7,6 +7,13 @@ import (
 	"github.com/gin-gonic/gin/render"
 )
 
+// Template fonksiyonları
+var TemplateFuncs = template.FuncMap{
+	"add": func(a, b int) int {
+		return a + b
+	},
+}
+
 // HTMLRenderer, her sayfa için ayrı template setlerini yönetir.
 type HTMLRenderer struct {
 	Templates map[string]*template.Template
