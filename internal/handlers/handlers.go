@@ -48,7 +48,7 @@ type DBInterface interface {
 	DeleteOrder(orderID int) error
 	GetOrderByNumberAndEmail(orderNumber, email string) (*models.Order, error)
 	GetOrdersBySessionID(sessionID string) ([]models.Order, error)
-	GetOrCreateSupportSession(sessionID, displayName string, userID *int) (*models.SupportSession, error)
+	GetOrCreateSupportSession(sessionID, displayName string, userID *int, userAgent string) (*models.SupportSession, error)
 	SaveMessage(message *models.Message) error
 	GetMessagesBySession(sessionID string) ([]models.Message, error)
 	MarkMessagesAsRead(sessionID string, isUser bool) error
@@ -61,6 +61,8 @@ type DBInterface interface {
 	GetAllActiveVideoCallRequests() ([]models.VideoCallRequest, error)
 	CreateVideoCallRequestWithInitiator(sessionID, username string, userID *int, initiator string) error
 	UpdateProduct(product *models.Product) error
+	UpdateSupportSessionLastActive(sessionID string) error
+	MarkSupportSessionOffline(sessionID string) error
 }
 
 // Handler, HTTP isteklerini yönetir.
@@ -1502,7 +1504,11 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 	}
 	
 	// Create or get support session
-	_, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID)
+	userAgent := c.GetHeader("User-Agent")
+	if userAgent == "" {
+		userAgent = "Unknown"
+	}
+	_, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID, userAgent)
 	if err != nil {
 		log.Printf("SendSupportMessage - Error creating session: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Oturum oluşturulamadı"})
@@ -1958,7 +1964,11 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 	}
 	
 	// Check if session exists
-	session, err := h.db.GetOrCreateSupportSession(request.SessionID, "Admin", nil)
+	userAgent := c.GetHeader("User-Agent")
+	if userAgent == "" {
+		userAgent = "Unknown"
+	}
+	session, err := h.db.GetOrCreateSupportSession(request.SessionID, "Admin", nil, userAgent)
 	if err != nil {
 		log.Printf("AdminStartVideoCall - Error getting session: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Session bulunamadı"})
@@ -1988,4 +1998,81 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 	log.Printf("AdminStartVideoCall - Video call request sent to session %s", request.SessionID)
 	
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video call talebi gönderildi"})
-} 
+}
+
+// Kullanıcıdan ping al
+func (h *Handler) SupportPing(c *gin.Context) {
+    username, _ := c.Cookie("username")
+    sessionID, _ := c.Cookie("user_session")
+    
+    if sessionID == "" {
+        sessionID = generateSessionID()
+        c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, false)
+    }
+    
+    var userID *int
+    displayName := "Ziyaretçi"
+    
+    if username != "" {
+        user, err := h.db.GetUserByUsername(username)
+        if err == nil {
+            userID = &user.ID
+            displayName = user.Username
+        }
+    }
+    
+    // Create or get support session
+    userAgent := c.GetHeader("User-Agent")
+    if userAgent == "" {
+        userAgent = "Unknown"
+    }
+    session, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID, userAgent)
+    if err != nil {
+        log.Printf("SupportPing - Error creating session: %v", err)
+        c.JSON(500, gin.H{"success": false, "error": "Session oluşturulamadı"})
+        return
+    }
+    
+    // Mail gönderme kontrolü - yeni session veya son aktiviteden 5 dakika geçmişse
+    if session.CreatedAt == session.LastMessageAt || time.Since(session.LastMessageAt) > 5*time.Minute {
+        // Mail gönder
+        err = h.email.SendSupportChatNotification("irmaksuaritmam@gmail.com", displayName, sessionID, userAgent)
+        if err != nil {
+            log.Printf("SupportPing - Mail gönderme hatası: %v", err)
+        } else {
+            log.Printf("SupportPing - Mail notification sent to irmaksuaritmam@gmail.com for visitor: %s (Session: %s)", displayName, sessionID)
+        }
+    }
+    
+    // Update last active time
+    err = h.db.UpdateSupportSessionLastActive(sessionID)
+    if err != nil {
+        log.Printf("SupportPing - Error updating last active: %v", err)
+    }
+    
+    c.JSON(200, gin.H{"success": true})
+}
+
+// Kullanıcı destek sayfasından ayrıldı
+func (h *Handler) SupportLeave(c *gin.Context) {
+    sessionID, _ := c.Cookie("user_session")
+    
+    if sessionID == "" {
+        log.Printf("SupportLeave - No session ID found in cookie")
+        c.JSON(400, gin.H{"error": "Session ID bulunamadı"})
+        return
+    }
+    
+    log.Printf("SupportLeave called for sessionID: %s", sessionID)
+    
+    // Session'ı offline olarak işaretle
+    err := h.db.MarkSupportSessionOffline(sessionID)
+    if err != nil {
+        log.Printf("SupportLeave - Error marking session offline: %v", err)
+    } else {
+        log.Printf("SupportLeave - Session %s marked as offline successfully", sessionID)
+    }
+    
+    c.JSON(200, gin.H{"success": true})
+}
+  

@@ -427,6 +427,64 @@ function updateCartCount() {
             console.error('Error updating cart count:', error);
         });
 }
+
+// Ping system for visitor tracking
+let pingInterval = null;
+
+// Start ping interval
+function startPingInterval() {
+    if (!pingInterval) {
+        pingInterval = setInterval(function() {
+            fetch('/support/ping', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Ping sent successfully (home page)');
+                }
+            })
+            .catch(error => {
+                console.error('Ping error (home page):', error);
+            });
+        }, 15000); // 15 saniye
+    }
+}
+
+// Stop ping interval
+function stopPingInterval() {
+    if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+    }
+}
+
+// Sayfa yüklendiğinde ping sistemini başlat
+document.addEventListener('DOMContentLoaded', function() {
+    startPingInterval();
+    updateCartCount();
+});
+
+// Sayfa kapatıldığında veya kullanıcı ayrıldığında
+window.addEventListener('beforeunload', function() {
+    stopPingInterval();
+    // Sunucuya kullanıcının ayrıldığını bildir
+    navigator.sendBeacon('/support/leave');
+    console.log('Sayfa kapatıldı - Ping sistemi durduruldu');
+});
+
+// Sayfa gizlendiğinde veya görünür olduğunda
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        // Sayfa gizlendiğinde ping interval'ını durdur
+        stopPingInterval();
+        // Sunucuya kullanıcının ayrıldığını bildir
+        navigator.sendBeacon('/support/leave');
+        console.log('Sayfa gizlendi - Ping sistemi durduruldu');
+    } else {
+        // Sayfa tekrar görünür olduğunda ping interval'ını yeniden başlat
+        startPingInterval();
+        console.log('Sayfa görünür - Ping sistemi başlatıldı');
+    }
+});
 </script>
 
 <style>

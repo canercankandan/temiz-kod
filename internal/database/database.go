@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"sync"
@@ -556,11 +557,11 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	defer db.mu.RUnlock()
 	
 	var sessions []models.SupportSession
-	// Son 30 dakika içinde mesaj alışverişi olan sessionları göster
-	thirtyMinutesAgo := time.Now().Add(-30 * time.Minute)
+	// Son 5 dakika içinde aktif olan sessionları göster
+	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
 	
 	for _, session := range db.data.SupportSessions {
-		if session.Status == "active" && session.LastMessageAt.After(thirtyMinutesAgo) {
+		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) {
 			sessions = append(sessions, session)
 		}
 	}
@@ -569,6 +570,8 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	sort.Slice(sessions, func(i, j int) bool {
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
+	
+	log.Printf("GetActiveSupportSessions - Found %d active sessions (last 5 minutes)", len(sessions))
 	
 	return sessions, nil
 }
@@ -615,13 +618,13 @@ func (db *JSONDatabase) GetMessagesBySession(sessionID string) ([]models.Message
 	return messages, nil
 }
 
-func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, userID *int) (*models.SupportSession, error) {
+func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, userID *int, userAgent string) (*models.SupportSession, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	
-	// Check if session exists
+	// Check if session exists with same sessionID and userAgent
 	for _, session := range db.data.SupportSessions {
-		if session.SessionID == sessionID {
+		if session.SessionID == sessionID && session.UserAgent == userAgent {
 			return &session, nil
 		}
 	}
@@ -639,6 +642,7 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 		SessionID:     sessionID,
 		UserID:        userID,
 		Username:      username,
+		UserAgent:     userAgent,
 		Status:        "active",
 		LastMessageAt: time.Now(),
 		CreatedAt:     time.Now(),
@@ -814,6 +818,40 @@ func (db *JSONDatabase) CreateVideoCallRequestWithInitiator(sessionID, username 
 
 	db.data.VideoCallRequests = append(db.data.VideoCallRequests, newRequest)
 	return db.saveData()
+}
+
+func (db *JSONDatabase) UpdateSupportSessionLastActive(sessionID string) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	for i, session := range db.data.SupportSessions {
+		if session.SessionID == sessionID {
+			db.data.SupportSessions[i].LastMessageAt = time.Now()
+			db.data.SupportSessions[i].Status = "active"
+			log.Printf("UpdateSupportSessionLastActive - Session %s updated", sessionID)
+			return db.saveData()
+		}
+	}
+	log.Printf("UpdateSupportSessionLastActive - Session %s not found", sessionID)
+	return nil
+}
+
+func (db *JSONDatabase) MarkSupportSessionOffline(sessionID string) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	
+	// Session'ı bul ve offline olarak işaretle
+	for i, session := range db.data.SupportSessions {
+		if session.SessionID == sessionID {
+			// Status'u offline yap ve son aktif zamanını çok eski bir tarihe ayarla
+			db.data.SupportSessions[i].Status = "offline"
+			db.data.SupportSessions[i].LastMessageAt = time.Now().AddDate(-1, 0, 0)
+			log.Printf("MarkSupportSessionOffline - Session %s marked as offline", sessionID)
+			return db.saveData()
+		}
+	}
+	
+	log.Printf("MarkSupportSessionOffline - Session %s not found", sessionID)
+	return nil
 }
 
  

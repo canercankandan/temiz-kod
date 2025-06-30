@@ -20,6 +20,7 @@ type SupportSession struct {
 	SessionID     string    `json:"session_id" db:"session_id"`
 	UserID        *int      `json:"user_id" db:"user_id"`
 	Username      string    `json:"username" db:"username"`
+	UserAgent     string    `json:"user_agent" db:"user_agent"` // Cihaz bilgisi
 	Status        string    `json:"status" db:"status"` // active, closed
 	LastMessageAt time.Time `json:"last_message_at" db:"last_message_at"`
 	CreatedAt     time.Time `json:"created_at" db:"created_at"`

@@ -58,7 +58,6 @@
                                         </small>
                                     </div>
                                     <div class="d-flex align-items-center">
-                                        <span class="badge bg-success me-2">Online</span>
                                         {{if gt .UnreadCount 0}}
                                         <span class="badge bg-danger me-2">{{.UnreadCount}}</span>
                                         {{end}}
@@ -571,7 +570,7 @@ function startSessionPolling() {
     setInterval(() => {
         loadSessions();
         checkVideoCallRequests(); // Check for video call requests globally
-    }, 2000); // Poll every 2 seconds
+    }, 3000); // Poll every 3 seconds
 }
 
 // Start polling for messages
@@ -588,11 +587,17 @@ function loadSessions() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            updateSessionsList(data.sessions);
+            // Check if data.sessions exists, otherwise pass empty array
+            const sessions = data.sessions || [];
+            updateSessionsList(sessions);
+        } else {
+            console.error('Failed to load sessions:', data.error);
+            updateSessionsList([]); // Pass empty array on error
         }
     })
     .catch(error => {
         console.error('Error loading sessions:', error);
+        updateSessionsList([]); // Pass empty array on error
     });
 }
 
@@ -637,7 +642,8 @@ function updateSessionsList(sessions) {
     const sessionsList = document.getElementById('sessionsList');
     const sessionCount = document.getElementById('sessionCount');
     
-    if (sessions.length === 0) {
+    // Check if sessions is null or undefined
+    if (!sessions || sessions.length === 0) {
         sessionsList.innerHTML = `
             <div class="p-4 text-center" style="color: #666;">
                 <i class="fas fa-comments fa-3x mb-3"></i>
@@ -673,7 +679,6 @@ function updateSessionsList(sessions) {
                     </small>
                 </div>
                 <div>
-                    <span class="badge bg-success">Online</span>
                     ${session.unread_count > 0 ? `<span class="badge bg-danger">${session.unread_count}</span>` : ''}
                 </div>
             </div>
@@ -1295,8 +1300,8 @@ function loadAdminSessions() {
 // Initialize admin support functionality
 document.addEventListener('DOMContentLoaded', function() {
     loadAdminSessions();
-    setInterval(loadAdminSessions, 5000);
-    setInterval(checkVideoCallRequests, 3000);
+    setInterval(loadAdminSessions, 3000); // 3 saniye
+    setInterval(checkVideoCallRequests, 2000); // 2 saniye
 });
 </script>
 </body>

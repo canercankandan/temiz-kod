@@ -1,24 +1,20 @@
 # PowerShell script to generate a self-signed certificate for localhost
 # Run this as Administrator
 
-# Create a self-signed certificate for localhost
-$cert = New-SelfSignedCertificate -DnsName "localhost", "127.0.0.1", "::1" -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears(1) -KeyUsage DigitalSignature, KeyEncipherment -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.1")
+# Generate self-signed certificate for localhost
+$cert = New-SelfSignedCertificate -DnsName "localhost" -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears(1) -FriendlyName "Cenap Localhost Certificate"
 
-# Export the certificate to files
-$certPath = ".\localhost.crt"
-$keyPath = ".\localhost.key"
+# Export certificate to file
+$certPath = "cert:\LocalMachine\My\$($cert.Thumbprint)"
+Export-Certificate -Cert $certPath -FilePath "localhost.crt"
 
-# Export certificate
-Export-Certificate -Cert $cert -FilePath $certPath -Type CERT
-
-# Export private key (requires conversion)
-$certWithKey = Get-ChildItem -Path "cert:\LocalMachine\My" | Where-Object { $_.Thumbprint -eq $cert.Thumbprint }
-$keyBytes = $certWithKey.PrivateKey.ExportCspBlob($true)
-[System.IO.File]::WriteAllBytes($keyPath, $keyBytes)
+# Export private key
+$password = ConvertTo-SecureString -String "password" -Force -AsPlainText
+Export-PfxCertificate -Cert $certPath -FilePath "localhost.pfx" -Password $password
 
 Write-Host "Certificate generated successfully!"
-Write-Host "Certificate: $certPath"
-Write-Host "Private Key: $keyPath"
+Write-Host "Certificate file: localhost.crt"
+Write-Host "Private key file: localhost.pfx"
 Write-Host ""
 Write-Host "To trust this certificate:"
 Write-Host "1. Double-click on localhost.crt"

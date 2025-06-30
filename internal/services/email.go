@@ -161,4 +161,53 @@ func (es *EmailService) SendVideoCallNotification(adminEmail, customerName, sess
 	m.SetBody("text/html", body)
 
 	return es.dialer.DialAndSend(m)
+}
+
+// SendSupportChatNotification, yeni ziyaretçi canlı desteğe geldiğinde mail bildirimi gönderir
+func (es *EmailService) SendSupportChatNotification(adminEmail, visitorName, sessionID, userAgent string) error {
+	if es.dialer == nil {
+		log.Printf("E-posta gönderimi devre dışı. Support chat bildirimi: %s - %s", visitorName, sessionID)
+		return nil
+	}
+
+	subject := "Yeni Canlı Destek Ziyaretçisi - Cenap Su Arıtma"
+	body := fmt.Sprintf(`
+		<h2>🔔 Yeni Canlı Destek Ziyaretçisi</h2>
+		<p>Merhaba,</p>
+		<p><strong>%s</strong> adlı ziyaretçi canlı destek sayfasına girdi ve sizi bekliyor.</p>
+		<br>
+		<p><strong>Ziyaretçi Bilgileri:</strong></p>
+		<ul>
+			<li><strong>Ad:</strong> %s</li>
+			<li><strong>Session ID:</strong> %s</li>
+			<li><strong>Tarih:</strong> %s</li>
+			<li><strong>Tarayıcı:</strong> %s</li>
+		</ul>
+		<br>
+		<p>Ziyaretçiye yardımcı olmak için admin panelini kontrol edin.</p>
+		
+		<div style="text-align: center; margin: 20px 0;">
+			<a href="https://xn--suartmauzman-44bi.com/admin" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">📱 Admin Paneli</a>
+			<a href="https://xn--suartmauzman-44bi.com/admin/support" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">💬 Canlı Destek</a>
+		</div>
+		
+		<p><strong>Hızlı Erişim Linkleri:</strong></p>
+		<ul>
+			<li><a href="https://xn--suartmauzman-44bi.com/admin">Ana Admin Paneli</a></li>
+			<li><a href="https://xn--suartmauzman-44bi.com/admin/support">Canlı Destek Paneli</a></li>
+		</ul>
+		
+		<br>
+		<p><em>Bu bildirim, ziyaretçi canlı destek sayfasına girdiğinde otomatik olarak gönderilmiştir.</em></p>
+		<br>
+		<p>Saygılarımızla,<br>Cenap Su Arıtma</p>
+	`, visitorName, visitorName, sessionID, time.Now().Format("02.01.2006 15:04:05"), userAgent)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", es.from)
+	m.SetHeader("To", adminEmail)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	return es.dialer.DialAndSend(m)
 } 

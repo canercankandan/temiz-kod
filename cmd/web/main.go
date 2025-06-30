@@ -78,12 +78,6 @@ func main() {
 
 	h := handlers.NewHandler(db)
 
-	// Port'u environment variable'dan al, yoksa default kullan
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "9500"
-	}
-
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
 	r := gin.New()
 	
@@ -160,6 +154,8 @@ func main() {
 	r.POST("/support/video-call-request", h.HandleVideoCallRequest)
 	r.POST("/support/webrtc-signal", h.HandleWebRTCSignal)
 	r.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
+	r.POST("/support/ping", h.SupportPing)
+	r.POST("/support/leave", h.SupportLeave)
 	log.Printf("Support chat routes registered successfully")
 
 	// Ana sayfa rotaları
@@ -272,27 +268,13 @@ func main() {
 		TLSConfig: tlsConfig,
 	}
 
-	// HTTP Server'ı başlat (port 8080'de)
-	httpPort := "8080"
+	// HTTPS Server'ı başlat
+	log.Printf("🔒 HTTPS Server başlatılıyor...")
+	log.Printf("📱 iPhone Safari desteği için: https://localhost:%s", httpsPort)
+	log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
+	log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
 	
-	// HTTPS Server'ı goroutine'de başlat
-	go func() {
-		log.Printf("🔒 HTTPS Server başlatılıyor...")
-		log.Printf("📱 iPhone Safari desteği için: https://localhost:%s", httpsPort)
-		log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
-		log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
-		
-		if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
-			log.Fatalf("HTTPS Server başlatılamadı: %v", err)
-		}
-	}()
-	
-	// HTTP Server'ı başlat
-	log.Printf("🌐 HTTP Server başlatılıyor...")
-	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
-	log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
-	
-	if err := http.ListenAndServe(":"+httpPort, r); err != nil {
-		log.Fatalf("HTTP Server başlatılamadı: %v", err)
+	if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
+		log.Fatalf("HTTPS Server başlatılamadı: %v", err)
 	}
 } 

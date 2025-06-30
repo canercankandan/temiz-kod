@@ -182,21 +182,6 @@
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
 
-.online-status {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    background: #4CAF50;
-    border-radius: 50%;
-    margin-right: 5px;
-    animation: blink 2s infinite;
-}
-
-@keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0.3; }
-}
-
 /* Video Call Styles */
 .video-call-area {
     border-bottom: 1px solid #dee2e6;
@@ -327,6 +312,11 @@ let sessionID = '{{.sessionID}}';
 let lastMessageTime = null;
 let pollInterval;
 
+// SessionID'yi döndüren fonksiyon
+function getSessionID() {
+    return sessionID;
+}
+
 // Video Call Variables
 let localStream = null;
 let remoteStream = null;
@@ -348,9 +338,35 @@ const toggleMuteBtn = document.getElementById('toggleMuteBtn');
 const toggleVideoBtn = document.getElementById('toggleVideoBtn');
 const callStatusText = document.getElementById('callStatusText');
 
+// Interval ID'lerini sakla
+let webrtcInterval;
+let pingInterval;
+let cartInterval;
+
 // Initialize chat
 document.addEventListener('DOMContentLoaded', function() {
     console.log('SessionID:', sessionID); // Debug log
+    
+    // SessionID kontrolü - eğer boşsa yeni oluştur
+    if (!sessionID || sessionID === '') {
+        sessionID = generateSessionID();
+        console.log('New SessionID generated:', sessionID);
+        // Cookie'ye kaydet
+        document.cookie = `user_session=${sessionID}; path=/; max-age=${3600*24*30}`;
+    }
+    
+    // İlk ping'i hemen gönder
+    fetch('/support/ping', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Initial ping sent successfully');
+        }
+    })
+    .catch(error => {
+        console.error('Initial ping error:', error);
+    });
+    
     loadMessages();
     startPolling();
     
@@ -396,12 +412,29 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sayfa ilk açıldığında Görüntülü Ara butonunu görünür yap
     videoCallBtn.style.display = 'inline-block';
     
-    // End call button event listener
-    const endCallBtn = document.getElementById('endCallBtn');
-    if (endCallBtn) {
-        endCallBtn.addEventListener('click', endVideoCall);
-    }
+    // Sayfa yüklendiğinde periyodik olarak sunucuya ping at
+    pingInterval = setInterval(function() {
+        fetch('/support/ping', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Ping sent successfully (page visible)');
+            }
+        })
+        .catch(error => {
+            console.error('Ping error (page visible):', error);
+        });
+    }, 15000); // 15 saniye
 });
+
+// SessionID oluşturma fonksiyonu
+function generateSessionID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
 
 // Load existing messages
 function loadMessages() {
@@ -507,8 +540,6 @@ function showWelcomeMessage() {
         <div class="text-center text-muted">
             <i class="fas fa-comments fa-3x mb-3"></i>
             <p>Merhaba! Size nasıl yardımcı olabiliriz?</p>
-            <div class="online-status"></div>
-            <small>Destek ekibimiz online</small>
         </div>
     `;
 }
@@ -525,21 +556,82 @@ function startPolling() {
     }, 3000); // Poll every 3 seconds
 }
 
-// Stop polling when page is hidden
+// Sayfa görünürlüğü değiştiğinde
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        clearInterval(pollInterval);
+        // Sayfa gizlendiğinde TÜM interval'ları durdur
+        if (webrtcInterval) {
+            clearInterval(webrtcInterval);
+            webrtcInterval = null;
+        }
+        if (pingInterval) {
+            clearInterval(pingInterval);
+            pingInterval = null;
+        }
+        if (cartInterval) {
+            clearInterval(cartInterval);
+            cartInterval = null;
+        }
+        if (signalingPollInterval) {
+            clearInterval(signalingPollInterval);
+            signalingPollInterval = null;
+        }
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
+        // Sunucuya kullanıcının ayrıldığını bildir
+        navigator.sendBeacon('/support/leave');
+        console.log('Sayfa gizlendi - Tüm interval\'lar durduruldu');
     } else {
-        startPolling();
+        // Sayfa tekrar görünür olduğunda hem ping hem de poll interval'ını yeniden başlat
+        if (!pingInterval) {
+            pingInterval = setInterval(function() {
+                fetch('/support/ping', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Ping sent successfully (page visible)');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ping error (page visible):', error);
+                });
+            }, 15000); // 15 saniye
+        }
+        if (!pollInterval) {
+            pollInterval = setInterval(() => {
+                loadMessages();
+            }, 3000);
+        }
+        console.log('Sayfa görünür oldu - Ping ve poll interval yeniden başlatıldı');
     }
 });
 
-// Cleanup on page unload
+// Sayfa kapatıldığında veya kullanıcı ayrıldığında
 window.addEventListener('beforeunload', function() {
-    clearInterval(pollInterval);
-    if (isCallActive) {
-        endVideoCall();
+    // Tüm interval'ları durdur
+    if (webrtcInterval) {
+        clearInterval(webrtcInterval);
+        webrtcInterval = null;
     }
+    if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+    }
+    if (cartInterval) {
+        clearInterval(cartInterval);
+        cartInterval = null;
+    }
+    if (signalingPollInterval) {
+        clearInterval(signalingPollInterval);
+        signalingPollInterval = null;
+    }
+    
+    // Sunucuya kullanıcının ayrıldığını bildir
+    navigator.sendBeacon('/support/leave');
+    
+    console.log('Sayfa kapatıldı - Tüm interval\'lar durduruldu');
 });
 
 // Video Call Functions
