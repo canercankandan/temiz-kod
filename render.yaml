@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: suaritamauzumani
+    env: go
+    plan: free
+    buildCommand: go build -o main cmd/web/main.go
+    startCommand: ./main
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: GIN_MODE
+        value: release 
