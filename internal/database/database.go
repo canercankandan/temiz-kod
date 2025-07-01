@@ -615,9 +615,9 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	
-	// Check if session exists with same sessionID and userAgent
+	// Check if session exists with same sessionID only
 	for i, session := range db.data.SupportSessions {
-		if session.SessionID == sessionID && session.UserAgent == userAgent {
+		if session.SessionID == sessionID {
 			// Eğer yeni username geldiyse ve farklıysa güncelle
 			if username != "" && session.Username != username {
 				db.data.SupportSessions[i].Username = username
