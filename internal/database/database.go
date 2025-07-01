@@ -173,12 +173,8 @@ func (db *JSONDatabase) CreateUser(user *models.User) error {
 		}
 	}
 
-	// Parolayı hashle
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	user.PasswordHash = string(hashedPassword)
+	// Parola zaten hashlenmiş olarak geliyor, tekrar hashlemeye gerek yok
+	// user.PasswordHash zaten hashlenmiş durumda
 
 	// Yeni ID ata
 	maxID := 0
@@ -557,11 +553,9 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	defer db.mu.RUnlock()
 	
 	var sessions []models.SupportSession
-	// Son 5 dakika içinde aktif olan sessionları göster
-	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
-	
+	// Sadece status'u "active" olan sessionları göster
 	for _, session := range db.data.SupportSessions {
-		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) {
+		if session.Status == "active" {
 			sessions = append(sessions, session)
 		}
 	}
@@ -571,7 +565,7 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
 	
-	log.Printf("GetActiveSupportSessions - Found %d active sessions (last 5 minutes)", len(sessions))
+	// log.Printf("GetActiveSupportSessions - Found %d active sessions", len(sessions))
 	
 	return sessions, nil
 }
@@ -623,9 +617,14 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 	defer db.mu.Unlock()
 	
 	// Check if session exists with same sessionID and userAgent
-	for _, session := range db.data.SupportSessions {
+	for i, session := range db.data.SupportSessions {
 		if session.SessionID == sessionID && session.UserAgent == userAgent {
-			return &session, nil
+			// Eğer yeni username geldiyse ve farklıysa güncelle
+			if username != "" && session.Username != username {
+				db.data.SupportSessions[i].Username = username
+				db.saveData()
+			}
+			return &db.data.SupportSessions[i], nil
 		}
 	}
 	
@@ -842,9 +841,8 @@ func (db *JSONDatabase) MarkSupportSessionOffline(sessionID string) error {
 	// Session'ı bul ve offline olarak işaretle
 	for i, session := range db.data.SupportSessions {
 		if session.SessionID == sessionID {
-			// Status'u offline yap ve son aktif zamanını çok eski bir tarihe ayarla
+			// Status'u offline yap, LastMessageAt'i değiştirme
 			db.data.SupportSessions[i].Status = "offline"
-			db.data.SupportSessions[i].LastMessageAt = time.Now().AddDate(-1, 0, 0)
 			log.Printf("MarkSupportSessionOffline - Session %s marked as offline", sessionID)
 			return db.saveData()
 		}
@@ -852,6 +850,42 @@ func (db *JSONDatabase) MarkSupportSessionOffline(sessionID string) error {
 	
 	log.Printf("MarkSupportSessionOffline - Session %s not found", sessionID)
 	return nil
+}
+
+// DeleteSupportSession - Support session'ı ve tüm mesajlarını sil
+func (db *JSONDatabase) DeleteSupportSession(sessionID string) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	
+	// Session'ı bul ve sil
+	for i, session := range db.data.SupportSessions {
+		if session.SessionID == sessionID {
+			db.data.SupportSessions = append(db.data.SupportSessions[:i], db.data.SupportSessions[i+1:]...)
+			log.Printf("DeleteSupportSession - Session %s deleted", sessionID)
+			break
+		}
+	}
+	
+	// Bu session'a ait tüm mesajları sil
+	var filteredMessages []models.Message
+	for _, msg := range db.data.Messages {
+		if msg.SessionID != sessionID {
+			filteredMessages = append(filteredMessages, msg)
+		}
+	}
+	db.data.Messages = filteredMessages
+	
+	// Bu session'a ait video call request'leri sil
+	var filteredVideoCalls []models.VideoCallRequest
+	for _, vc := range db.data.VideoCallRequests {
+		if vc.SessionID != sessionID {
+			filteredVideoCalls = append(filteredVideoCalls, vc)
+		}
+	}
+	db.data.VideoCallRequests = filteredVideoCalls
+	
+	log.Printf("DeleteSupportSession - All data for session %s deleted", sessionID)
+	return db.saveData()
 }
 
  

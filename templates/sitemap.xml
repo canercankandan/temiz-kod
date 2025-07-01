@@ -12,6 +12,17 @@
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
+    <!-- Product URLs will be dynamically generated -->
+    {{if .products}}
+    {{range .products}}
+    <url>
+        <loc>https://xn--suartmauzman-44bi.com/products#product-{{.ID}}</loc>
+        <lastmod>{{.UpdatedAt.Format "2006-01-02"}}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    {{end}}
+    {{end}}
     <url>
         <loc>https://xn--suartmauzman-44bi.com/about</loc>
         <lastmod>2025-06-30</lastmod>

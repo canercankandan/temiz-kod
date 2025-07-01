@@ -89,7 +89,7 @@ func main() {
 	r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 
 	// Her sayfa için ayrı template setleri oluştur
-	log.Printf("📄 Template'ler yükleniyor...")
+	// log.Printf("📄 Template'ler yükleniyor...")
 	templates := map[string]*template.Template{}
 	
 	templateFiles := map[string][]string{
@@ -114,7 +114,7 @@ func main() {
 	}
 	
 	for name, files := range templateFiles {
-		log.Printf("📄 Template yükleniyor: %s", name)
+		// log.Printf("📄 Template yükleniyor: %s", name)
 		log.Printf("📁 Dosyalar: %v", files)
 		
 		// Dosyaların varlığını kontrol et
@@ -132,10 +132,10 @@ func main() {
 			log.Fatalf("Template yüklenemedi %s: %v", name, err)
 		}
 		templates[name] = tmpl
-		log.Printf("✅ Template yüklendi: %s", name)
+		// log.Printf("✅ Template yüklendi: %s", name)
 	}
 	
-	log.Printf("🎯 Toplam %d template yüklendi", len(templates))
+	// log.Printf("🎯 Toplam %d template yüklendi", len(templates))
 	
 	r.HTMLRender = &handlers.HTMLRenderer{
 		Templates: templates,
@@ -166,9 +166,9 @@ func main() {
 	})
 
 	// ANA SAYFA ROUTE'U - EN BAŞTA OLMALI
-	log.Printf("🏠 Ana sayfa route'u tanımlanıyor: /")
+	// log.Printf("🏠 Ana sayfa route'u tanımlanıyor: /")
 	r.GET("/", h.HomePage)
-	log.Printf("✅ Ana sayfa route'u tanımlandı")
+	// log.Printf("✅ Ana sayfa route'u tanımlandı")
 
 	// Diğer ana sayfa rotaları
 	r.GET("/products", h.ProductsPage)
@@ -193,6 +193,9 @@ func main() {
 	r.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
 	r.POST("/support/ping", h.SupportPing)
 	r.POST("/support/leave", h.SupportLeave)
+	// Typing indicator routes
+	r.POST("/support/typing/:sessionID", h.SetTypingStatus)
+	r.GET("/support/typing/:sessionID", h.GetTypingStatus)
 	log.Printf("Support chat routes registered successfully")
 
 	// Sepet rotaları
@@ -246,12 +249,16 @@ func main() {
 		admin.GET("/support/sessions", h.AdminGetSupportSessions)
 		admin.GET("/support/messages/:sessionId", h.AdminGetSupportMessages)
 		admin.POST("/support/send/:sessionId", h.AdminSendSupportMessage)
+		admin.DELETE("/support/sessions/:sessionId", h.AdminDeleteSupportSession)
 		admin.POST("/support/video-call-response", h.AdminVideoCallResponse)
 		admin.POST("/support/start-video-call", h.AdminStartVideoCall)
 		admin.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
 		admin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
 		admin.POST("/support/webrtc-signal", h.HandleAdminWebRTCSignal)
 		admin.GET("/support/webrtc-signals/:sessionId", h.GetAdminWebRTCSignals)
+		// Admin typing indicator routes
+		admin.POST("/support/typing/:sessionID", h.SetTypingStatus)
+		admin.GET("/support/typing/:sessionID", h.GetTypingStatus)
 	}
 
 	// User profile routes (protected)
@@ -284,6 +291,18 @@ func main() {
 		log.Printf("✅ External certificate yüklendi: localhost.crt")
 	}
 
+	// Start typing indicator cleanup goroutine
+	go func() {
+		ticker := time.NewTicker(5 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				h.CleanupTypingStatus()
+			}
+		}
+	}()
+
 	// Configure TLS
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{cert},
@@ -304,8 +323,8 @@ func main() {
 	}
 
 	// Lokal geliştirme: HTTPS ve HTTP yönlendirme
-	httpsPort := "8081"
-	httpPort := "8080"
+	httpsPort := "8443"
+	httpPort := "8082"
 	
 	// Create HTTPS server
 	httpsServer := &http.Server{
