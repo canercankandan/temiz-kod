@@ -204,6 +204,86 @@
       "is_admin": true,
       "is_read": true,
       "created_at": "2025-07-01T22:13:46.5344273+03:00"
+    },
+    {
+      "id": 102,
+      "user_id": null,
+      "username": "Mor",
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "message": "Merhaba",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-07-01T22:35:51.8692982+03:00"
+    },
+    {
+      "id": 103,
+      "user_id": null,
+      "username": "ömer",
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "message": "merhana",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-07-01T22:41:42.931231+03:00"
+    },
+    {
+      "id": 104,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "message": "jj",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-07-01T22:43:07.706219+03:00"
+    },
+    {
+      "id": 105,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "message": "jj",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-07-01T22:43:10.5670437+03:00"
+    },
+    {
+      "id": 106,
+      "user_id": null,
+      "username": "Mobil",
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "message": "Cvvb",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-07-01T22:43:34.0471971+03:00"
+    },
+    {
+      "id": 107,
+      "user_id": null,
+      "username": "Mobil",
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "message": "Ndndj",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-07-01T22:44:33.5976451+03:00"
+    },
+    {
+      "id": 108,
+      "user_id": null,
+      "username": "Mobil",
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "message": "Merhaba",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-07-01T22:46:51.0471235+03:00"
+    },
+    {
+      "id": 109,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "message": "şşş",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-07-01T22:49:44.9617805+03:00"
     }
   ],
   "support_sessions": [
@@ -277,10 +357,10 @@
       "id": 22,
       "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
       "user_id": null,
-      "username": "ayse",
+      "username": "ömer",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-      "status": "offline",
-      "last_message_at": "2025-07-01T22:14:06.4674378+03:00",
+      "status": "active",
+      "last_message_at": "2025-07-01T22:51:38.8941759+03:00",
       "created_at": "2025-07-01T22:13:14.2839261+03:00",
       "unread_count": 0
     },
@@ -291,8 +371,19 @@
       "username": "Mobil",
       "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
       "status": "active",
-      "last_message_at": "2025-07-01T22:14:00.461035+03:00",
-      "created_at": "2025-07-01T22:13:59.3737418+03:00",
+      "last_message_at": "2025-07-01T22:51:04.5387018+03:00",
+      "created_at": "2025-07-01T22:35:27.7312053+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 24,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-01T22:35:58.8751786+03:00",
+      "created_at": "2025-07-01T22:35:58.8751786+03:00",
       "unread_count": 0
     }
   ],
@@ -486,6 +577,76 @@
       "requested_at": "2025-07-01T17:43:39.6828246+03:00",
       "responded_at": "2025-07-01T17:44:02.8873158+03:00",
       "initiator": "admin"
+    },
+    {
+      "id": 45,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Misafir-2419a933",
+      "status": "ended",
+      "requested_at": "2025-07-01T22:35:36.244193+03:00",
+      "responded_at": "2025-07-01T22:35:38.6720343+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 46,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-01T22:35:58.8759199+03:00",
+      "responded_at": "2025-07-01T22:36:13.6070152+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 47,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-01T22:44:40.0992843+03:00",
+      "responded_at": "2025-07-01T22:46:44.1533877+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 48,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-01T22:46:58.1087934+03:00",
+      "responded_at": "2025-07-01T22:48:43.8461937+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 49,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-01T22:49:57.0606433+03:00",
+      "responded_at": "2025-07-01T22:50:10.7643605+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 50,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Misafir-2419a933",
+      "status": "rejected",
+      "requested_at": "2025-07-01T22:50:17.4504608+03:00",
+      "responded_at": "2025-07-01T22:50:26.5749855+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 51,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Misafir-2419a933",
+      "status": "ended",
+      "requested_at": "2025-07-01T22:50:57.2250044+03:00",
+      "responded_at": "2025-07-01T22:51:11.3904362+03:00",
+      "initiator": ""
     }
   ]
 }

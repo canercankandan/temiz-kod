@@ -1603,11 +1603,19 @@ async function checkMediaPermissions() {
                         location.hostname.startsWith('172.') ||
                         location.hostname.endsWith('.local');
         
-        // HTTPS requirement - more lenient for local network
+        // iOS Safari requires HTTPS for camera access, even on local network
+        if (isIOS && location.protocol !== 'https:') {
+            return {
+                supported: false,
+                message: `iOS Safari için HTTPS bağlantısı zorunludur.\n\n📱 iOS Safari güvenlik gereksinimleri:\n• Kamera erişimi için HTTPS gerekli\n• Lütfen https://192.168.1.133:8443 adresini kullanın\n• Veya Safari ayarlarından güvenlik kısıtlamalarını gevşetin`
+            };
+        }
+        
+        // HTTPS requirement for other browsers - more lenient for local network
         if (!isSecure && !location.hostname.startsWith('192.168.')) {
             return {
                 supported: false,
-                message: `Güvenli bağlantı gerekli.\n\n${isIOS ? '📱 iOS Safari için:\n• HTTPS bağlantısı zorunludur\n• Yerel test için: http://192.168.x.x:9394 kullanın' : '🔒 Güvenlik gereksinimleri:\n• HTTPS bağlantısı gereklidir\n• Yerel ağ IP\'si ile test edebilirsiniz'}`
+                message: `Güvenli bağlantı gerekli.\n\n🔒 Güvenlik gereksinimleri:\n• HTTPS bağlantısı gereklidir\n• Yerel ağ IP'si ile test edebilirsiniz`
             };
         }
         

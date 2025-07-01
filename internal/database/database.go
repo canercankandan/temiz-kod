@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -553,9 +554,9 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	defer db.mu.RUnlock()
 	
 	var sessions []models.SupportSession
-	// Sadece status'u "active" olan sessionları göster
+	// Sadece status'u "active" olan ve username'i "Admin" olmayan sessionları göster
 	for _, session := range db.data.SupportSessions {
-		if session.Status == "active" {
+		if session.Status == "active" && strings.ToLower(session.Username) != "admin" {
 			sessions = append(sessions, session)
 		}
 	}
@@ -564,8 +565,6 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	sort.Slice(sessions, func(i, j int) bool {
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
-	
-	// log.Printf("GetActiveSupportSessions - Found %d active sessions", len(sessions))
 	
 	return sessions, nil
 }

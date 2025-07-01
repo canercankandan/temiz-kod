@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"html/template"
 	"log"
 	"math/big"
@@ -304,20 +305,80 @@ func main() {
 		return
 	}
 
-	// Lokal geliştirme: Sadece HTTP
+	// Lokal geliştirme: HTTP ve HTTPS
 	httpPort := "8082"
+	httpsPort := "8443"
 	
-	// HTTP server
-	httpServer := &http.Server{
-		Addr:    ":" + httpPort,
-		Handler: r,
+	// HTTPS için sertifika yükle
+	cert, err := generateSelfSignedCert()
+	if err != nil {
+		log.Printf("❌ Self-signed sertifika oluşturulamadı: %v", err)
+		log.Printf("🌐 Sadece HTTP başlatılıyor...")
+		
+		// HTTP server
+		httpServer := &http.Server{
+			Addr:    ":" + httpPort,
+			Handler: r,
+		}
+
+		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
+		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
+		
+		if err := httpServer.ListenAndServe(); err != nil {
+			log.Fatalf("HTTP Server başlatılamadı: %v", err)
+		}
+		return
 	}
 
-	// HTTP Server'ı başlat
-	log.Printf("🌐 HTTP Server başlatılıyor...")
+	// External certificate kontrolü
+	if _, err := os.Stat("localhost.crt"); err == nil {
+		log.Printf("✅ External certificate yüklendi: localhost.crt")
+		cert, err = tls.LoadX509KeyPair("localhost.crt", "localhost.key")
+		if err != nil {
+			log.Printf("❌ External certificate yüklenemedi: %v", err)
+		}
+	}
+
+	// HTTPS server
+	httpsServer := &http.Server{
+		Addr:    ":" + httpsPort,
+		Handler: r,
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		},
+	}
+
+	// HTTP server (HTTPS'e yönlendirme)
+	httpServer := &http.Server{
+		Addr:    ":" + httpPort,
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// HTTPS'e yönlendir
+			httpsURL := fmt.Sprintf("https://%s:%s%s", r.Host, httpsPort, r.URL.Path)
+			if r.URL.RawQuery != "" {
+				httpsURL += "?" + r.URL.RawQuery
+			}
+			http.Redirect(w, r, httpsURL, http.StatusMovedPermanently)
+		}),
+	}
+
+	// HTTPS Server'ı başlat
+	log.Printf("🔒 HTTPS Server başlatılıyor...")
+	log.Printf("🔐 Güvenli erişim için: https://localhost:%s", httpsPort)
+	log.Printf("📱 Mobil güvenli erişim için: https://192.168.1.133:%s", httpsPort)
+	
+	// HTTP Server'ı başlat (HTTPS'e yönlendirme)
+	log.Printf("🌐 HTTP Server başlatılıyor (HTTPS'e yönlendirme)...")
 	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 	log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
 	
+	// HTTPS server'ı goroutine'de başlat
+	go func() {
+		if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
+			log.Printf("❌ HTTPS Server başlatılamadı: %v", err)
+		}
+	}()
+	
+	// HTTP server'ı ana thread'de başlat
 	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
