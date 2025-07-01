@@ -492,6 +492,9 @@ function checkTypingStatus() {
                 const typingIndicator = document.getElementById('typingIndicator');
                 if (data.typing.userTyping) {
                     typingIndicator.style.display = 'block';
+                    // Kullanıcı adıyla birlikte göster
+                    const userName = data.typing.userName || 'Kullanıcı';
+                    typingIndicator.textContent = `${userName} yazıyor...`;
                 } else {
                     typingIndicator.style.display = 'none';
                 }

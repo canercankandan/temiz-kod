@@ -278,19 +278,6 @@ func main() {
 		orders.DELETE("/:id", h.UserCancelOrder)
 	}
 
-	// Load external certificate files
-	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
-	if err != nil {
-		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
-		// Fallback to self-signed certificate
-		cert, err = generateSelfSignedCert()
-		if err != nil {
-			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
-		}
-	} else {
-		log.Printf("✅ External certificate yüklendi: localhost.crt")
-	}
-
 	// Start typing indicator cleanup goroutine
 	go func() {
 		ticker := time.NewTicker(5 * time.Second)
@@ -302,11 +289,6 @@ func main() {
 			}
 		}
 	}()
-
-	// Configure TLS
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
 
 	// Render.com için ortam değişkeni kontrolü
 	port := os.Getenv("PORT")
@@ -326,6 +308,24 @@ func main() {
 	httpsPort := "8443"
 	httpPort := "8082"
 	
+	// Load external certificate files
+	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
+	if err != nil {
+		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
+		// Fallback to self-signed certificate
+		cert, err = generateSelfSignedCert()
+		if err != nil {
+			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
+		}
+	} else {
+		log.Printf("✅ External certificate yüklendi: localhost.crt")
+	}
+
+	// Configure TLS
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
 	// Create HTTPS server
 	httpsServer := &http.Server{
 		Addr:      ":" + httpsPort,
@@ -333,17 +333,10 @@ func main() {
 		TLSConfig: tlsConfig,
 	}
 
-	// HTTP'den HTTPS'e yönlendirme için handler
-	httpHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		// HTTPS'e yönlendir
-		httpsURL := "https://" + req.Host + ":" + httpsPort + req.RequestURI
-		http.Redirect(w, req, httpsURL, http.StatusMovedPermanently)
-	})
-
-	// HTTP server
+	// HTTP server - aynı handler'ı kullan (yönlendirme yok)
 	httpServer := &http.Server{
 		Addr:    ":" + httpPort,
-		Handler: httpHandler,
+		Handler: r, // Aynı router'ı kullan
 	}
 
 	// HTTP Server'ı goroutine'de başlat
@@ -352,16 +345,15 @@ func main() {
 		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
 		
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := httpServer.ListenAndServe(); err != nil {
 			log.Printf("HTTP Server hatası: %v", err)
 		}
 	}()
 
 	// HTTPS Server'ı başlat
 	log.Printf("🔒 HTTPS Server başlatılıyor...")
-	log.Printf("📱 iPhone Safari desteği için: https://localhost:%s", httpsPort)
-	log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
-	log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
+	log.Printf("🔐 Güvenli erişim için: https://localhost:%s", httpsPort)
+	log.Printf("📱 Mobil güvenli erişim için: https://192.168.1.133:%s", httpsPort)
 	
 	if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
 		log.Fatalf("HTTPS Server başlatılamadı: %v", err)

@@ -2175,6 +2175,8 @@ func (h *Handler) GetTypingStatus(c *gin.Context) {
 	typingStatus := gin.H{
 		"userTyping":  false,
 		"adminTyping": false,
+		"userName":    "",
+		"adminName":   "Admin",
 	}
 	
 	if sessionTyping, exists := typingUsers[sessionID]; exists {
@@ -2184,6 +2186,12 @@ func (h *Handler) GetTypingStatus(c *gin.Context) {
 		if lastUserTyping, exists := sessionTyping["user"]; exists {
 			if now.Sub(lastUserTyping) < 3*time.Second {
 				typingStatus["userTyping"] = true
+				
+				// Get user name from session
+				session, err := h.db.GetOrCreateSupportSession(sessionID, "", nil, "")
+				if err == nil && session != nil {
+					typingStatus["userName"] = session.Username
+				}
 			}
 		}
 		

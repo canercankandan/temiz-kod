@@ -21,8 +21,8 @@
       "category": "Su Arıtma Cihazları",
       "stock": 25,
       "features": "{\"Filtreleme\":\"5 Aşamalı\",\"Kapasite\":\"200L/Gün\",\"Garanti\":\"1 Yıl\"}",
-      "created_at": "2025-07-01T19:15:00.0000000+03:00",
-      "updated_at": "2025-07-01T19:15:00.0000000+03:00"
+      "created_at": "2025-07-01T19:15:00+03:00",
+      "updated_at": "2025-07-01T19:15:00+03:00"
     },
     {
       "id": 3,
@@ -33,8 +33,8 @@
       "category": "Su Arıtma Cihazları",
       "stock": 10,
       "features": "{\"Filtreleme\":\"3 Aşamalı\",\"Kapasite\":\"150L/Gün\",\"Garanti\":\"1 Yıl\"}",
-      "created_at": "2025-07-01T19:15:00.0000000+03:00",
-      "updated_at": "2025-07-01T19:15:00.0000000+03:00"
+      "created_at": "2025-07-01T19:15:00+03:00",
+      "updated_at": "2025-07-01T19:15:00+03:00"
     },
     {
       "id": 4,
@@ -45,8 +45,8 @@
       "category": "Aksesuarlar",
       "stock": 50,
       "features": "{\"Adet\":\"6 Parça\",\"Uyumluluk\":\"Premium Cihazlar\",\"Ömür\":\"6 Ay\"}",
-      "created_at": "2025-07-01T19:15:00.0000000+03:00",
-      "updated_at": "2025-07-01T19:15:00.0000000+03:00"
+      "created_at": "2025-07-01T19:15:00+03:00",
+      "updated_at": "2025-07-01T19:15:00+03:00"
     },
     {
       "id": 5,
@@ -57,8 +57,8 @@
       "category": "Aksesuarlar",
       "stock": 75,
       "features": "{\"Adet\":\"5 Parça\",\"Uyumluluk\":\"Standard Cihazlar\",\"Ömür\":\"6 Ay\"}",
-      "created_at": "2025-07-01T19:15:00.0000000+03:00",
-      "updated_at": "2025-07-01T19:15:00.0000000+03:00"
+      "created_at": "2025-07-01T19:15:00+03:00",
+      "updated_at": "2025-07-01T19:15:00+03:00"
     }
   ],
   "users": [
@@ -261,6 +261,17 @@
       "status": "offline",
       "last_message_at": "2025-07-01T17:51:39.9341338+03:00",
       "created_at": "2025-07-01T17:43:04.9722452+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 25,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "ömer",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "offline",
+      "last_message_at": "2025-07-01T21:40:05.7649909+03:00",
+      "created_at": "2025-07-01T21:39:13.8748027+03:00",
       "unread_count": 0
     }
   ],
