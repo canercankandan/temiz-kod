@@ -304,58 +304,21 @@ func main() {
 		return
 	}
 
-	// Lokal geliştirme: HTTPS ve HTTP yönlendirme
-	httpsPort := "8443"
+	// Lokal geliştirme: Sadece HTTP
 	httpPort := "8082"
 	
-	// Load external certificate files
-	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
-	if err != nil {
-		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
-		// Fallback to self-signed certificate
-		cert, err = generateSelfSignedCert()
-		if err != nil {
-			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
-		}
-	} else {
-		log.Printf("✅ External certificate yüklendi: localhost.crt")
-	}
-
-	// Configure TLS
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
-
-	// Create HTTPS server
-	httpsServer := &http.Server{
-		Addr:      ":" + httpsPort,
-		Handler:   r,
-		TLSConfig: tlsConfig,
-	}
-
-	// HTTP server - aynı handler'ı kullan (yönlendirme yok)
+	// HTTP server
 	httpServer := &http.Server{
 		Addr:    ":" + httpPort,
-		Handler: r, // Aynı router'ı kullan
+		Handler: r,
 	}
 
-	// HTTP Server'ı goroutine'de başlat
-	go func() {
-		log.Printf("🌐 HTTP Server başlatılıyor (HTTPS'e yönlendirme)...")
-		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
-		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
-		
-		if err := httpServer.ListenAndServe(); err != nil {
-			log.Printf("HTTP Server hatası: %v", err)
-		}
-	}()
-
-	// HTTPS Server'ı başlat
-	log.Printf("🔒 HTTPS Server başlatılıyor...")
-	log.Printf("🔐 Güvenli erişim için: https://localhost:%s", httpsPort)
-	log.Printf("📱 Mobil güvenli erişim için: https://192.168.1.133:%s", httpsPort)
+	// HTTP Server'ı başlat
+	log.Printf("🌐 HTTP Server başlatılıyor...")
+	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
+	log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
 	
-	if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
-		log.Fatalf("HTTPS Server başlatılamadı: %v", err)
+	if err := httpServer.ListenAndServe(); err != nil {
+		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
 } 

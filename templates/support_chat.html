@@ -634,8 +634,6 @@ function checkTypingStatus() {
                 const typingIndicator = document.getElementById('typingIndicator');
                 if (data.typing.adminTyping) {
                     typingIndicator.style.display = 'block';
-                    // Admin yazıyor mesajı
-                    typingIndicator.textContent = 'Admin yazıyor...';
                 } else {
                     typingIndicator.style.display = 'none';
                 }
@@ -891,36 +889,28 @@ async function startVideoCall() {
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         
-        // iOS Safari için çok basit constraints
-        let constraints;
-        if (isIOS && isSafari) {
-            constraints = {
-                video: true,
-                audio: true
-            };
-        } else {
-            constraints = {
-                video: isSafari ? {
-                    facingMode: isMobile ? 'user' : 'environment',
-                    width: { ideal: isMobile ? 640 : 1280, max: 1920 },
-                    height: { ideal: isMobile ? 480 : 720, max: 1080 },
-                    frameRate: { ideal: 30, max: 30 }
-                } : (isMobile ? {
-                    facingMode: 'user',
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                } : {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                }),
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true,
-                    sampleRate: isSafari ? 44100 : undefined
-                }
-            };
-        }
+        // Safari and mobile-friendly constraints
+        const constraints = {
+            video: isSafari ? {
+                facingMode: isMobile ? 'user' : 'environment',
+                width: { ideal: isMobile ? 640 : 1280, max: 1920 },
+                height: { ideal: isMobile ? 480 : 720, max: 1080 },
+                frameRate: { ideal: 30, max: 30 }
+            } : (isMobile ? {
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            } : {
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }),
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: isSafari ? 44100 : undefined
+            }
+        };
         
         // Request camera and microphone access with Safari-specific handling
         try {
@@ -1726,7 +1716,7 @@ function getSafariErrorMessage(errorName, isIOS) {
         case 'NotAllowedError':
             return `${deviceInfo} izinleri reddedildi.\n\n` +
                    `${isIOS ? 
-                     '📱 iPhone/iPad için:\n• Safari ayarlarına gidin\n• "Kamera" ve "Mikrofon" bölümünden bu siteye izin verin\n• Sayfa adresinin yanındaki "AA" simgesine tıklayın\n• "Website Ayarları" > "Kamera ve Mikrofon" > "İzin Ver"\n• Sayfayı yenileyin ve tekrar deneyin\n\n🔧 Alternatif çözüm:\n• Ayarlar > Safari > Kamera > "İzin Ver"\n• Ayarlar > Safari > Mikrofon > "İzin Ver"\n• Safari\'yi tamamen kapatıp yeniden açın' :
+                     '📱 iPhone/iPad için:\n• Safari ayarlarına gidin\n• "Kamera" ve "Mikrofon" bölümünden bu siteye izin verin\n• Sayfa adresinin yanındaki "AA" simgesine tıklayın\n• "Website Ayarları" > "Kamera ve Mikrofon" > "İzin Ver"\n• Sayfayı yenileyin ve tekrar deneyin' :
                      '🖥️ Mac Safari için:\n• Adres çubuğundaki kamera simgesine tıklayın\n• "İzin ver" seçeneğini seçin\n• Safari > Tercihler > Web Siteleri > Kamera/Mikrofon\n• Bu siteye izin verin'
                    }`;
         case 'NotFoundError':

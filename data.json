@@ -194,6 +194,16 @@
       "is_admin": false,
       "is_read": true,
       "created_at": "2025-07-01T17:43:23.3546942+03:00"
+    },
+    {
+      "id": 101,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "message": "ff",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-07-01T22:13:46.5344273+03:00"
     }
   ],
   "support_sessions": [
@@ -264,14 +274,25 @@
       "unread_count": 0
     },
     {
-      "id": 25,
-      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "id": 22,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
       "user_id": null,
-      "username": "ömer",
+      "username": "ayse",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2025-07-01T21:40:05.7649909+03:00",
-      "created_at": "2025-07-01T21:39:13.8748027+03:00",
+      "last_message_at": "2025-07-01T22:14:06.4674378+03:00",
+      "created_at": "2025-07-01T22:13:14.2839261+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 23,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Mobil",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
+      "status": "active",
+      "last_message_at": "2025-07-01T22:14:00.461035+03:00",
+      "created_at": "2025-07-01T22:13:59.3737418+03:00",
       "unread_count": 0
     }
   ],
