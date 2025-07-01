@@ -89,7 +89,7 @@
         },
         "offers": {
           "@type": "Offer",
-          "price": {{replace $product.Price "," ""}},
+          "price": {{$product.Price}},
           "priceCurrency": "TRY",
           "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
           "seller": {
