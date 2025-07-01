@@ -1,6 +1,86 @@
-# suarıtama uzmanı com Web Sitesi
+# Su Arıtma Uzmanı - E-ticaret ve Destek Sistemi
 
-Go ile geliştirilmiş modern web sitesi ve admin paneli.
+## 🚀 Render Deployment
+
+### Environment Variables (Render'da ayarlanması gerekenler):
+
+```
+PORT=8080
+ADMIN_EMAIL=your-admin-email@example.com
+ADMIN_PASSWORD=your-admin-password
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+```
+
+### Render Deployment Adımları:
+
+1. **GitHub Repository'yi bağla**
+2. **Build Command:** `go build -o main ./cmd/web`
+3. **Start Command:** `./main`
+4. **Environment Variables'ları ayarla**
+5. **Deploy et**
+
+### Önemli Notlar:
+
+- ✅ **Video Call özelliği** aktif
+- ✅ **Destek sohbeti** çalışıyor
+- ✅ **E-posta kullanıcı adı** sistemi aktif
+- ✅ **Gereksiz loglar** temizlendi
+- ✅ **Dockerfile** hazır
+
+## 🛠️ Yerel Geliştirme
+
+### Gereksinimler:
+- Go 1.24+
+- Git
+
+### Kurulum:
+```bash
+git clone https://github.com/canercankandan/su-aritma-uzmani.git
+cd su-aritma-uzmani
+go mod download
+go run cmd/web/main.go
+```
+
+### Erişim:
+- **Ana site:** http://localhost:8082
+- **Admin paneli:** http://localhost:8082/admin
+- **Destek sohbeti:** http://localhost:8082/support
+
+## 📋 Özellikler
+
+### 🛒 E-ticaret
+- Ürün katalog
+- Sepet sistemi
+- Sipariş takibi
+- Kullanıcı profili
+
+### 💬 Canlı Destek
+- Gerçek zamanlı sohbet
+- Video görüşme (WebRTC)
+- Typing indicator
+- Admin paneli
+
+### 🔐 Güvenlik
+- Kullanıcı kayıt/giriş
+- Admin authentication
+- Şifre hashleme
+- Session yönetimi
+
+## 🎯 Son Güncellemeler
+
+- ✅ E-posta adresi kullanıcı adı olarak kullanılıyor
+- ✅ Kayıt sistemi optimize edildi
+- ✅ Gereksiz loglar temizlendi
+- ✅ Render deployment hazır
+- ✅ Video call özelliği korundu
+
+## 📞 İletişim
+
+- **E-posta:** irmaksuaritmam@gmail.com
+- **GitHub:** https://github.com/canercankandan/su-aritma-uzmani
 
 ## Özellikler
 
