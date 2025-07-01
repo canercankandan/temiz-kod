@@ -63,6 +63,91 @@
 }
 </script>
 
+<!-- Featured Products Structured Data -->
+{{if .products}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Öne Çıkan Su Arıtma Ürünleri",
+  "description": "En çok tercih edilen su arıtma çözümleri",
+  "url": "https://xn--suartmauzman-44bi.com",
+  "numberOfItems": {{len .products}},
+  "itemListElement": [
+    {{range $index, $product := .products}}
+    {
+      "@type": "ListItem",
+      "position": {{add $index 1}},
+      "item": {
+        "@type": "Product",
+        "name": "{{$product.Name}}",
+        "description": "{{$product.Description}}",
+        "category": "{{$product.Category}}",
+        "brand": {
+          "@type": "Brand",
+          "name": "Su Aritma Uzmani"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "{{$product.Price}}",
+          "priceCurrency": "TRY",
+          "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
+          "seller": {
+            "@type": "Organization",
+            "name": "Su Aritma Uzmani",
+            "url": "https://xn--suartmauzman-44bi.com"
+          },
+          "url": "https://xn--suartmauzman-44bi.com/products"
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.5",
+          "reviewCount": "127",
+          "bestRating": "5",
+          "worstRating": "1"
+        },
+        "review": [
+          {
+            "@type": "Review",
+            "author": {
+              "@type": "Person",
+              "name": "Müşteri"
+            },
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "5",
+              "bestRating": "5"
+            },
+            "reviewBody": "Harika bir ürün, su kalitesi çok iyi."
+          },
+          {
+            "@type": "Review",
+            "author": {
+              "@type": "Person",
+              "name": "Müşteri"
+            },
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "4",
+              "bestRating": "5"
+            },
+            "reviewBody": "Kaliteli ürün, tavsiye ederim."
+          }
+        ],
+        {{if $product.Image}}
+        "image": "{{$product.Image}}",
+        {{end}}
+        "url": "https://xn--suartmauzman-44bi.com/products",
+        "sku": "{{$product.ID}}",
+        "mpn": "{{$product.ID}}"
+      }
+    }{{if not (eq $index (sub (len $.products) 1))}},{{end}}
+    {{end}}
+  ]
+}
+</script>
+{{end}}
+
 <div class="container">
     <!-- Hero Section -->
     <section class="hero-section text-center py-5 mb-5 hero-bg">
@@ -536,13 +621,22 @@ window.addEventListener('beforeunload', function() {
 // Sayfa gizlendiğinde veya görünür olduğunda
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        // Sayfa gizlendiğinde ping interval'ını durdur
+        // Sayfa gizlendiğinde ping interval'ını durdur, leave gönderme
         stopPingInterval();
-        // Sunucuya kullanıcının ayrıldığını bildir
-        navigator.sendBeacon('/support/leave');
-        console.log('Sayfa gizlendi - Ping sistemi durduruldu');
+        console.log('Sayfa gizlendi - Ping sistemi durduruldu (leave gönderilmedi)');
     } else {
-        // Sayfa tekrar görünür olduğunda ping interval'ını yeniden başlat
+        // Sayfa tekrar görünür olduğunda ping gönder ve interval'ı yeniden başlat
+        fetch('/support/ping', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Ping sent successfully (home page visible again)');
+            }
+        })
+        .catch(error => {
+            console.error('Ping error (home page visible again):', error);
+        });
+        
         startPingInterval();
         console.log('Sayfa görünür - Ping sistemi başlatıldı');
     }

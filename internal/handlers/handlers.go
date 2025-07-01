@@ -63,6 +63,7 @@ type DBInterface interface {
 	UpdateProduct(product *models.Product) error
 	UpdateSupportSessionLastActive(sessionID string) error
 	MarkSupportSessionOffline(sessionID string) error
+	DeleteSupportSession(sessionID string) error
 }
 
 // Handler, HTTP isteklerini yönetir.
@@ -202,13 +203,15 @@ func (h *Handler) RegisterPage(c *gin.Context) {
 // HandleRegister, kullanıcı kayıt işlemini yönetir.
 func (h *Handler) HandleRegister(c *gin.Context) {
 	fullName := c.PostForm("fullName")
-	username := c.PostForm("username")
 	email := c.PostForm("email")
 	password := c.PostForm("password")
 	confirmPassword := c.PostForm("confirmPassword")
 
+	// E-posta adresini kullanıcı adı olarak kullan
+	username := email
+
 	// Validasyon
-	if fullName == "" || username == "" || email == "" || password == "" {
+	if fullName == "" || email == "" || password == "" {
 		c.HTML(http.StatusBadRequest, "register.html", gin.H{
 			"title": "Kayıt Ol",
 			"error": "Tüm alanları doldurun.",
@@ -977,7 +980,7 @@ func (h *Handler) GetCartCount(c *gin.Context) {
 
 	count := h.cartService.GetCartCount(sessionID)
 
-	log.Printf("GetCartCount - SessionID: %s, Count: %d", sessionID, count)
+	// log.Printf("GetCartCount - SessionID: %s, Count: %d", sessionID, count)
 	c.JSON(http.StatusOK, gin.H{"count": count})
 }
 
@@ -1489,7 +1492,8 @@ func (h *Handler) SupportChatPage(c *gin.Context) {
 // SendSupportMessage - Destek mesajı gönder
 func (h *Handler) SendSupportMessage(c *gin.Context) {
 	var request struct {
-		Message string `json:"message"`
+		Message  string `json:"message"`
+		Username string `json:"username"`
 	}
 	
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -1502,6 +1506,12 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 		return
 	}
 	
+	// Check if username is provided
+	if strings.TrimSpace(request.Username) == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Kullanıcı adı gerekli"})
+		return
+	}
+	
 	username, _ := c.Cookie("username")
 	sessionID, _ := c.Cookie("user_session")
 	
@@ -1510,14 +1520,17 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 		c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, false)
 	}
 	
+	// Kullanıcının girdiği ismi cookie'ye kaydet
+	c.SetCookie("support_username", request.Username, 3600*24*30, "/", "", false, false)
+	
 	var userID *int
-	displayName := "Ziyaretçi"
+	displayName := request.Username // Use the provided username
 	
 	if username != "" {
 		user, err := h.db.GetUserByUsername(username)
 		if err == nil {
 			userID = &user.ID
-			displayName = user.Username
+			// Keep the provided display name for support chat
 		}
 	}
 	
@@ -2022,6 +2035,7 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 func (h *Handler) SupportPing(c *gin.Context) {
     username, _ := c.Cookie("username")
     sessionID, _ := c.Cookie("user_session")
+    supportUsername, _ := c.Cookie("support_username") // Kullanıcının girdiği isim
     
     if sessionID == "" {
         sessionID = generateSessionID()
@@ -2031,7 +2045,11 @@ func (h *Handler) SupportPing(c *gin.Context) {
     var userID *int
     displayName := "Ziyaretçi"
     
-    if username != "" {
+    // Önce support_username cookie'sini kontrol et (kullanıcının girdiği isim)
+    if supportUsername != "" {
+        displayName = supportUsername
+    } else if username != "" {
+        // Eğer support_username yoksa, normal username'i kontrol et
         user, err := h.db.GetUserByUsername(username)
         if err == nil {
             userID = &user.ID
@@ -2092,5 +2110,112 @@ func (h *Handler) SupportLeave(c *gin.Context) {
     }
     
     c.JSON(200, gin.H{"success": true})
+}
+
+// AdminDeleteSupportSession - Admin için support session'ı sil
+func (h *Handler) AdminDeleteSupportSession(c *gin.Context) {
+    sessionID := c.Param("sessionId")
+    if sessionID == "" {
+        c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
+        return
+    }
+    
+    log.Printf("AdminDeleteSupportSession - Deleting session: %s", sessionID)
+    
+    // Session'ı ve tüm ilgili verileri sil
+    err := h.db.DeleteSupportSession(sessionID)
+    if err != nil {
+        log.Printf("AdminDeleteSupportSession - Error: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Session silinemedi"})
+        return
+    }
+    
+    log.Printf("AdminDeleteSupportSession - Session %s deleted successfully", sessionID)
+    c.JSON(http.StatusOK, gin.H{"success": true, "message": "Session başarıyla silindi"})
+}
+
+// Typing indicator storage
+var typingUsers = make(map[string]map[string]time.Time) // sessionID -> userType -> lastTypingTime
+var typingMutex sync.RWMutex
+
+// SetTypingStatus handles typing indicator status
+func (h *Handler) SetTypingStatus(c *gin.Context) {
+	sessionID := c.Param("sessionID")
+	userType := c.PostForm("userType") // "user" or "admin"
+	
+	if sessionID == "" || userType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Session ID and user type required"})
+		return
+	}
+	
+	typingMutex.Lock()
+	defer typingMutex.Unlock()
+	
+	if typingUsers[sessionID] == nil {
+		typingUsers[sessionID] = make(map[string]time.Time)
+	}
+	
+	typingUsers[sessionID][userType] = time.Now()
+	
+	c.JSON(http.StatusOK, gin.H{"success": true})
+}
+
+// GetTypingStatus returns current typing status for a session
+func (h *Handler) GetTypingStatus(c *gin.Context) {
+	sessionID := c.Param("sessionID")
+	
+	if sessionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Session ID required"})
+		return
+	}
+	
+	typingMutex.RLock()
+	defer typingMutex.RUnlock()
+	
+	typingStatus := gin.H{
+		"userTyping":  false,
+		"adminTyping": false,
+	}
+	
+	if sessionTyping, exists := typingUsers[sessionID]; exists {
+		now := time.Now()
+		
+		// Check if user is typing (within last 3 seconds)
+		if lastUserTyping, exists := sessionTyping["user"]; exists {
+			if now.Sub(lastUserTyping) < 3*time.Second {
+				typingStatus["userTyping"] = true
+			}
+		}
+		
+		// Check if admin is typing (within last 3 seconds)
+		if lastAdminTyping, exists := sessionTyping["admin"]; exists {
+			if now.Sub(lastAdminTyping) < 3*time.Second {
+				typingStatus["adminTyping"] = true
+			}
+		}
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"typing":  typingStatus,
+	})
+}
+
+// CleanupTypingStatus removes old typing indicators
+func (h *Handler) CleanupTypingStatus() {
+	typingMutex.Lock()
+	defer typingMutex.Unlock()
+	
+	now := time.Now()
+	for sessionID, sessionTyping := range typingUsers {
+		for userType, lastTyping := range sessionTyping {
+			if now.Sub(lastTyping) > 5*time.Second {
+				delete(sessionTyping, userType)
+			}
+		}
+		if len(sessionTyping) == 0 {
+			delete(typingUsers, sessionID)
+		}
+	}
 }
   

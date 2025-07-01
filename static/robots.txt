@@ -17,6 +17,12 @@ Disallow: /static/uploads/
 Disallow: /static/js/
 Disallow: /static/css/
 
+# Allow product images for better SEO
+Allow: /static/uploads/*.jpg
+Allow: /static/uploads/*.jpeg
+Allow: /static/uploads/*.png
+Allow: /static/uploads/*.webp
+
 # Allow important pages
 Allow: /products
 Allow: /about
