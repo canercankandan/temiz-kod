@@ -1,40 +1,7 @@
 {{template "base.html" .}}
 
 {{define "content"}}
-<!-- Name Input Modal -->
-<div class="modal fade" id="nameModal" tabindex="-1" aria-labelledby="nameModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="nameModalLabel">
-                    <i class="fas fa-user me-2"></i>Canlı Destek'e Hoş Geldiniz
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <i class="fas fa-comments fa-3x text-primary mb-3"></i>
-                    <h5>Size nasıl hitap edelim?</h5>
-                    <p class="text-muted">Lütfen isminizi girin, böylece destek uzmanımız size daha iyi yardımcı olabilir.</p>
-                </div>
-                <form id="nameForm">
-                    <div class="mb-3">
-                        <label for="userName" class="form-label">İsminiz *</label>
-                        <input type="text" class="form-control form-control-lg" id="userName" placeholder="Örn: Ahmet, Ayşe, Mehmet..." required minlength="2" maxlength="30">
-                        <div class="form-text">En az 2 karakter olmalıdır.</div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary btn-lg" id="startChatBtn" disabled>
-                    <i class="fas fa-comments me-2"></i>Sohbete Başla
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container my-5" id="chatContainer" style="display: none;">
+<div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow">
@@ -44,7 +11,7 @@
                             <h4 class="mb-0">
                                 <i class="fas fa-comments me-2"></i>Canlı Destek
                             </h4>
-                            <small>Hoş geldin <span id="userDisplayName" class="fw-bold"></span>! Sorularınız için 7/24 buradayız!</small>
+                            <small>Sorularınız için 7/24 buradayız!</small>
                         </div>
                         <div>
                             <button id="videoCallBtn" class="btn btn-success btn-lg" title="Görüntülü Görüşmeye Geç" style="font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3); animation: pulse-glow 2s infinite;">
@@ -87,17 +54,6 @@
                                 </button>
                                 <p class="mt-2 small text-muted">Mesaj yazmadan direkt görüntülü görüşme başlatabilirsiniz!</p>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Typing Indicator -->
-                    <div id="typingIndicator" class="typing-indicator" style="display: none; padding: 10px 20px; background: #f8f9fa; border-top: 1px solid #dee2e6;">
-                        <div class="typing-bubble">
-                            <i class="fas fa-user-tie me-2"></i>
-                            <span class="typing-text">Destek uzmanı yazıyor</span>
-                            <span class="typing-dots">
-                                <span>.</span><span>.</span><span>.</span>
-                            </span>
                         </div>
                     </div>
                     
@@ -210,43 +166,11 @@
     border-radius: 18px;
     padding: 12px 16px;
     animation: pulse 1.5s infinite;
-    font-size: 14px;
-    color: #666;
 }
 
 @keyframes pulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
-}
-
-.typing-dots {
-    margin-left: 8px;
-}
-
-.typing-dots span {
-    animation: typing-dots 1.4s infinite;
-    opacity: 0;
-}
-
-.typing-dots span:nth-child(1) {
-    animation-delay: 0s;
-}
-
-.typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-@keyframes typing-dots {
-    0%, 60%, 100% {
-        opacity: 0;
-    }
-    30% {
-        opacity: 1;
-    }
 }
 
 .chat-input {
@@ -419,9 +343,6 @@ let webrtcInterval;
 let pingInterval;
 let cartInterval;
 
-// Global variables
-let userName = '';
-
 // Initialize chat
 document.addEventListener('DOMContentLoaded', function() {
     console.log('SessionID:', sessionID); // Debug log
@@ -434,82 +355,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.cookie = `user_session=${sessionID}; path=/; max-age=${3600*24*30}`;
     }
     
-    // Show name input modal first
-    showNameModal();
-    
-    // Initialize name modal functionality
-    initializeNameModal();
-});
-
-// Show name input modal
-function showNameModal() {
-    const nameModal = new bootstrap.Modal(document.getElementById('nameModal'));
-    nameModal.show();
-}
-
-// Initialize name modal functionality
-function initializeNameModal() {
-    const userNameInput = document.getElementById('userName');
-    const startChatBtn = document.getElementById('startChatBtn');
-    const nameForm = document.getElementById('nameForm');
-    
-    // Enable/disable start button based on input
-    userNameInput.addEventListener('input', function() {
-        const name = this.value.trim();
-        startChatBtn.disabled = name.length < 2;
-    });
-    
-    // Handle form submission
-    nameForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        startChat();
-    });
-    
-    // Handle start chat button click
-    startChatBtn.addEventListener('click', startChat);
-    
-    // Handle Enter key in input
-    userNameInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && this.value.trim().length >= 2) {
-            startChat();
-        }
-    });
-    
-    // Focus on input
-    userNameInput.focus();
-}
-
-// Start chat with entered name
-function startChat() {
-    const userNameInput = document.getElementById('userName');
-    const name = userNameInput.value.trim();
-    
-    if (name.length < 2) {
-        alert('Lütfen en az 2 karakterlik bir isim girin.');
-        return;
-    }
-    
-    // Store user name
-    userName = name;
-    
-    // Save to localStorage for persistence
-    localStorage.setItem('support_user_name', name);
-    
-    // Update display name
-    document.getElementById('userDisplayName').textContent = name;
-    
-    // Hide modal and show chat
-    const nameModal = bootstrap.Modal.getInstance(document.getElementById('nameModal'));
-    nameModal.hide();
-    
-    document.getElementById('chatContainer').style.display = 'block';
-    
-    // Initialize chat functionality
-    initializeChat();
-}
-
-// Initialize chat functionality
-function initializeChat() {
     // İlk ping'i hemen gönder
     fetch('/support/ping', { method: 'POST' })
     .then(response => response.json())
@@ -550,19 +395,6 @@ function initializeChat() {
         }
     });
     
-    // Typing indicator functionality
-    messageInput.addEventListener('input', function() {
-        if (!isTyping) {
-            isTyping = true;
-            sendTypingStatus();
-        }
-        
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(function() {
-            isTyping = false;
-        }, 2000); // Stop typing after 2 seconds of inactivity
-    });
-    
     // Focus on input
     messageInput.focus();
     
@@ -593,7 +425,7 @@ function initializeChat() {
             console.error('Ping error (page visible):', error);
         });
     }, 15000); // 15 saniye
-}
+});
 
 // SessionID oluşturma fonksiyonu
 function generateSessionID() {
@@ -602,46 +434,6 @@ function generateSessionID() {
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
-}
-
-// Typing indicator variables
-let typingTimer;
-let isTyping = false;
-
-// Send typing status
-function sendTypingStatus() {
-    if (!sessionID) return;
-    
-    const formData = new FormData();
-    formData.append('userType', 'user');
-    
-    fetch(`/support/typing/${sessionID}`, {
-        method: 'POST',
-        body: formData
-    }).catch(error => {
-        console.error('Error sending typing status:', error);
-    });
-}
-
-// Check typing status
-function checkTypingStatus() {
-    if (!sessionID) return;
-    
-    fetch(`/support/typing/${sessionID}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.typing) {
-                const typingIndicator = document.getElementById('typingIndicator');
-                if (data.typing.adminTyping) {
-                    typingIndicator.style.display = 'block';
-                } else {
-                    typingIndicator.style.display = 'none';
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error checking typing status:', error);
-        });
 }
 
 // Load existing messages
@@ -668,13 +460,6 @@ function sendMessage() {
     const message = messageInput.value.trim();
     if (!message) return;
     
-    // Check if user has entered name
-    if (!userName || userName.trim() === '') {
-        alert('Lütfen önce isminizi girin.');
-        showNameModal();
-        return;
-    }
-    
     // Disable input while sending
     messageInput.disabled = true;
     sendButton.disabled = true;
@@ -685,8 +470,7 @@ function sendMessage() {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            message: message,
-            username: userName
+            message: message
         })
     })
     .then(response => response.json())
@@ -769,14 +553,13 @@ function scrollToBottom() {
 function startPolling() {
     pollInterval = setInterval(() => {
         loadMessages();
-        checkTypingStatus(); // Check typing status as well
-    }, 1000); // Poll every 1 second for better responsiveness
+    }, 3000); // Poll every 3 seconds
 }
 
 // Sayfa görünürlüğü değiştiğinde
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        // Sayfa gizlendiğinde sadece interval'ları durdur, leave gönderme
+        // Sayfa gizlendiğinde TÜM interval'ları durdur
         if (webrtcInterval) {
             clearInterval(webrtcInterval);
             webrtcInterval = null;
@@ -797,20 +580,11 @@ document.addEventListener('visibilitychange', function() {
             clearInterval(pollInterval);
             pollInterval = null;
         }
-        console.log('Sayfa gizlendi - Interval\'lar durduruldu (leave gönderilmedi)');
+        // Sunucuya kullanıcının ayrıldığını bildir
+        navigator.sendBeacon('/support/leave');
+        console.log('Sayfa gizlendi - Tüm interval\'lar durduruldu');
     } else {
-        // Sayfa tekrar görünür olduğunda ping gönder ve interval'ları yeniden başlat
-        fetch('/support/ping', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Ping sent successfully (page visible again)');
-            }
-        })
-        .catch(error => {
-            console.error('Ping error (page visible again):', error);
-        });
-        
+        // Sayfa tekrar görünür olduğunda hem ping hem de poll interval'ını yeniden başlat
         if (!pingInterval) {
             pingInterval = setInterval(function() {
                 fetch('/support/ping', { method: 'POST' })
@@ -1603,19 +1377,11 @@ async function checkMediaPermissions() {
                         location.hostname.startsWith('172.') ||
                         location.hostname.endsWith('.local');
         
-        // iOS Safari requires HTTPS for camera access, even on local network
-        if (isIOS && location.protocol !== 'https:') {
-            return {
-                supported: false,
-                message: `iOS Safari için HTTPS bağlantısı zorunludur.\n\n📱 iOS Safari güvenlik gereksinimleri:\n• Kamera erişimi için HTTPS gerekli\n• Lütfen https://192.168.1.133:8443 adresini kullanın\n• Veya Safari ayarlarından güvenlik kısıtlamalarını gevşetin`
-            };
-        }
-        
-        // HTTPS requirement for other browsers - more lenient for local network
+        // HTTPS requirement - more lenient for local network
         if (!isSecure && !location.hostname.startsWith('192.168.')) {
             return {
                 supported: false,
-                message: `Güvenli bağlantı gerekli.\n\n🔒 Güvenlik gereksinimleri:\n• HTTPS bağlantısı gereklidir\n• Yerel ağ IP'si ile test edebilirsiniz`
+                message: `Güvenli bağlantı gerekli.\n\n${isIOS ? '📱 iOS Safari için:\n• HTTPS bağlantısı zorunludur\n• Yerel test için: http://192.168.x.x:9394 kullanın' : '🔒 Güvenlik gereksinimleri:\n• HTTPS bağlantısı gereklidir\n• Yerel ağ IP\'si ile test edebilirsiniz'}`
             };
         }
         
@@ -1833,12 +1599,12 @@ async function updateVideoCallButton() {
 let signalingPollInterval;
 
 function startSignalingPolling() {
-    // Poll for signaling messages every 1 second
+    // Poll for signaling messages every 2 seconds (reduced frequency)
     signalingPollInterval = setInterval(async () => {
-        if (sessionID) { // Always poll if sessionID exists, not just when call is active
+        if (sessionID) { // Always poll if sessionID exists to catch admin call requests
             await pollSignalingMessages();
         }
-    }, 1000);
+    }, 2000); // 2 saniye - daha az sıklıkta
 }
 
 function stopSignalingPolling() {
@@ -1850,7 +1616,6 @@ function stopSignalingPolling() {
 
 async function pollSignalingMessages() {
     try {
-        console.log('Polling signaling messages for sessionID:', sessionID); // Debug log
         const response = await fetch(`/support/webrtc-signals/${sessionID}`);
         const data = await response.json();
         
@@ -1862,6 +1627,8 @@ async function pollSignalingMessages() {
         }
     } catch (error) {
         console.error('Error polling signaling messages:', error);
+        // Stop polling on error to prevent spam
+        stopSignalingPolling();
     }
 }
 </script>

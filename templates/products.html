@@ -27,7 +27,7 @@
         },
         "offers": {
           "@type": "Offer",
-          "price": {{$product.Price}},
+          "price": "{{$product.Price}}",
           "priceCurrency": "TRY",
           "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
           "seller": {
@@ -37,60 +37,12 @@
           },
           "url": "https://xn--suartmauzman-44bi.com/products"
         },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": 4.5,
-          "reviewCount": 127,
-          "bestRating": 5,
-          "worstRating": 1
-        },
-        "review": [
-          {
-            "@type": "Review",
-            "author": {
-              "@type": "Person",
-              "name": "Müşteri"
-            },
-            "reviewRating": {
-              "@type": "Rating",
-              "ratingValue": 5,
-              "bestRating": 5
-            },
-            "reviewBody": "Harika bir ürün, su kalitesi çok iyi."
-          },
-          {
-            "@type": "Review",
-            "author": {
-              "@type": "Person",
-              "name": "Müşteri"
-            },
-            "reviewRating": {
-              "@type": "Rating",
-              "ratingValue": 4,
-              "bestRating": 5
-            },
-            "reviewBody": "Kaliteli ürün, tavsiye ederim."
-          }
-        ],
         {{if $product.Image}}
         "image": "{{$product.Image}}",
         {{end}}
         "url": "https://xn--suartmauzman-44bi.com/products",
         "sku": "{{$product.ID}}",
-        "mpn": "{{$product.ID}}",
-        "gtin": "{{$product.ID}}",
-        "additionalProperty": [
-          {
-            "@type": "PropertyValue",
-            "name": "Stok Durumu",
-            "value": "{{if gt $product.Stock 0}}Stokta{{else}}Stokta Yok{{end}}"
-          },
-          {
-            "@type": "PropertyValue", 
-            "name": "Kategori",
-            "value": "{{$product.Category}}"
-          }
-        ]
+        "mpn": "{{$product.ID}}"
       }
     }{{if not (eq $index (sub (len $.products) 1))}},{{end}}
     {{end}}
@@ -98,91 +50,6 @@
   ]
 }
 </script>
-
-<!-- Individual Product Structured Data -->
-{{if .products}}
-{{range .products}}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "{{.Name}}",
-  "description": "{{.Description}}",
-  "category": "{{.Category}}",
-  "brand": {
-    "@type": "Brand",
-    "name": "Su Aritma Uzmani"
-  },
-  "offers": {
-    "@type": "Offer",
-    "price": {{.Price}},
-    "priceCurrency": "TRY",
-    "availability": "{{if gt .Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
-    "seller": {
-      "@type": "Organization",
-      "name": "Su Aritma Uzmani",
-      "url": "https://xn--suartmauzman-44bi.com"
-    },
-    "url": "https://xn--suartmauzman-44bi.com/products"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": 4.5,
-    "reviewCount": 127,
-    "bestRating": 5,
-    "worstRating": 1
-  },
-  "review": [
-    {
-      "@type": "Review",
-      "author": {
-        "@type": "Person",
-        "name": "Müşteri"
-      },
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": 5,
-        "bestRating": 5
-      },
-      "reviewBody": "Harika bir ürün, su kalitesi çok iyi."
-    },
-    {
-      "@type": "Review",
-      "author": {
-        "@type": "Person",
-        "name": "Müşteri"
-      },
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": 4,
-        "bestRating": 5
-      },
-      "reviewBody": "Kaliteli ürün, tavsiye ederim."
-    }
-  ],
-  {{if .Image}}
-  "image": "{{.Image}}",
-  {{end}}
-  "url": "https://xn--suartmauzman-44bi.com/products",
-  "sku": "{{.ID}}",
-  "mpn": "{{.ID}}",
-  "gtin": "{{.ID}}",
-  "additionalProperty": [
-    {
-      "@type": "PropertyValue",
-      "name": "Stok Durumu",
-      "value": "{{if gt .Stock 0}}Stokta{{else}}Stokta Yok{{end}}"
-    },
-    {
-      "@type": "PropertyValue",
-      "name": "Kategori",
-      "value": "{{.Category}}"
-    }
-  ]
-}
-</script>
-{{end}}
-{{end}}
 
 <!-- Breadcrumb Structured Data -->
 <script type="application/ld+json">
@@ -199,7 +66,7 @@
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "Ürünler",
+      "name": "Urunler",
       "item": "https://xn--suartmauzman-44bi.com/products"
     }
   ]

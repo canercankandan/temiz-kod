@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"fmt"
 	"html/template"
 	"log"
 	"math/big"
@@ -90,7 +89,7 @@ func main() {
 	r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 
 	// Her sayfa için ayrı template setleri oluştur
-	// log.Printf("📄 Template'ler yükleniyor...")
+	log.Printf("📄 Template'ler yükleniyor...")
 	templates := map[string]*template.Template{}
 	
 	templateFiles := map[string][]string{
@@ -115,7 +114,7 @@ func main() {
 	}
 	
 	for name, files := range templateFiles {
-		// log.Printf("📄 Template yükleniyor: %s", name)
+		log.Printf("📄 Template yükleniyor: %s", name)
 		log.Printf("📁 Dosyalar: %v", files)
 		
 		// Dosyaların varlığını kontrol et
@@ -133,10 +132,10 @@ func main() {
 			log.Fatalf("Template yüklenemedi %s: %v", name, err)
 		}
 		templates[name] = tmpl
-		// log.Printf("✅ Template yüklendi: %s", name)
+		log.Printf("✅ Template yüklendi: %s", name)
 	}
 	
-	// log.Printf("🎯 Toplam %d template yüklendi", len(templates))
+	log.Printf("🎯 Toplam %d template yüklendi", len(templates))
 	
 	r.HTMLRender = &handlers.HTMLRenderer{
 		Templates: templates,
@@ -167,9 +166,9 @@ func main() {
 	})
 
 	// ANA SAYFA ROUTE'U - EN BAŞTA OLMALI
-	// log.Printf("🏠 Ana sayfa route'u tanımlanıyor: /")
+	log.Printf("🏠 Ana sayfa route'u tanımlanıyor: /")
 	r.GET("/", h.HomePage)
-	// log.Printf("✅ Ana sayfa route'u tanımlandı")
+	log.Printf("✅ Ana sayfa route'u tanımlandı")
 
 	// Diğer ana sayfa rotaları
 	r.GET("/products", h.ProductsPage)
@@ -194,9 +193,6 @@ func main() {
 	r.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
 	r.POST("/support/ping", h.SupportPing)
 	r.POST("/support/leave", h.SupportLeave)
-	// Typing indicator routes
-	r.POST("/support/typing/:sessionID", h.SetTypingStatus)
-	r.GET("/support/typing/:sessionID", h.GetTypingStatus)
 	log.Printf("Support chat routes registered successfully")
 
 	// Sepet rotaları
@@ -250,16 +246,12 @@ func main() {
 		admin.GET("/support/sessions", h.AdminGetSupportSessions)
 		admin.GET("/support/messages/:sessionId", h.AdminGetSupportMessages)
 		admin.POST("/support/send/:sessionId", h.AdminSendSupportMessage)
-		admin.DELETE("/support/sessions/:sessionId", h.AdminDeleteSupportSession)
 		admin.POST("/support/video-call-response", h.AdminVideoCallResponse)
 		admin.POST("/support/start-video-call", h.AdminStartVideoCall)
 		admin.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
 		admin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
 		admin.POST("/support/webrtc-signal", h.HandleAdminWebRTCSignal)
 		admin.GET("/support/webrtc-signals/:sessionId", h.GetAdminWebRTCSignals)
-		// Admin typing indicator routes
-		admin.POST("/support/typing/:sessionID", h.SetTypingStatus)
-		admin.GET("/support/typing/:sessionID", h.GetTypingStatus)
 	}
 
 	// User profile routes (protected)
@@ -279,17 +271,23 @@ func main() {
 		orders.DELETE("/:id", h.UserCancelOrder)
 	}
 
-	// Start typing indicator cleanup goroutine
-	go func() {
-		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				h.CleanupTypingStatus()
-			}
+	// Load external certificate files
+	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
+	if err != nil {
+		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
+		// Fallback to self-signed certificate
+		cert, err = generateSelfSignedCert()
+		if err != nil {
+			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
 		}
-	}()
+	} else {
+		log.Printf("✅ External certificate yüklendi: localhost.crt")
+	}
+
+	// Configure TLS
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
 
 	// Render.com için ortam değişkeni kontrolü
 	port := os.Getenv("PORT")
@@ -305,81 +303,48 @@ func main() {
 		return
 	}
 
-	// Lokal geliştirme: HTTP ve HTTPS
+	// Lokal geliştirme: HTTPS ve HTTP yönlendirme
+	httpsPort := "8083"
 	httpPort := "8082"
-	httpsPort := "8443"
 	
-	// HTTPS için sertifika yükle
-	cert, err := generateSelfSignedCert()
-	if err != nil {
-		log.Printf("❌ Self-signed sertifika oluşturulamadı: %v", err)
-		log.Printf("🌐 Sadece HTTP başlatılıyor...")
-		
-		// HTTP server
-		httpServer := &http.Server{
-			Addr:    ":" + httpPort,
-			Handler: r,
-		}
+	// Create HTTPS server
+	httpsServer := &http.Server{
+		Addr:      ":" + httpsPort,
+		Handler:   r,
+		TLSConfig: tlsConfig,
+	}
 
+	// HTTP'den HTTPS'e yönlendirme için handler
+	httpHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		// HTTPS'e yönlendir
+		httpsURL := "https://" + req.Host + ":" + httpsPort + req.RequestURI
+		http.Redirect(w, req, httpsURL, http.StatusMovedPermanently)
+	})
+
+	// HTTP server
+	httpServer := &http.Server{
+		Addr:    ":" + httpPort,
+		Handler: httpHandler,
+	}
+
+	// HTTP Server'ı goroutine'de başlat
+	go func() {
+		log.Printf("🌐 HTTP Server başlatılıyor (HTTPS'e yönlendirme)...")
 		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
 		
-		if err := httpServer.ListenAndServe(); err != nil {
-			log.Fatalf("HTTP Server başlatılamadı: %v", err)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("HTTP Server hatası: %v", err)
 		}
-		return
-	}
-
-	// External certificate kontrolü
-	if _, err := os.Stat("localhost.crt"); err == nil {
-		log.Printf("✅ External certificate yüklendi: localhost.crt")
-		cert, err = tls.LoadX509KeyPair("localhost.crt", "localhost.key")
-		if err != nil {
-			log.Printf("❌ External certificate yüklenemedi: %v", err)
-		}
-	}
-
-	// HTTPS server
-	httpsServer := &http.Server{
-		Addr:    ":" + httpsPort,
-		Handler: r,
-		TLSConfig: &tls.Config{
-			Certificates: []tls.Certificate{cert},
-		},
-	}
-
-	// HTTP server (HTTPS'e yönlendirme)
-	httpServer := &http.Server{
-		Addr:    ":" + httpPort,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// HTTPS'e yönlendir
-			httpsURL := fmt.Sprintf("https://%s:%s%s", r.Host, httpsPort, r.URL.Path)
-			if r.URL.RawQuery != "" {
-				httpsURL += "?" + r.URL.RawQuery
-			}
-			http.Redirect(w, r, httpsURL, http.StatusMovedPermanently)
-		}),
-	}
+	}()
 
 	// HTTPS Server'ı başlat
 	log.Printf("🔒 HTTPS Server başlatılıyor...")
-	log.Printf("🔐 Güvenli erişim için: https://localhost:%s", httpsPort)
-	log.Printf("📱 Mobil güvenli erişim için: https://192.168.1.133:%s", httpsPort)
+	log.Printf("📱 iPhone Safari desteği için: https://localhost:%s", httpsPort)
+	log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
+	log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
 	
-	// HTTP Server'ı başlat (HTTPS'e yönlendirme)
-	log.Printf("🌐 HTTP Server başlatılıyor (HTTPS'e yönlendirme)...")
-	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
-	log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
-	
-	// HTTPS server'ı goroutine'de başlat
-	go func() {
-		if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
-			log.Printf("❌ HTTPS Server başlatılamadı: %v", err)
-		}
-	}()
-	
-	// HTTP server'ı ana thread'de başlat
-	if err := httpServer.ListenAndServe(); err != nil {
-		log.Fatalf("HTTP Server başlatılamadı: %v", err)
+	if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
+		log.Fatalf("HTTPS Server başlatılamadı: %v", err)
 	}
 } 

@@ -48,9 +48,9 @@
                     <div id="sessionsList">
                         {{if .sessions}}
                             {{range .sessions}}
-                            <div class="session-item p-3 border-bottom" data-session-id="{{.SessionID}}" style="background-color: white; color: black;">
+                            <div class="session-item p-3 border-bottom cursor-pointer" data-session-id="{{.SessionID}}" onclick="loadChat('{{.SessionID}}', '{{.Username}}')" style="background-color: white; color: black;">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div class="flex-grow-1 cursor-pointer" onclick="loadChat('{{.SessionID}}', '{{.Username}}')">
+                                    <div class="flex-grow-1">
                                         <h6 class="mb-1" style="color: black;">{{.Username}}</h6>
                                         <small style="color: #666;">
                                             <i class="fas fa-clock me-1"></i>
@@ -61,10 +61,6 @@
                                         {{if gt .UnreadCount 0}}
                                         <span class="badge bg-danger me-2">{{.UnreadCount}}</span>
                                         {{end}}
-                                        <!-- Delete Button -->
-                                        <button class="btn btn-outline-danger btn-sm me-2" onclick="deleteSession('{{.SessionID}}', '{{.Username}}')" title="Bu kullanıcıyı sil">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
                                         <!-- Video Call Request Buttons -->
                                         <div class="video-call-buttons" id="videoCallButtons-{{.SessionID}}" style="display: none;">
                                             <button class="btn btn-success btn-sm me-1" onclick="acceptVideoCall('{{.SessionID}}', '{{.Username}}')" title="Video Görüşmeyi Kabul Et">
@@ -156,17 +152,6 @@
                         <div class="text-center" style="color: #666;">
                             <i class="fas fa-arrow-left fa-2x mb-3"></i>
                             <p>Soldan bir sohbet seçin</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Typing Indicator -->
-                    <div id="typingIndicator" class="typing-indicator" style="display: none; padding: 10px 20px; background: white; border-top: 1px solid #dee2e6;">
-                        <div class="typing-bubble">
-                            <i class="fas fa-user me-2"></i>
-                            <span class="typing-text">Kullanıcı yazıyor</span>
-                            <span class="typing-dots">
-                                <span>.</span><span>.</span><span>.</span>
-                            </span>
                         </div>
                     </div>
                     
@@ -310,58 +295,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, small {
     color: black !important;
 }
 
-/* Typing Indicator Styles */
-.typing-indicator {
-    text-align: left;
-    margin-bottom: 15px;
-}
-
-.typing-bubble {
-    display: inline-block;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 18px;
-    padding: 12px 16px;
-    animation: pulse 1.5s infinite;
-    font-size: 14px;
-    color: #666;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
-}
-
-.typing-dots {
-    margin-left: 8px;
-}
-
-.typing-dots span {
-    animation: typing-dots 1.4s infinite;
-    opacity: 0;
-}
-
-.typing-dots span:nth-child(1) {
-    animation-delay: 0s;
-}
-
-.typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-@keyframes typing-dots {
-    0%, 60%, 100% {
-        opacity: 0;
-    }
-    30% {
-        opacity: 1;
-    }
-}
-
 /* Video Call Styles */
 .video-call-area {
     border-bottom: 1px solid #dee2e6;
@@ -462,48 +395,13 @@ let isAdminMuted = false;
 let isAdminVideoOff = false;
 let pendingVideoCallSession = null;
 
-// Typing indicator variables
-let typingTimer;
-let isTyping = false;
-
-// Send typing status
-function sendTypingStatus() {
-    if (!currentSessionID) return;
-    
-    const formData = new FormData();
-    formData.append('userType', 'admin');
-    
-    fetch(`/admin/support/typing/${currentSessionID}`, {
-        method: 'POST',
-        body: formData
-    }).catch(error => {
-        console.error('Error sending typing status:', error);
-    });
-}
-
-// Check typing status
-function checkTypingStatus() {
-    if (!currentSessionID) return;
-    
-    fetch(`/admin/support/typing/${currentSessionID}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.typing) {
-                const typingIndicator = document.getElementById('typingIndicator');
-                if (data.typing.userTyping) {
-                    typingIndicator.style.display = 'block';
-                } else {
-                    typingIndicator.style.display = 'none';
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error checking typing status:', error);
-        });
-}
-
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    // Request notification permission
+    if (Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    
     startSessionPolling();
     
     // Send message on button click
@@ -514,19 +412,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') {
             sendMessage();
         }
-    });
-    
-    // Typing indicator functionality
-    document.getElementById('messageInput').addEventListener('input', function() {
-        if (!isTyping) {
-            isTyping = true;
-            sendTypingStatus();
-        }
-        
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(function() {
-            isTyping = false;
-        }, 2000); // Stop typing after 2 seconds of inactivity
     });
     
     // Video call event listeners
@@ -614,32 +499,25 @@ function displayMessages(messages) {
 // Add single message
 function addMessage(message) {
     const chatMessages = document.getElementById('chatMessages');
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${message.is_admin ? 'admin' : 'user'}`;
-
-    // Gönderen adı
-    const senderDiv = document.createElement('div');
-    senderDiv.className = 'message-sender';
-    senderDiv.style.fontSize = '0.85em';
-    senderDiv.style.fontWeight = 'bold';
-    senderDiv.style.marginBottom = '2px';
-    senderDiv.style.color = message.is_admin ? '#007bff' : '#333';
-    senderDiv.textContent = message.is_admin ? 'Admin' : (message.username || 'Ziyaretçi');
-
+    
     const bubbleDiv = document.createElement('div');
     bubbleDiv.className = 'message-bubble';
     bubbleDiv.textContent = message.message;
-
+    
     const timeDiv = document.createElement('div');
     timeDiv.className = 'message-time';
-    timeDiv.textContent = message.time || '';
-
-    messageDiv.appendChild(senderDiv);
+    const messageTime = new Date(message.created_at);
+    timeDiv.textContent = `${message.username} - ${messageTime.toLocaleTimeString('tr-TR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    })}`;
+    
     messageDiv.appendChild(bubbleDiv);
     messageDiv.appendChild(timeDiv);
-
     chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Send message
@@ -705,8 +583,7 @@ function startMessagePolling() {
     pollInterval = setInterval(() => {
         loadMessages();
         checkVideoCallRequests(); // Check for video call requests
-        checkTypingStatus(); // Check typing status
-    }, 1000); // Poll every 1 second for better responsiveness
+    }, 2000); // Poll every 2 seconds
 }
 
 // Load sessions
@@ -798,20 +675,16 @@ function updateSessionsList(sessions) {
         const lastMessageTime = new Date(session.last_message_at);
         
         sessionDiv.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="flex-grow-1 cursor-pointer" onclick="loadChat('${session.session_id}', '${session.username}')">
+            <div class="d-flex justify-content-between align-items-center mb-2" onclick="loadChat('${session.session_id}', '${session.username}')" style="cursor: pointer;">
+                <div>
                     <h6 class="mb-1" style="color: black;">${session.username}</h6>
                     <small style="color: #666;">
                         <i class="fas fa-clock me-1"></i>
                         ${lastMessageTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                     </small>
                 </div>
-                <div class="d-flex align-items-center">
-                    ${session.unread_count > 0 ? `<span class="badge bg-danger me-2">${session.unread_count}</span>` : ''}
-                    <!-- Delete Button -->
-                    <button class="btn btn-outline-danger btn-sm me-2" onclick="deleteSession('${session.session_id}', '${session.username}')" title="Bu kullanıcıyı sil">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <div>
+                    ${session.unread_count > 0 ? `<span class="badge bg-danger">${session.unread_count}</span>` : ''}
                 </div>
             </div>
             
@@ -1269,6 +1142,23 @@ function addAdminSystemMessage(message) {
     scrollToBottom();
 }
 
+// Auto-select session with video call request
+function autoSelectVideoCallSession(sessionId, username) {
+    // If no session is currently selected, auto-select this one
+    if (!currentSessionID) {
+        loadChat(sessionId, username);
+        return;
+    }
+    
+    // If a different session has video call request, show a prompt
+    if (currentSessionID !== sessionId) {
+        const shouldSwitch = confirm(`${username} görüntülü görüşme istiyor. Bu sohbete geçmek istiyor musunuz?`);
+        if (shouldSwitch) {
+            loadChat(sessionId, username);
+        }
+    }
+}
+
 // Check for video call requests for all sessions
 function checkVideoCallRequests() {
     fetch('/admin/support/video-call-requests')
@@ -1310,6 +1200,25 @@ function checkVideoCallRequests() {
                             alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                         }
                     }
+                    
+                    // Eğer bu session aktif değilse, otomatik olarak seç
+                    if (sessionId !== currentSessionID) {
+                        // Highlight the session item to draw attention
+                        const sessionItem = document.querySelector(`[data-session-id="${sessionId}"]`);
+                        if (sessionItem) {
+                            sessionItem.style.backgroundColor = '#fff3cd';
+                            sessionItem.style.borderLeft = '4px solid #ffc107';
+                            
+                            // Remove highlight after 5 seconds
+                            setTimeout(() => {
+                                sessionItem.style.backgroundColor = '';
+                                sessionItem.style.borderLeft = '';
+                            }, 5000);
+                        }
+                        
+                        // Auto-select if no current session or prompt user
+                        autoSelectVideoCallSession(sessionId, username);
+                    }
                 } else {
                     // Admin arama başlattıysa butonları gösterme, sadece bilgi mesajı göster
                     if (sessionId === currentSessionID && !isAdminCallActive) {
@@ -1322,6 +1231,23 @@ function checkVideoCallRequests() {
             if (hasNewRequests && (!window.lastVideoCallRequests || 
                 JSON.stringify(currentRequests.sort()) !== JSON.stringify(window.lastVideoCallRequests.sort()))) {
                 playNotificationSound();
+                
+                // Show browser notification if available
+                if (Notification.permission === 'granted') {
+                    const newRequests = data.requests.filter(r => 
+                        !window.lastVideoCallRequests || 
+                        !window.lastVideoCallRequests.includes(r.session_id)
+                    );
+                    
+                    newRequests.forEach(request => {
+                        new Notification('Yeni Video Arama Talebi', {
+                            body: `${request.username || 'Misafir'} görüntülü görüşme istiyor`,
+                            icon: '/static/favicon.ico',
+                            tag: `video-call-${request.session_id}`
+                        });
+                    });
+                }
+                
                 window.lastVideoCallRequests = currentRequests;
             }
         } else {
@@ -1399,21 +1325,26 @@ function startAdminSignalingPolling() {
     }
     
     window.adminSignalingInterval = setInterval(async () => {
-        if (!isAdminCallActive || !currentSessionID) return;
+        // Only poll if video call is active and session exists
+        if (!isAdminCallActive || !currentSessionID) {
+            return;
+        }
         
         try {
             const response = await fetch(`/admin/support/webrtc-signals/${currentSessionID}`);
             const data = await response.json();
             
-            if (data.success && data.messages) {
+            if (data.success && data.messages && data.messages.length > 0) {
                 for (const message of data.messages) {
                     await handleAdminSignalingMessage(message);
                 }
             }
         } catch (error) {
             console.error('Error polling admin signaling messages:', error);
+            // Stop polling on error to prevent spam
+            stopAdminSignalingPolling();
         }
-    }, 1000);
+    }, 2000); // 2 saniye - daha az sıklıkta
 }
 
 // Stop admin signaling polling
@@ -1424,93 +1355,6 @@ function stopAdminSignalingPolling() {
     }
 }
 
-// Delete support session
-function deleteSession(sessionID, username) {
-    if (!confirm(`"${username}" kullanıcısını ve tüm mesajlarını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) {
-        return;
-    }
-    
-    fetch(`/admin/support/sessions/${sessionID}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Session'ı listeden kaldır
-            const sessionElement = document.querySelector(`[data-session-id="${sessionID}"]`);
-            if (sessionElement) {
-                sessionElement.remove();
-            }
-            
-            // Eğer silinen session aktif session ise, chat'i temizle
-            if (currentSessionID === sessionID) {
-                currentSessionID = null;
-                document.getElementById('chatHeader').innerHTML = '<i class="fas fa-comment-dots me-2"></i>Sohbet Seçin';
-                document.getElementById('chatInput').style.display = 'none';
-                document.getElementById('chatMessages').innerHTML = `
-                    <div class="text-center" style="color: #666;">
-                        <i class="fas fa-arrow-left fa-2x mb-3"></i>
-                        <p>Soldan bir sohbet seçin</p>
-                    </div>
-                `;
-                document.getElementById('adminVideoCallControls').style.display = 'none';
-            }
-            
-            // Session sayısını güncelle
-            const sessionCount = document.getElementById('sessionCount');
-            const currentCount = parseInt(sessionCount.textContent);
-            sessionCount.textContent = Math.max(0, currentCount - 1);
-            
-            // Başarı mesajı göster
-            showNotification('Kullanıcı başarıyla silindi', 'success');
-        } else {
-            showNotification('Kullanıcı silinirken hata oluştu: ' + data.error, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error deleting session:', error);
-        showNotification('Kullanıcı silinirken hata oluştu', 'error');
-    });
-}
-
-// Show notification
-function showNotification(message, type = 'info') {
-    // Mevcut notification'ları temizle
-    const existingNotifications = document.querySelectorAll('.notification-toast');
-    existingNotifications.forEach(notification => notification.remove());
-    
-    const notification = document.createElement('div');
-    notification.className = `notification-toast alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} position-fixed`;
-    notification.style.cssText = `
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        min-width: 300px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border: none;
-        border-radius: 8px;
-    `;
-    notification.innerHTML = `
-        <div class="d-flex align-items-center">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
-            <span>${message}</span>
-            <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // 5 saniye sonra otomatik kaldır
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
 // Load admin sessions (alias for loadSessions)
 function loadAdminSessions() {
     loadSessions();
@@ -1518,10 +1362,45 @@ function loadAdminSessions() {
 
 // Initialize admin support functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Request notification permission
+    if (Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    
     loadAdminSessions();
-    setInterval(loadAdminSessions, 3000); // 3 saniye
-    setInterval(checkVideoCallRequests, 2000); // 2 saniye
+    checkVideoCallRequests(); // Initial check
+    
+    // Optimized intervals to reduce server load
+    setInterval(loadAdminSessions, 5000); // 5 saniye - daha az sıklıkta
+    setInterval(checkVideoCallRequests, 3000); // 3 saniye - daha az sıklıkta
+    
+    // Add visual indicator for new video call requests
+    setInterval(() => {
+        const videoCallNotifications = document.querySelectorAll('.video-call-notification[style*="display: block"]');
+        videoCallNotifications.forEach(notification => {
+            const alert = notification.querySelector('.alert');
+            if (alert) {
+                // Add pulsing animation
+                alert.style.animation = 'pulse 2s infinite';
+            }
+        });
+    }, 3000); // 3 saniye
 });
+
+// Add CSS animation for pulsing effect
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+    
+    .video-call-notification .alert {
+        animation: pulse 2s infinite;
+    }
+`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>
