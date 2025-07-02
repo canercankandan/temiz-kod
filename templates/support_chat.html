@@ -642,176 +642,121 @@ window.addEventListener('beforeunload', function(e) {
     console.log('Sayfa kapatıldı - Tüm interval\'lar durduruldu');
 });
 
-// Video Call Functions
+// Manuel izin isteme fonksiyonu
+async function requestMediaPermissions() {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    try {
+        // Basit kısıtlamalar ile başla
+        const simpleConstraints = { 
+            video: true, 
+            audio: true 
+        };
+        
+        console.log('Kamera ve mikrofon izni isteniyor...');
+        
+        const stream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
+        
+        // İzin verildi, stream'i durdur
+        stream.getTracks().forEach(track => {
+            track.stop();
+            console.log('Track durduruldu:', track.kind);
+        });
+        
+        console.log('✅ Kamera ve mikrofon izni verildi!');
+        return { success: true, message: 'İzinler başarıyla verildi!' };
+        
+    } catch (error) {
+        console.error('❌ İzin hatası:', error.name, error.message);
+        
+        let errorMessage = '';
+        
+        switch (error.name) {
+            case 'NotAllowedError':
+                errorMessage = `İzin reddedildi!\n\n` +
+                    `${isSafari ? 
+                        `${isIOS ? '📱 iPhone/iPad Safari:' : '🖥️ Mac Safari:'}\n` +
+                        '1. Adres çubuğundaki 🔒 simgesine tıklayın\n' +
+                        '2. "Kamera" ve "Mikrofon" için "İzin ver" seçin\n' +
+                        '3. Sayfayı yenileyin ve tekrar deneyin' :
+                        '🖥️ Tarayıcı ayarları:\n' +
+                        '1. Adres çubuğundaki 🔒 simgesine tıklayın\n' +
+                        '2. "Kamera" ve "Mikrofon" için "İzin ver" seçin\n' +
+                        '3. Sayfayı yenileyin ve tekrar deneyin'
+                    }`;
+                break;
+                
+            case 'NotFoundError':
+                errorMessage = '❌ Kamera veya mikrofon bulunamadı!\n\n' +
+                    '• Cihazınızda kamera ve mikrofon olduğundan emin olun\n' +
+                    '• Başka bir uygulama tarafından kullanılmıyor olabilir\n' +
+                    '• Cihazı yeniden başlatmayı deneyin';
+                break;
+                
+            case 'NotReadableError':
+                errorMessage = '❌ Kamera veya mikrofon kullanımda!\n\n' +
+                    '• Başka bir uygulama tarafından kullanılıyor olabilir\n' +
+                    '• Tüm kamera/mikrofon kullanan uygulamaları kapatın\n' +
+                    '• Cihazı yeniden başlatmayı deneyin';
+                break;
+                
+            case 'SecurityError':
+                errorMessage = '❌ Güvenlik hatası!\n\n' +
+                    '• HTTPS bağlantısı gerekli\n' +
+                    '• Tarayıcı ayarlarını kontrol edin\n' +
+                    '• Farklı bir tarayıcı deneyin';
+                break;
+                
+            default:
+                errorMessage = `❌ Bilinmeyen hata: ${error.name}\n\n` +
+                    '• Sayfayı yenileyin ve tekrar deneyin\n' +
+                    '• Farklı bir tarayıcı kullanmayı deneyin\n' +
+                    '• Cihazı yeniden başlatmayı deneyin';
+        }
+        
+        return { success: false, message: errorMessage };
+    }
+}
+
+// Video arama başlatma fonksiyonunu güncelle
 async function startVideoCall() {
-    // Eğer video call talebi zaten gönderildiyse, fonksiyonu durdur
-    if (videoCallRequested) {
-        console.log('Video call talebi zaten gönderildi');
+    if (isCallActive) {
+        console.log('Video arama zaten aktif');
         return;
     }
     
+    // İzin kontrolü
+    const permissionResult = await requestMediaPermissions();
+    
+    if (!permissionResult.success) {
+        alert(permissionResult.message);
+        return;
+    }
+    
+    // Video arama başlat
     try {
-        // Check permissions first
-        const permissions = await checkMediaPermissions();
-        
-        if (!permissions.supported) {
-            showPermissionDialog(permissions.message);
-            callStatusText.textContent = 'Desteklenmiyor';
-            return;
-        }
-        
-        if (!permissions.granted && permissions.message) {
-            showPermissionDialog(permissions.message);
-            callStatusText.textContent = 'İzin gerekli';
-            return;
-        }
-        
-        // Detect mobile device and browser
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        
-        // Safari and mobile-friendly constraints
-        const constraints = {
-            video: isSafari ? {
-                facingMode: isMobile ? 'user' : 'environment',
-                width: { ideal: isMobile ? 640 : 1280, max: 1920 },
-                height: { ideal: isMobile ? 480 : 720, max: 1080 },
-                frameRate: { ideal: 30, max: 30 }
-            } : (isMobile ? {
-                facingMode: 'user',
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            } : {
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }),
-            audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-                sampleRate: isSafari ? 44100 : undefined
-            }
-        };
-        
-        // Request camera and microphone access with Safari-specific handling
-        try {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                localStream = await navigator.mediaDevices.getUserMedia(constraints);
-            } else {
-                // Fallback for older browsers
-                const getUserMedia = navigator.getUserMedia || 
-                                   navigator.webkitGetUserMedia || 
-                                   navigator.mozGetUserMedia ||
-                                   navigator.msGetUserMedia;
-                
-                if (!getUserMedia) {
-                    throw new Error('getUserMedia not supported');
-                }
-                
-                localStream = await new Promise((resolve, reject) => {
-                    getUserMedia.call(navigator, constraints, resolve, reject);
-                });
-            }
-        } catch (error) {
-            // Safari fallback with simpler constraints
-            if (isSafari) {
-                console.log('Safari: Trying simpler constraints...');
-                try {
-                    const simpleConstraints = { 
-                        video: isMobile ? { facingMode: 'user' } : true, 
-                        audio: true 
-                    };
-                    
-                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                        localStream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
-                    } else {
-                        const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
-                        localStream = await new Promise((resolve, reject) => {
-                            getUserMedia.call(navigator, simpleConstraints, resolve, reject);
-                        });
-                    }
-                    
-                    console.log('Safari: Simple constraints worked!');
-                } catch (simpleError) {
-                    throw simpleError; // Re-throw the simpler error
-                }
-            } else {
-                throw error; // Re-throw original error for non-Safari browsers
-            }
-        }
-        
-        // Set video source
-        localVideo.srcObject = localStream;
-        console.log('Local stream set to video element');
-        console.log('Local stream tracks:', localStream.getTracks());
-        
-        // Safari-specific video handling
-        if (isSafari) {
-            localVideo.playsInline = true; // Prevent fullscreen on iOS
-            localVideo.setAttribute('playsinline', ''); // Additional attribute for iOS
-            localVideo.muted = true; // Ensure local video is muted
-        }
-        
-        // Show video call area
-        videoCallArea.style.display = 'block';
-        videoCallBtn.style.display = 'none';
-        
-        // Adjust chat area height for mobile
-        if (isMobile) {
-            chatMessages.style.height = '200px';
-        } else {
-            chatMessages.style.height = '300px';
-        }
-        
         isCallActive = true;
-        callStatusText.textContent = isSafari ? 'Safari görüntülü görüşme aktif' : 'Görüntülü görüşme başlatıldı';
+        isWaitingForResponse = true;
         
-        // Send video call request to admin
+        // UI güncelle
+        videoCallBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aranıyor...';
+        videoCallBtn.disabled = true;
+        
+        // Admin'e video arama isteği gönder
         await sendVideoCallRequest();
         
-        // Initialize WebRTC peer connection
-        await initializePeerConnection();
-        console.log('Peer connection initialized, connection state:', peerConnection.connectionState);
-        
-        // Start signaling polling
-        startSignalingPolling();
-        
-        // Create and send offer to admin
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        
-        await sendSignalingMessage({
-            type: 'offer',
-            sdp: offer
-        });
-        
-        console.log('Customer sent offer to admin');
-        
-        // Görüşme başlatıldıktan sonra endCallBtn'e event listener ekle
-        setTimeout(() => {
-            const endCallBtn = document.getElementById('endCallBtn');
-            if (endCallBtn && !endCallBtn.hasAttribute('data-listener')) {
-                endCallBtn.addEventListener('click', endVideoCall);
-                endCallBtn.setAttribute('data-listener', 'true');
-            }
-        }, 500);
+        console.log('✅ Video arama başlatıldı');
         
     } catch (error) {
-        console.error('Video call başlatılamadı:', error);
+        console.error('❌ Video arama hatası:', error);
+        isCallActive = false;
+        isWaitingForResponse = false;
         
-        // Use Safari-specific or general error message
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        videoCallBtn.innerHTML = '<i class="fas fa-video"></i> Görüntülü Görüşme';
+        videoCallBtn.disabled = false;
         
-        const errorMessage = isSafari ? 
-            getSafariErrorMessage(error.name, isIOS) : 
-            getErrorMessage(error.name, isMobile);
-        
-        // Show detailed error message
-        showPermissionDialog(errorMessage);
-        callStatusText.textContent = 'Hata oluştu';
+        alert('Video arama başlatılamadı. Lütfen tekrar deneyin.');
     }
 }
 
@@ -1179,8 +1124,55 @@ async function acceptAdminCall() {
             window.adminCallModal = null;
         }
         
-        // Start video call
-        await startVideoCall();
+        // Set video call state
+        isCallActive = true;
+        isWaitingForResponse = false;
+        
+        // Get video elements
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const videoCallArea = document.getElementById('videoCallArea');
+        const videoCallBtn = document.getElementById('videoCallBtn');
+        
+        // Show video call interface
+        if (videoCallArea) {
+            videoCallArea.style.display = 'block';
+        }
+        if (videoCallBtn) {
+            videoCallBtn.style.display = 'none';
+        }
+        
+        // Get user media (camera and microphone)
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+            
+            // Set local video
+            if (localVideo) {
+                localVideo.srcObject = stream;
+                localVideo.muted = true; // Mute local video to prevent echo
+            }
+            
+            // Initialize WebRTC
+            await initializePeerConnection();
+            
+            // Add local stream to peer connection
+            stream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, stream);
+            });
+            
+            // Start signaling polling
+            startSignalingPolling();
+            
+            console.log('✅ Video call accepted and started');
+            
+        } catch (mediaError) {
+            console.error('❌ Media access error:', mediaError);
+            alert('Kamera ve mikrofon erişimi sağlanamadı. Lütfen izinleri kontrol edin.');
+            return;
+        }
         
         // Send acceptance to admin
         await sendSignalingMessage({
