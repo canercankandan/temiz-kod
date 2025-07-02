@@ -609,7 +609,13 @@ document.addEventListener('visibilitychange', function() {
 });
 
 // Sayfa kapatıldığında veya kullanıcı ayrıldığında
-window.addEventListener('beforeunload', function() {
+let pageUnloading = false;
+
+window.addEventListener('beforeunload', function(e) {
+    if (pageUnloading) return; // Prevent multiple calls
+    
+    pageUnloading = true;
+    
     // Tüm interval'ları durdur
     if (webrtcInterval) {
         clearInterval(webrtcInterval);
@@ -629,7 +635,9 @@ window.addEventListener('beforeunload', function() {
     }
     
     // Sunucuya kullanıcının ayrıldığını bildir
-    navigator.sendBeacon('/support/leave');
+    if (sessionID) {
+        navigator.sendBeacon('/support/leave');
+    }
     
     console.log('Sayfa kapatıldı - Tüm interval\'lar durduruldu');
 });
@@ -1631,5 +1639,56 @@ async function pollSignalingMessages() {
         stopSignalingPolling();
     }
 }
+
+// Session başlatma fonksiyonu
+async function initializeSession() {
+    try {
+        // Session'ı sunucuda aktif hale getir
+        const response = await fetch('/support/ping', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionID,
+                username: 'Ziyaretçi'
+            })
+        });
+        
+        if (response.ok) {
+            console.log('Session başarıyla başlatıldı:', sessionID);
+        } else {
+            console.error('Session başlatılamadı');
+        }
+    } catch (error) {
+        console.error('Session başlatma hatası:', error);
+    }
+}
+
+// Sayfa yüklendiğinde session'ı başlat
+document.addEventListener('DOMContentLoaded', function() {
+    // Session ID'yi oluştur veya mevcut olanı al
+    if (!sessionID) {
+        sessionID = generateSessionID();
+        console.log('Yeni session oluşturuldu:', sessionID);
+    }
+    
+    // Session'ı aktif hale getir
+    initializeSession();
+    
+    // Ping gönder
+    sendPing();
+    
+    // Ping interval'ını başlat
+    startPingInterval();
+    
+    // Cart count interval'ını başlat
+    startCartInterval();
+    
+    // Signaling polling'i başlat
+    startSignalingPolling();
+    
+    console.log('Support chat sayfası başlatıldı - Session:', sessionID);
+});
 </script>
 {{end}} 
