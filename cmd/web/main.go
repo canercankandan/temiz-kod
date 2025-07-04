@@ -141,7 +141,6 @@ func main() {
 	r.POST("/support/send", h.SendSupportMessage)
 	r.GET("/support/messages", h.GetSupportMessages)
 	r.POST("/support/video-call-request", h.HandleVideoCallRequest)
-	r.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
 	r.POST("/support/webrtc-signal", h.HandleWebRTCSignal)
 	r.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
 	r.POST("/support/ping", h.SupportPing)
