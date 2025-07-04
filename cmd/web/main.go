@@ -1,19 +1,9 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
 	"html/template"
 	"log"
-	"math/big"
-	"net"
-	"net/http"
 	"os"
-	"time"
 
 	"cenap/internal/database"
 	"cenap/internal/handlers"
@@ -21,45 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// generateSelfSignedCert creates a self-signed certificate for HTTPS
-func generateSelfSignedCert() (tls.Certificate, error) {
-	// Create private key
-	priv, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
 
-	// Create certificate template
-	template := x509.Certificate{
-		SerialNumber: big.NewInt(1),
-		Subject: pkix.Name{
-			Organization:  []string{"Cenap Water Filters"},
-			Country:       []string{"TR"},
-			Province:      []string{""},
-			Locality:      []string{"Istanbul"},
-			StreetAddress: []string{""},
-			PostalCode:    []string{""},
-		},
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().Add(365 * 24 * time.Hour), // 1 year
-		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback, net.ParseIP("192.168.1.133")},
-		DNSNames:     []string{"localhost", "*.localhost", "192.168.1.133"},
-	}
-
-	// Create certificate
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	// Encode certificate
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
-
-	return tls.X509KeyPair(certPEM, keyPEM)
-}
 
 func main() {
 	// Production modunu aktif et
@@ -189,6 +141,7 @@ func main() {
 	r.POST("/support/send", h.SendSupportMessage)
 	r.GET("/support/messages", h.GetSupportMessages)
 	r.POST("/support/video-call-request", h.HandleVideoCallRequest)
+	r.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
 	r.POST("/support/webrtc-signal", h.HandleWebRTCSignal)
 	r.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
 	r.POST("/support/ping", h.SupportPing)
@@ -271,94 +224,31 @@ func main() {
 		orders.DELETE("/:id", h.UserCancelOrder)
 	}
 
-	// Load external certificate files
-	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
-	if err != nil {
-		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
-		// Fallback to self-signed certificate
-		cert, err = generateSelfSignedCert()
-		if err != nil {
-			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
-		}
-	} else {
-		log.Printf("✅ External certificate yüklendi: localhost.crt")
-	}
-
-	// Configure TLS
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
+	// Sadece HTTP kullanıyoruz - sertifika gerekmez
 
 	// Render.com için ortam değişkeni kontrolü
-	port := os.Getenv("PORT")
-	if port != "" {
+	envPort := os.Getenv("PORT")
+	if envPort != "" {
 		// Render ortamı: Sadece HTTP başlat
 		log.Printf("🚀 Render.com ortamı tespit edildi")
-		log.Printf("🌐 HTTP Server başlatılıyor (port: %s)...", port)
-		log.Printf("📱 Erişim için: http://localhost:%s", port)
+		log.Printf("🌐 HTTP Server başlatılıyor (port: %s)...", envPort)
+		log.Printf("📱 Erişim için: http://localhost:%s", envPort)
 		
-		// Render için CORS ayarları
-		r.Use(func(c *gin.Context) {
-			c.Header("Access-Control-Allow-Origin", "*")
-			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-			
-			if c.Request.Method == "OPTIONS" {
-				c.AbortWithStatus(204)
-				return
-			}
-			
-			c.Next()
-		})
-		
-		if err := r.Run(":" + port); err != nil {
+		if err := r.Run(":" + envPort); err != nil {
 			log.Fatalf("HTTP Server başlatılamadı: %v", err)
 		}
 		return
 	}
 
-	// Lokal geliştirme: HTTPS ve HTTP yönlendirme
-	httpsPort := "8083"
-	httpPort := "8082"
+	// Lokal geliştirme: Tek port kullanımı
+	port := "4505"
 	
-	// Create HTTPS server
-	httpsServer := &http.Server{
-		Addr:      ":" + httpsPort,
-		Handler:   r,
-		TLSConfig: tlsConfig,
-	}
-
-	// HTTP'den HTTPS'e yönlendirme için handler
-	httpHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		// HTTPS'e yönlendir
-		httpsURL := "https://" + req.Host + ":" + httpsPort + req.RequestURI
-		http.Redirect(w, req, httpsURL, http.StatusMovedPermanently)
-	})
-
-	// HTTP server
-	httpServer := &http.Server{
-		Addr:    ":" + httpPort,
-		Handler: httpHandler,
-	}
-
-	// HTTP Server'ı goroutine'de başlat
-	go func() {
-		log.Printf("🌐 HTTP Server başlatılıyor (HTTPS'e yönlendirme)...")
-		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
-		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
-		
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("HTTP Server hatası: %v", err)
-		}
-	}()
-
-	// HTTPS Server'ı başlat
-	log.Printf("🔒 HTTPS Server başlatılıyor...")
-	log.Printf("📱 iPhone Safari desteği için: https://localhost:%s", httpsPort)
-	log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
-	log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
+	// Tek port HTTP server
+	log.Printf("🌐 HTTP Server başlatılıyor...")
+	log.Printf("📱 HTTP erişim için: http://localhost:%s", port)
+	log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", port)
 	
-	if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
-		log.Fatalf("HTTPS Server başlatılamadı: %v", err)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
 } 

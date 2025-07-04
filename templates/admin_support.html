@@ -699,7 +699,7 @@ function updateSessionsList(sessions) {
             <div id="videoCallButtons-${session.session_id}" class="video-call-buttons" style="display: none;">
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-success btn-sm flex-fill" onclick="acceptVideoCall('${session.session_id}', '${session.username}')">
-                        <i class="fas fa-video me-1"></i>Cevap Ver
+                        <i class="fas fa-video me-1"></i>Kabul Et
                     </button>
                     <button type="button" class="btn btn-danger btn-sm flex-fill" onclick="rejectVideoCall('${session.session_id}', '${session.username}')">
                         <i class="fas fa-times me-1"></i>Reddet
@@ -742,11 +742,32 @@ async function acceptVideoCall(sessionId, username) {
         // Load chat for this session first
         await loadChat(sessionId, username);
         
-        // Start video call
-        adminLocalStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-        });
+        // Check if MediaDevices API is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isSecure = window.location.protocol === 'https:';
+            
+            if (!isSecure && !isLocalhost) {
+                throw new Error('Video görüşme özelliği için HTTPS gereklidir. Lütfen güvenli bağlantı üzerinden erişim sağlayın.');
+            } else {
+                throw new Error('Tarayıcınız video görüşme özelliğini desteklemiyor. Lütfen farklı bir tarayıcı kullanın.');
+            }
+        }
+        
+        // Start video call with fallback
+        try {
+            adminLocalStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+        } catch (mediaError) {
+            // Try with audio only if video fails
+            console.log('Video access failed, trying audio only:', mediaError);
+            adminLocalStream = await navigator.mediaDevices.getUserMedia({
+                video: false,
+                audio: true
+            });
+        }
         
         document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
         
@@ -797,7 +818,22 @@ async function acceptVideoCall(sessionId, username) {
         
     } catch (error) {
         console.error('Video call kabul edilemedi:', error);
-        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
+        
+        let errorMessage = 'Video görüşme başlatılamadı.';
+        
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            errorMessage = 'Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.';
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+            errorMessage = 'Kamera veya mikrofon bulunamadı. Lütfen cihazlarınızı kontrol edin.';
+        } else if (error.name === 'NotSupportedError') {
+            errorMessage = 'Tarayıcınız video görüşme özelliğini desteklemiyor.';
+        } else if (error.message.includes('HTTPS')) {
+            errorMessage = error.message;
+        } else {
+            errorMessage += ' ' + error.message;
+        }
+        
+        alert(errorMessage);
         await sendVideoCallResponse('reject', sessionId);
     }
 }
@@ -830,7 +866,17 @@ async function startAdminVideoCall() {
     try {
         // Get session info
         const sessionElement = document.querySelector(`[data-session-id="${currentSessionID}"]`);
+        if (!sessionElement) {
+            alert('Seçili sohbet bulunamadı');
+            return;
+        }
+        
         const username = sessionElement.querySelector('h6').textContent;
+        
+        // Video arama butonunu devre dışı bırak
+        const startBtn = document.getElementById('startVideoCallBtn');
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Arama başlatılıyor...';
         
         // Send admin video call request to backend
         const response = await fetch('/admin/support/start-video-call', {
@@ -846,14 +892,38 @@ async function startAdminVideoCall() {
         const data = await response.json();
         if (!data.success) {
             alert('Video call talebi gönderilemedi: ' + data.error);
+            // Butonu tekrar aktif et
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-video me-1"></i>Video Arama Başlat';
             return;
         }
         
-        // Start video call
-        adminLocalStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-        });
+        // Check if MediaDevices API is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isSecure = window.location.protocol === 'https:';
+            
+            if (!isSecure && !isLocalhost) {
+                throw new Error('Video görüşme özelliği için HTTPS gereklidir. Lütfen güvenli bağlantı üzerinden erişim sağlayın.');
+            } else {
+                throw new Error('Tarayıcınız video görüşme özelliğini desteklemiyor. Lütfen farklı bir tarayıcı kullanın.');
+            }
+        }
+        
+        // Get user media with fallback
+        try {
+            adminLocalStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+        } catch (mediaError) {
+            // Try with audio only if video fails
+            console.log('Video access failed, trying audio only:', mediaError);
+            adminLocalStream = await navigator.mediaDevices.getUserMedia({
+                video: false,
+                audio: true
+            });
+        }
         
         document.getElementById('adminLocalVideo').srcObject = adminLocalStream;
         
@@ -879,19 +949,56 @@ async function startAdminVideoCall() {
         const offer = await adminPeerConnection.createOffer();
         await adminPeerConnection.setLocalDescription(offer);
         
+        // Send offer to customer
         await sendAdminSignalingMessage({
             type: 'offer',
-            sdp: offer
+            sdp: offer.sdp
         });
-        
-        console.log('Admin sent offer to customer');
         
         // Add system message
         addAdminSystemMessage(`${username} ile video görüşme başlatıldı. Müşteri yanıtını bekliyor...`);
         
+        console.log('✅ Admin video call started successfully');
+        
     } catch (error) {
-        console.error('Admin video call başlatılamadı:', error);
-        alert('Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.');
+        console.error('Error starting admin video call:', error);
+        
+        let errorMessage = 'Video görüşme başlatılamadı.';
+        
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            errorMessage = 'Kamera veya mikrofon erişimi reddedildi. Lütfen tarayıcı ayarlarınızdan izin verin.';
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+            errorMessage = 'Kamera veya mikrofon bulunamadı. Lütfen cihazlarınızı kontrol edin.';
+        } else if (error.name === 'NotSupportedError') {
+            errorMessage = 'Tarayıcınız video görüşme özelliğini desteklemiyor.';
+        } else if (error.message.includes('HTTPS')) {
+            errorMessage = error.message;
+        } else {
+            errorMessage += ' ' + error.message;
+        }
+        
+        alert(errorMessage);
+        
+        // Butonu tekrar aktif et
+        const startBtn = document.getElementById('startVideoCallBtn');
+        startBtn.disabled = false;
+        startBtn.innerHTML = '<i class="fas fa-video me-1"></i>Video Arama Başlat';
+        
+        // Video arama talebini sonlandır
+        try {
+            await fetch('/admin/support/video-call-response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    session_id: currentSessionID,
+                    action: 'end'
+                })
+            });
+        } catch (endError) {
+            console.error('Error ending video call request:', endError);
+        }
     }
 }
 

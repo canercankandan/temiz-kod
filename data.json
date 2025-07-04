@@ -4,49 +4,49 @@
       "id": 5,
       "name": "valıh",
       "description": "tr",
-      "price": 77,
+      "price": 1,
       "image": "/static/uploads/60af0572-6307-4d62-936c-73b9d986a8e0.jpg",
       "category": "Su Arıtma Ürünleri",
       "stock": 66,
       "features": "",
       "created_at": "2025-06-20T21:39:14.7761704+03:00",
-      "updated_at": "2025-06-20T21:39:14.7761704+03:00"
+      "updated_at": "2025-07-03T23:25:55.5027667+03:00"
     },
     {
       "id": 7,
       "name": "Premium Su Arıtma Cihazı",
       "description": "8 Aşamalı filtreleme sistemi ile musluk suyunu içme suyuna çeviren profesyonel su arıtma cihazı. NSF sertifikalı filtreler kullanır.",
-      "price": 2500,
+      "price": 1,
       "image": "/static/uploads/75d45004-bf34-4c2c-99bf-9167885f8391.jpg",
       "category": "Su Arıtma Ürünleri",
       "stock": 15,
       "features": "",
       "created_at": "2025-06-29T00:55:00+03:00",
-      "updated_at": "2025-06-29T00:55:00+03:00"
+      "updated_at": "2025-07-03T23:26:03.1836664+03:00"
     },
     {
       "id": 10,
       "name": "Kompakt Su Filtresi",
       "description": "Mutfak musluğuna kolayca takılabilen kompakt su filtresi. Aktif karbon ve sediment filtreleme özelliği.",
-      "price": 450,
+      "price": 1,
       "image": "/static/uploads/60af0572-6307-4d62-936c-73b9d986a8e0.jpg",
       "category": "Su Arıtma Ürünleri",
       "stock": 25,
       "features": "",
       "created_at": "2025-06-29T00:55:00+03:00",
-      "updated_at": "2025-06-29T00:55:00+03:00"
+      "updated_at": "2025-07-03T23:26:09.2593273+03:00"
     },
     {
       "id": 13,
       "name": ".deneme",
       "description": "555",
-      "price": 89,
+      "price": 1,
       "image": "/static/uploads/9d0d1309-3a9f-4560-a9cb-a1bff44975c6.png",
       "category": "Yedek Parça",
       "stock": 9,
       "features": "{\"5\":\"5\"}",
       "created_at": "2025-06-29T13:15:01.7993525+03:00",
-      "updated_at": "2025-06-29T13:15:01.7993525+03:00"
+      "updated_at": "2025-07-03T23:26:15.7776245+03:00"
     }
   ],
   "users": [
@@ -82,12 +82,12 @@
         }
       ],
       "total_price": 6,
-      "status": "ended",
+      "status": "confirmed",
       "payment_method": "",
       "notes": "",
       "admin_notes": "",
       "created_at": "2025-06-23T13:54:49.6710926+03:00",
-      "updated_at": "2025-06-23T13:54:49.6710926+03:00"
+      "updated_at": "2025-07-03T23:30:52.4929029+03:00"
     }
   ],
   "messages": [
@@ -1070,6 +1070,26 @@
       "is_admin": false,
       "is_read": true,
       "created_at": "2025-07-02T17:05:42.7711752+03:00"
+    },
+    {
+      "id": 99,
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "message": "rrrr",
+      "is_admin": false,
+      "is_read": true,
+      "created_at": "2025-07-03T22:02:36.5695377+03:00"
+    },
+    {
+      "id": 100,
+      "user_id": null,
+      "username": "Admin",
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "message": "merhaba",
+      "is_admin": true,
+      "is_read": true,
+      "created_at": "2025-07-03T22:02:43.3805557+03:00"
     }
   ],
   "support_sessions": [
@@ -1223,7 +1243,7 @@
       "username": "Ziyaretçi",
       "user_agent": "",
       "status": "offline",
-      "last_message_at": "2024-06-30T23:23:26.8328332+03:00",
+      "last_message_at": "2024-07-04T19:37:27.6876457+03:00",
       "created_at": "2025-06-28T22:46:30.0383752+03:00",
       "unread_count": 0
     },
@@ -1278,7 +1298,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-02T17:47:06.6244744+03:00",
+      "last_message_at": "2024-07-02T17:13:04.545215+03:00",
       "created_at": "2025-06-30T15:27:24.4837251+03:00",
       "unread_count": 0
     },
@@ -1291,6 +1311,72 @@
       "status": "offline",
       "last_message_at": "2024-07-02T17:10:00.8870156+03:00",
       "created_at": "2025-07-02T16:56:51.5690828+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 21,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "offline",
+      "last_message_at": "2024-07-04T20:02:04.664769+03:00",
+      "created_at": "2025-07-03T21:54:38.1985033+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 22,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "offline",
+      "last_message_at": "2024-07-03T22:15:40.7813962+03:00",
+      "created_at": "2025-07-03T22:00:31.7384997+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 23,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-03T22:27:42.1229718+03:00",
+      "created_at": "2025-07-03T22:27:42.1229718+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 24,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "offline",
+      "last_message_at": "2024-07-04T01:04:42.4896675+03:00",
+      "created_at": "2025-07-03T23:18:27.8783411+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 25,
+      "session_id": "f961d8c8-4381-42d5-b4aa-1932cf0c96c2",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
+      "status": "offline",
+      "last_message_at": "2024-07-04T00:59:50.5293521+03:00",
+      "created_at": "2025-07-04T00:29:26.5209611+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 26,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-04T21:39:24.86856+03:00",
+      "created_at": "2025-07-04T20:05:59.7010016+03:00",
       "unread_count": 0
     }
   ],
@@ -3027,43 +3113,333 @@
     },
     {
       "id": 174,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
       "user_id": null,
       "username": "Ziyaretçi",
-      "status": "ended",
-      "requested_at": "2025-07-02T17:41:49.4014958+03:00",
-      "responded_at": "2025-07-02T17:42:08.6790793+03:00",
+      "status": "rejected",
+      "requested_at": "2025-07-03T21:54:58.444907+03:00",
+      "responded_at": "2025-07-04T19:49:33.7853978+03:00",
       "initiator": "admin"
     },
     {
       "id": 175,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
-      "user_id": null,
-      "username": "Misafir-36b8bdf4",
-      "status": "rejected",
-      "requested_at": "2025-07-02T17:42:13.895887+03:00",
-      "responded_at": "2025-07-02T17:42:15.8951941+03:00",
-      "initiator": ""
-    },
-    {
-      "id": 176,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
       "user_id": null,
       "username": "Ziyaretçi",
       "status": "ended",
-      "requested_at": "2025-07-02T17:42:56.1856214+03:00",
-      "responded_at": "2025-07-02T17:43:34.584997+03:00",
+      "requested_at": "2025-07-03T22:00:52.3096489+03:00",
+      "responded_at": "2025-07-03T22:00:55.9747107+03:00",
       "initiator": "admin"
     },
     {
+      "id": 176,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Misafir-759010f5",
+      "status": "ended",
+      "requested_at": "2025-07-03T22:01:01.352315+03:00",
+      "responded_at": "2025-07-03T22:01:05.726147+03:00",
+      "initiator": ""
+    },
+    {
       "id": 177,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
       "user_id": null,
       "username": "Ziyaretçi",
-      "status": "pending",
-      "requested_at": "2025-07-02T17:43:44.2642964+03:00",
-      "responded_at": null,
+      "status": "ended",
+      "requested_at": "2025-07-03T22:01:21.3602979+03:00",
+      "responded_at": "2025-07-03T22:01:24.6146538+03:00",
       "initiator": "admin"
+    },
+    {
+      "id": 178,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Misafir-759010f5",
+      "status": "ended",
+      "requested_at": "2025-07-03T22:01:37.3810736+03:00",
+      "responded_at": "2025-07-03T22:01:43.2042234+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 179,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-03T22:01:53.3799118+03:00",
+      "responded_at": "2025-07-03T22:02:00.0605222+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 180,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Misafir-759010f5",
+      "status": "ended",
+      "requested_at": "2025-07-03T22:07:05.2354201+03:00",
+      "responded_at": "2025-07-03T22:07:14.7665897+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 181,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "expired",
+      "requested_at": "2025-07-03T22:27:58.9059086+03:00",
+      "responded_at": "2025-07-04T19:49:38.1324009+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 182,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-03T23:19:14.0753594+03:00",
+      "responded_at": "2025-07-03T23:19:19.465967+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 183,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-07-03T23:19:24.7019218+03:00",
+      "responded_at": "2025-07-03T23:19:29.5194775+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 184,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-07-03T23:19:58.6689547+03:00",
+      "responded_at": "2025-07-03T23:20:33.1594374+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 185,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-07-03T23:20:53.238787+03:00",
+      "responded_at": "2025-07-03T23:20:54.8976985+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 186,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-04T01:03:38.7331161+03:00",
+      "responded_at": "2025-07-04T01:03:43.7414491+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 187,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Misafir-e5c56228",
+      "status": "ended",
+      "requested_at": "2025-07-04T01:03:48.8381516+03:00",
+      "responded_at": "2025-07-04T01:03:58.7770045+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 188,
+      "session_id": "e5c56228-607b-4446-a047-45661e9af6ef",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-04T01:04:15.6195583+03:00",
+      "responded_at": "2025-07-04T01:04:34.3381822+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 189,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T19:49:38.1324009+03:00",
+      "responded_at": "2025-07-04T19:49:39.5120882+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 190,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T19:49:44.3714647+03:00",
+      "responded_at": "2025-07-04T19:49:47.5547058+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 191,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "rejected",
+      "requested_at": "2025-07-04T19:50:31.0928013+03:00",
+      "responded_at": "2025-07-04T19:50:40.5071708+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 192,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T19:51:57.1887528+03:00",
+      "responded_at": "2025-07-04T19:52:00.8189059+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 193,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T19:55:29.8246878+03:00",
+      "responded_at": "2025-07-04T19:55:32.8625451+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 194,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T19:58:43.978635+03:00",
+      "responded_at": "2025-07-04T19:58:45.2086059+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 195,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Misafir-97f4bc48",
+      "status": "rejected",
+      "requested_at": "2025-07-04T19:58:49.4816343+03:00",
+      "responded_at": "2025-07-04T19:58:55.1662272+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 196,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T20:00:34.7833624+03:00",
+      "responded_at": "2025-07-04T20:00:40.1144515+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 197,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T20:01:47.0430213+03:00",
+      "responded_at": "2025-07-04T20:01:51.7723663+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 198,
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T20:02:00.6021838+03:00",
+      "responded_at": "2025-07-04T20:02:01.5287294+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 199,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T20:06:19.9540086+03:00",
+      "responded_at": "2025-07-04T20:06:29.3829175+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 200,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Misafir-d8b8ef3c",
+      "status": "ended",
+      "requested_at": "2025-07-04T20:06:31.8534413+03:00",
+      "responded_at": "2025-07-04T20:07:26.6761538+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 201,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Misafir-d8b8ef3c",
+      "status": "ended",
+      "requested_at": "2025-07-04T20:07:52.0156471+03:00",
+      "responded_at": "2025-07-04T20:08:02.9523652+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 202,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Misafir-d8b8ef3c",
+      "status": "ended",
+      "requested_at": "2025-07-04T20:08:08.7504724+03:00",
+      "responded_at": "2025-07-04T20:10:11.8592698+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 203,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T21:35:08.6432528+03:00",
+      "responded_at": "2025-07-04T21:36:00.7805609+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 204,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Misafir-d8b8ef3c",
+      "status": "ended",
+      "requested_at": "2025-07-04T21:36:05.973696+03:00",
+      "responded_at": "2025-07-04T21:37:40.185559+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 205,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-04T21:37:50.5548715+03:00",
+      "responded_at": "2025-07-04T21:37:57.401191+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 206,
+      "session_id": "d8b8ef3c-1b43-4027-8cc1-33d8137f0437",
+      "user_id": null,
+      "username": "Misafir-d8b8ef3c",
+      "status": "pending",
+      "requested_at": "2025-07-04T21:38:00.5763989+03:00",
+      "responded_at": null,
+      "initiator": ""
     }
   ]
 }
