@@ -397,11 +397,6 @@ let pendingVideoCallSession = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    // Request notification permission
-    if (Notification.permission === 'default') {
-        Notification.requestPermission();
-    }
-    
     startSessionPolling();
     
     // Send message on button click
@@ -1142,23 +1137,6 @@ function addAdminSystemMessage(message) {
     scrollToBottom();
 }
 
-// Auto-select session with video call request
-function autoSelectVideoCallSession(sessionId, username) {
-    // If no session is currently selected, auto-select this one
-    if (!currentSessionID) {
-        loadChat(sessionId, username);
-        return;
-    }
-    
-    // If a different session has video call request, show a prompt
-    if (currentSessionID !== sessionId) {
-        const shouldSwitch = confirm(`${username} görüntülü görüşme istiyor. Bu sohbete geçmek istiyor musunuz?`);
-        if (shouldSwitch) {
-            loadChat(sessionId, username);
-        }
-    }
-}
-
 // Check for video call requests for all sessions
 function checkVideoCallRequests() {
     fetch('/admin/support/video-call-requests')
@@ -1200,25 +1178,6 @@ function checkVideoCallRequests() {
                             alertDiv.innerHTML = `<i class="fas fa-video me-1"></i><strong>${username}</strong> görüntülü görüşme istiyor`;
                         }
                     }
-                    
-                    // Eğer bu session aktif değilse, otomatik olarak seç
-                    if (sessionId !== currentSessionID) {
-                        // Highlight the session item to draw attention
-                        const sessionItem = document.querySelector(`[data-session-id="${sessionId}"]`);
-                        if (sessionItem) {
-                            sessionItem.style.backgroundColor = '#fff3cd';
-                            sessionItem.style.borderLeft = '4px solid #ffc107';
-                            
-                            // Remove highlight after 5 seconds
-                            setTimeout(() => {
-                                sessionItem.style.backgroundColor = '';
-                                sessionItem.style.borderLeft = '';
-                            }, 5000);
-                        }
-                        
-                        // Auto-select if no current session or prompt user
-                        autoSelectVideoCallSession(sessionId, username);
-                    }
                 } else {
                     // Admin arama başlattıysa butonları gösterme, sadece bilgi mesajı göster
                     if (sessionId === currentSessionID && !isAdminCallActive) {
@@ -1231,23 +1190,6 @@ function checkVideoCallRequests() {
             if (hasNewRequests && (!window.lastVideoCallRequests || 
                 JSON.stringify(currentRequests.sort()) !== JSON.stringify(window.lastVideoCallRequests.sort()))) {
                 playNotificationSound();
-                
-                // Show browser notification if available
-                if (Notification.permission === 'granted') {
-                    const newRequests = data.requests.filter(r => 
-                        !window.lastVideoCallRequests || 
-                        !window.lastVideoCallRequests.includes(r.session_id)
-                    );
-                    
-                    newRequests.forEach(request => {
-                        new Notification('Yeni Video Arama Talebi', {
-                            body: `${request.username || 'Misafir'} görüntülü görüşme istiyor`,
-                            icon: '/static/favicon.ico',
-                            tag: `video-call-${request.session_id}`
-                        });
-                    });
-                }
-                
                 window.lastVideoCallRequests = currentRequests;
             }
         } else {
@@ -1325,26 +1267,21 @@ function startAdminSignalingPolling() {
     }
     
     window.adminSignalingInterval = setInterval(async () => {
-        // Only poll if video call is active and session exists
-        if (!isAdminCallActive || !currentSessionID) {
-            return;
-        }
+        if (!isAdminCallActive || !currentSessionID) return;
         
         try {
             const response = await fetch(`/admin/support/webrtc-signals/${currentSessionID}`);
             const data = await response.json();
             
-            if (data.success && data.messages && data.messages.length > 0) {
+            if (data.success && data.messages) {
                 for (const message of data.messages) {
                     await handleAdminSignalingMessage(message);
                 }
             }
         } catch (error) {
             console.error('Error polling admin signaling messages:', error);
-            // Stop polling on error to prevent spam
-            stopAdminSignalingPolling();
         }
-    }, 2000); // 2 saniye - daha az sıklıkta
+    }, 1000);
 }
 
 // Stop admin signaling polling
@@ -1362,45 +1299,10 @@ function loadAdminSessions() {
 
 // Initialize admin support functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Request notification permission
-    if (Notification.permission === 'default') {
-        Notification.requestPermission();
-    }
-    
     loadAdminSessions();
-    checkVideoCallRequests(); // Initial check
-    
-    // Optimized intervals to reduce server load
-    setInterval(loadAdminSessions, 5000); // 5 saniye - daha az sıklıkta
-    setInterval(checkVideoCallRequests, 3000); // 3 saniye - daha az sıklıkta
-    
-    // Add visual indicator for new video call requests
-    setInterval(() => {
-        const videoCallNotifications = document.querySelectorAll('.video-call-notification[style*="display: block"]');
-        videoCallNotifications.forEach(notification => {
-            const alert = notification.querySelector('.alert');
-            if (alert) {
-                // Add pulsing animation
-                alert.style.animation = 'pulse 2s infinite';
-            }
-        });
-    }, 3000); // 3 saniye
+    setInterval(loadAdminSessions, 3000); // 3 saniye
+    setInterval(checkVideoCallRequests, 2000); // 2 saniye
 });
-
-// Add CSS animation for pulsing effect
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.7; }
-        100% { opacity: 1; }
-    }
-    
-    .video-call-notification .alert {
-        animation: pulse 2s infinite;
-    }
-`;
-document.head.appendChild(style);
 </script>
 </body>
 </html>

@@ -63,7 +63,6 @@ type DBInterface interface {
 	UpdateProduct(product *models.Product) error
 	UpdateSupportSessionLastActive(sessionID string) error
 	MarkSupportSessionOffline(sessionID string) error
-	GetSupportSessionByID(sessionID string) (*models.SupportSession, error)
 }
 
 // Handler, HTTP isteklerini yönetir.
@@ -1740,24 +1739,6 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 		
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme talebi gönderildi"})
 		
-	case "accept":
-		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "accepted")
-		if err != nil {
-			log.Printf("HandleVideoCallRequest - Error accepting: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme kabul edilemedi"})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme kabul edildi"})
-		
-	case "reject":
-		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "rejected")
-		if err != nil {
-			log.Printf("HandleVideoCallRequest - Error rejecting: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme reddedilemedi"})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme reddedildi"})
-		
 	case "end":
 		// End video call request
 		err := h.db.EndVideoCallRequest(request.SessionID)
@@ -2000,26 +1981,20 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 		return
 	}
 	
-	// Check if session exists and is active
-	session, err := h.db.GetSupportSessionByID(request.SessionID)
+	// Check if session exists
+	userAgent := c.GetHeader("User-Agent")
+	if userAgent == "" {
+		userAgent = "Unknown"
+	}
+	session, err := h.db.GetOrCreateSupportSession(request.SessionID, "Admin", nil, userAgent)
 	if err != nil {
 		log.Printf("AdminStartVideoCall - Error getting session: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Session bulunamadı"})
 		return
 	}
 	
-	// Check if session is active (son 5 dakika içinde mesaj göndermiş)
-	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
-	if session.LastMessageAt.Before(fiveMinutesAgo) {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Bu kullanıcı artık aktif değil"})
-		return
-	}
-	
-	// Önce mevcut video arama taleplerini temizle
-	h.db.EndVideoCallRequest(request.SessionID)
-	
 	// Create video call request (username 'Admin' ve initiator 'admin' olarak kaydet)
-	err = h.db.CreateVideoCallRequestWithInitiator(request.SessionID, "Admin", session.UserID, "admin")
+	err = h.db.CreateVideoCallRequestWithInitiator(request.SessionID, session.Username, session.UserID, "admin")
 	if err != nil {
 		log.Printf("AdminStartVideoCall - Error creating video call request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video call talebi oluşturulamadı"})
@@ -2076,8 +2051,8 @@ func (h *Handler) SupportPing(c *gin.Context) {
         return
     }
     
-    // Mail gönderme kontrolü - sadece yeni session açıldığında
-    if session.CreatedAt == session.LastMessageAt {
+    // Mail gönderme kontrolü - yeni session veya son aktiviteden 5 dakika geçmişse
+    if session.CreatedAt == session.LastMessageAt || time.Since(session.LastMessageAt) > 5*time.Minute {
         // Mail gönder
         err = h.email.SendSupportChatNotification("irmaksuaritmam@gmail.com", displayName, sessionID, userAgent)
         if err != nil {

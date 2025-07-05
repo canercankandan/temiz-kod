@@ -15,7 +15,7 @@
     {{range $index, $product := .products}}
     {
       "@type": "ListItem",
-      "position": {{$index}},
+      "position": {{add $index 1}},
       "item": {
         "@type": "Product",
         "name": "{{$product.Name}}",
@@ -44,7 +44,7 @@
         "sku": "{{$product.ID}}",
         "mpn": "{{$product.ID}}"
       }
-    }{{if not (eq $index (len $.products))}},{{end}}
+    }{{if not (eq $index (sub (len $.products) 1))}},{{end}}
     {{end}}
     {{end}}
   ]
@@ -170,7 +170,9 @@
                 </div>
             </div>
             <div class="col-md-6 text-end">
-                <!-- Güncelle butonu kaldırıldı - Admin panelinde zaten mevcut -->
+                <a href="/admin" class="btn btn-warning">
+                    <i class="fas fa-edit me-2"></i>Güncelle
+                </a>
             </div>
         </div>
     </section>

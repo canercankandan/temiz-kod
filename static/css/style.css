@@ -444,7 +444,7 @@ footer h5 {
 
 /* Hero arka planı tamamen bebek resmi */
 .hero-bg {
-    min-height: 520px;
+    min-height: 720px;
     width: 100%;
     background: url('/static/uploads/bebek.jpeg') center center/cover no-repeat !important;
     position: relative;
@@ -458,14 +458,13 @@ footer h5 {
 .hero-content {
     position: relative;
     z-index: 2;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.12); /* Çok daha şeffaf */
     border-radius: 16px;
     padding: 32px 24px;
     margin: 0;
     margin-right: 50px;
-    color: #F5F5DC;
-    text-shadow: 0 2px 16px rgba(245,245,220,0.6);
+    color: #222;
+    text-shadow: none;
     text-align: right;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -475,20 +474,27 @@ footer h5 {
     text-align: right;
 }
 @media (max-width: 768px) {
-    .hero-bg {
-        min-height: 320px;
-        background-size: cover;
-        justify-content: center;
-        margin: 10px 0;
-    }
+  .hero-bg {
+    min-height: 320px;
+    background-size: contain;
+    background-position: center top;
+    background-repeat: no-repeat;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 10px 0;
+  }
     .hero-content {
-        text-align: center;
-        margin: 0;
-        padding: 16px;
-        margin: 0 10px;
+        background: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 16px 8px !important;
+        margin: 0 !important;
+        text-align: center !important;
     }
     .hero-content h1, .hero-content p {
         text-align: center;
+        color: #F5F5DC !important;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
     }
 }
 
@@ -508,70 +514,64 @@ footer h5 {
 }
 .hero-baby-img {
     width: 600px;
-    height: 600px;
+    height: 800px;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: cover;
     border-radius: 48px;
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+    display: block;
+    margin: 0 auto;
 }
 @media (max-width: 768px) {
-    .hero-baby-img {
-        width: 300px;
-        height: 300px;
-        border-radius: 24px;
-    }
-    
-    .hero-frame {
-        width: 300px;
-        height: 300px;
-        padding: 12px;
-        border-radius: 24px;
-    }
-} 
-
-@media (max-width: 768px) {
-  .hero-mobile-img {
+  .hero-frame {
+    width: 95vw !important;
+    max-width: 370px !important;
+    height: 95vw !important;
+    max-height: 450px !important;
+    padding: 10px !important;
+    border-radius: 20px !important;
+    margin: 0 auto !important;
     display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    border-radius: 16px;
-    margin: 16px auto 0 auto;
+  }
+  .hero-frame-wrapper {
+    min-height: auto !important;
+    padding: 20px 10px !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    text-align: left !important;
   }
 }
-@media (min-width: 769px) {
-  .hero-mobile-img {
-    display: none !important;
-  }
-} 
-
 @media (max-width: 768px) {
-  .hero-content {
-    background: rgba(255,255,255,0.05) !important;
-    backdrop-filter: none !important;
+  .hero-baby-img {
+    width: 180px !important;
+    height: 240px !important;
+    border-radius: 16px !important;
   }
-} 
-
-@media (max-width: 768px) {
+}
+@media (max-width: 480px) {
   .hero-bg {
-    background-position: center center !important;
-    background-size: cover !important;
-    min-height: 500px !important;
-    height: 100vw !important;
-    max-height: none !important;
-  }
-  .hero-bg .container,
-  .hero-bg .row {
-    align-items: center !important;
-    justify-content: center !important;
+    background-size: contain !important;
+    background-position: top center !important;
+    background-repeat: no-repeat !important;
     min-height: unset !important;
-    height: 100% !important;
+    padding-bottom: 12px !important;
   }
-  .hero-content {
-    background: rgba(255,255,255,0.3) !important;
-    backdrop-filter: none !important;
+  .hero-baby-img {
+    width: 100vw !important;
+    max-width: 220px !important;
+    height: auto !important;
+    object-fit: contain !important;
+    object-position: top center !important;
+    display: block !important;
+    margin: 0 auto !important;
   }
-  .hero-content h1,
-  .hero-content p {
-    color: #222 !important;
+}
+
+/* Mobile için mavi metin rengi */
+@media (max-width: 768px) {
+  .hero-content .lead {
+    color: #0066cc !important; /* Su mavisi */
     text-shadow: none !important;
   }
 } 
