@@ -1059,6 +1059,13 @@ async function handleSignalingMessage(message) {
             case 'offer':
                 console.log('Received offer from admin:', message);
                 console.log('Offer SDP:', message.sdp);
+                
+                // Admin'den offer geldiğinde, önce kendi stream'ini peer connection'a ekle
+                if (localStream && !peerConnection) {
+                    console.log('Initializing peer connection for admin call...');
+                    await initializePeerConnection();
+                }
+                
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(message.sdp));
                 console.log('Remote description set successfully');
                 
@@ -1171,7 +1178,7 @@ async function acceptAdminCall() {
             window.adminCallModal = null;
         }
         
-        // Start video call
+        // Start video call (bu fonksiyon kendi stream'ini alacak ve peer connection'ı başlatacak)
         await startVideoCall();
         
         // Send acceptance to admin

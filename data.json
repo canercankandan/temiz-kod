@@ -1162,8 +1162,8 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "user_agent": "",
-      "status": "offline",
-      "last_message_at": "2024-07-05T15:29:47.0308872+03:00",
+      "status": "active",
+      "last_message_at": "2025-07-05T18:30:48.031911+03:00",
       "created_at": "2025-06-28T22:46:30.0383752+03:00",
       "unread_count": 0
     },
@@ -1262,7 +1262,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
       "status": "offline",
-      "last_message_at": "2024-07-05T17:13:25.6685712+03:00",
+      "last_message_at": "2024-07-05T18:29:38.6262782+03:00",
       "created_at": "2025-07-05T15:33:02.7277848+03:00",
       "unread_count": 0
     },
@@ -3018,6 +3018,26 @@
       "status": "ended",
       "requested_at": "2025-07-05T17:27:30.9088738+03:00",
       "responded_at": "2025-07-05T17:27:35.7801208+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 174,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-05T18:29:53.1502604+03:00",
+      "responded_at": "2025-07-05T18:30:03.4912107+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 175,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Misafir-a876aebd",
+      "status": "ended",
+      "requested_at": "2025-07-05T18:30:12.8635257+03:00",
+      "responded_at": "2025-07-05T18:30:24.9165386+03:00",
       "initiator": ""
     }
   ]
