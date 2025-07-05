@@ -560,9 +560,20 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	// Son 5 dakika içinde aktif olan sessionları göster (admin hariç)
 	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
 	
+	// Admin username'lerini tanımla
+	adminUsernames := []string{"admin", "Admin", "ADMIN", "admın", "Admın", "ADMİN"}
+	
 	for _, session := range db.data.SupportSessions {
 		// Admin session'larını filtrele (admin kullanıcısının session'larını gösterme)
-		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) && session.Username != "admin" {
+		isAdmin := false
+		for _, adminUsername := range adminUsernames {
+			if session.Username == adminUsername {
+				isAdmin = true
+				break
+			}
+		}
+		
+		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) && !isAdmin {
 			sessions = append(sessions, session)
 		}
 	}
