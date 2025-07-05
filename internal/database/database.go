@@ -557,11 +557,12 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	defer db.mu.RUnlock()
 	
 	var sessions []models.SupportSession
-	// Son 5 dakika içinde aktif olan sessionları göster
+	// Son 5 dakika içinde aktif olan sessionları göster (admin hariç)
 	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
 	
 	for _, session := range db.data.SupportSessions {
-		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) {
+		// Admin session'larını filtrele (admin kullanıcısının session'larını gösterme)
+		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) && session.Username != "admin" {
 			sessions = append(sessions, session)
 		}
 	}
@@ -571,7 +572,7 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
 	
-	log.Printf("GetActiveSupportSessions - Found %d active sessions (last 5 minutes)", len(sessions))
+	log.Printf("GetActiveSupportSessions - Found %d active sessions (last 5 minutes, admin excluded)", len(sessions))
 	
 	return sessions, nil
 }
