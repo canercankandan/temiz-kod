@@ -625,6 +625,18 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 	// Check if session exists with same sessionID and userAgent
 	for _, session := range db.data.SupportSessions {
 		if session.SessionID == sessionID && session.UserAgent == userAgent {
+			// Session exists, update user info if userID is provided
+			if userID != nil {
+				for i, s := range db.data.SupportSessions {
+					if s.SessionID == sessionID && s.UserAgent == userAgent {
+						db.data.SupportSessions[i].UserID = userID
+						db.data.SupportSessions[i].Username = username
+						db.data.SupportSessions[i].LastMessageAt = time.Now()
+						db.saveData()
+						return &db.data.SupportSessions[i], nil
+					}
+				}
+			}
 			return &session, nil
 		}
 	}

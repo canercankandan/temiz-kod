@@ -185,9 +185,29 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 		return
 	}
 
+	// Mevcut session ID'yi al (eğer varsa)
+	oldSessionID, _ := c.Cookie("user_session")
+	
+	// Yeni session ID oluştur
 	sessionID := uuid.New().String()
 	c.SetCookie("user_session", sessionID, 3600, "/", "", false, true)
 	c.SetCookie("username", user.Username, 3600, "/", "", false, true)
+	
+	// Eğer eski session varsa, yeni session ID ile güncelle
+	if oldSessionID != "" {
+		userAgent := c.GetHeader("User-Agent")
+		if userAgent == "" {
+			userAgent = "Unknown"
+		}
+		
+		// Eski session'ı yeni session ID ile güncelle
+		_, err := h.db.GetOrCreateSupportSession(sessionID, user.Username, &user.ID, userAgent)
+		if err != nil {
+			log.Printf("HandleLogin - Error updating support session: %v", err)
+		} else {
+			log.Printf("HandleLogin - Support session updated for user %s: %s -> %s", user.Username, oldSessionID, sessionID)
+		}
+	}
 	
 	c.Redirect(http.StatusSeeOther, "/")
 }
