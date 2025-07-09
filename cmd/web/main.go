@@ -321,119 +321,10 @@ func main() {
 	// HTTP engine için static dosyalar
 	httpEngine.Static("/static", "./static")
 	
-	// HTTP engine için tüm route'ları kopyala
-	httpEngine.GET("/", h.HomePage)
-	httpEngine.GET("/home", h.HomePage)
-	httpEngine.GET("/test", func(c *gin.Context) {
-		c.String(http.StatusOK, "Test sayfası - HTTP Server aktif!")
-	})
-	httpEngine.GET("/products", h.ProductsPage)
-	httpEngine.GET("/about", h.AboutPage)
-	httpEngine.GET("/contact", h.ContactPage)
-	
-	// Order tracking routes
-	httpEngine.GET("/track", h.OrderTrackingPage)
-	httpEngine.POST("/track-order", h.TrackOrderByNumber)
-	httpEngine.GET("/track-session-orders", h.TrackOrderBySession)
-	httpEngine.POST("/cancel-order/:id", h.CustomerCancelOrder)
-	
-	// Support chat routes
-	httpEngine.GET("/support", h.SupportChatPage)
-	httpEngine.POST("/support/send", h.SendSupportMessage)
-	httpEngine.GET("/support/messages", h.GetSupportMessages)
-	httpEngine.POST("/support/video-call-request", h.HandleVideoCallRequest)
-	httpEngine.POST("/support/webrtc-signal", h.HandleWebRTCSignal)
-	httpEngine.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
-	httpEngine.POST("/support/ping", h.SupportPing)
-	httpEngine.POST("/support/leave", h.SupportLeave)
-	
-	// Sepet rotaları
-	httpEngine.GET("/cart", h.CartPage)
-	httpEngine.POST("/cart/add", h.AddToCart)
-	httpEngine.POST("/cart/update", h.UpdateCartItem)
-	httpEngine.POST("/cart/remove", h.RemoveFromCart)
-	httpEngine.GET("/cart/count", h.GetCartCount)
-	httpEngine.GET("/checkout", h.CheckoutPage)
-	httpEngine.POST("/checkout", h.HandleCheckout)
-	httpEngine.GET("/order-success", h.OrderSuccessPage)
-	
-	// User authentication routes
-	httpEngine.GET("/login", h.LoginPage)
-	httpEngine.POST("/login", h.HandleLogin)
-	httpEngine.GET("/register", h.RegisterPage)
-	httpEngine.POST("/register", h.HandleRegister)
-	httpEngine.GET("/logout", h.UserLogout)
-	
-	// Şifre sıfırlama route'ları
-	httpEngine.GET("/forgot-password", h.ForgotPasswordPage)
-	httpEngine.POST("/forgot-password", h.HandleForgotPassword)
-	httpEngine.GET("/reset-password", h.ResetPasswordPage)
-	httpEngine.POST("/reset-password", h.HandleResetPassword)
-	
-	// Admin authentication rotaları
-	httpEngine.GET("/admin/login", h.AdminLoginPage)
-	httpEngine.POST("/admin/login", h.AdminLogin)
-	httpEngine.GET("/admin/logout", h.AdminLogout)
-	
-	// Admin paneli rotaları (korumalı)
-	httpAdmin := httpEngine.Group("/admin")
-	httpAdmin.Use(h.AuthMiddleware())
-	{
-		httpAdmin.GET("", h.AdminPage)
-		httpAdmin.POST("/add-product", h.AddProduct)
-		httpAdmin.POST("/update-product", h.UpdateProduct)
-		httpAdmin.DELETE("/delete-product/:id", h.DeleteProduct)
-		httpAdmin.GET("/orders", h.AdminGetOrders)
-		httpAdmin.GET("/orders/:id", h.AdminGetOrderDetail)
-		httpAdmin.PUT("/orders/:id", h.AdminUpdateOrder)
-		httpAdmin.DELETE("/orders/:id", h.AdminDeleteOrder)
-		httpAdmin.GET("/users", h.AdminGetUsers)
-		httpAdmin.DELETE("/users/:id", h.AdminDeleteUser)
-		httpAdmin.GET("/support", h.AdminSupportPage)
-		httpAdmin.GET("/support/sessions", h.AdminGetSupportSessions)
-		httpAdmin.GET("/support/messages/:sessionId", h.AdminGetSupportMessages)
-		httpAdmin.POST("/support/send/:sessionId", h.AdminSendSupportMessage)
-		httpAdmin.POST("/support/video-call-response", h.AdminVideoCallResponse)
-		httpAdmin.POST("/support/start-video-call", h.AdminStartVideoCall)
-		httpAdmin.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
-		httpAdmin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
-		httpAdmin.POST("/support/webrtc-signal", h.HandleAdminWebRTCSignal)
-		httpAdmin.GET("/support/webrtc-signals/:sessionId", h.GetAdminWebRTCSignals)
-	}
-	
-	// User profile routes (protected)
-	httpUser := httpEngine.Group("/profile")
-	httpUser.Use(h.AuthUserMiddleware())
-	{
-		httpUser.GET("", h.ProfilePage)
-		httpUser.POST("/change-password", h.HandleChangePassword)
-	}
-	
-	// Sipariş geçmişi (protected)
-	httpOrders := httpEngine.Group("/orders")
-	httpOrders.Use(h.AuthUserMiddleware())
-	{
-		httpOrders.GET("", h.OrdersPage)
-		httpOrders.GET("/:id", h.GetOrderDetail)
-		httpOrders.DELETE("/:id", h.UserCancelOrder)
-	}
-	
-	httpEngine.GET("/sitemap.xml", func(c *gin.Context) {
-		c.Header("Content-Type", "application/xml")
-		c.File("./templates/sitemap.xml")
-	})
-	httpEngine.GET("/robots.txt", func(c *gin.Context) {
-		c.Header("Content-Type", "text/plain")
-		c.File("./static/robots.txt")
-	})
-	httpEngine.GET("/favicon.ico", func(c *gin.Context) {
-		c.File("./static/favicon.ico")
-	})
-
 	// HTTPS server
 	httpsServer := &http.Server{
 		Addr:      "0.0.0.0:" + httpsPort,
-		Handler:   httpsEngine,
+		Handler:   r,
 		TLSConfig: tlsConfig,
 	}
 
@@ -443,7 +334,7 @@ func main() {
 		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
 		
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := httpEngine.Run(":" + httpPort); err != nil {
 			log.Printf("HTTP Server hatası: %v", err)
 		}
 	}()
