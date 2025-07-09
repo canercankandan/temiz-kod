@@ -64,30 +64,30 @@
   "orders": [
     {
       "id": 1,
-      "user_id": 1,
-      "session_id": "742ee9f1-7e61-438b-a5db-4b5cd1be4bc0",
-      "order_number": "ORD-7b6eaf8a",
+      "user_id": 0,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "order_number": "ORD-b2006abb",
       "customer_name": "Cenap Oktay",
-      "email": "cenapoktay@gmail.com",
-      "phone": "05448113105",
-      "address": "Gultepe\r\n3",
+      "email": "None@gmail.com",
+      "phone": "06225555555",
+      "address": "g\r\ndükkan",
       "items": [
         {
-          "product_id": 1,
-          "name": "deneme",
-          "price": 6,
-          "image": "/static/uploads/75d45004-bf34-4c2c-99bf-9167885f8391.jpg",
+          "product_id": 13,
+          "name": ".deneme",
+          "price": 89,
+          "image": "/static/uploads/9d0d1309-3a9f-4560-a9cb-a1bff44975c6.png",
           "quantity": 1,
-          "total_price": 6
+          "total_price": 89
         }
       ],
-      "total_price": 6,
-      "status": "ended",
+      "total_price": 89,
+      "status": "pending",
       "payment_method": "",
       "notes": "",
       "admin_notes": "",
-      "created_at": "2025-06-23T13:54:49.6710926+03:00",
-      "updated_at": "2025-06-23T13:54:49.6710926+03:00"
+      "created_at": "2025-07-09T17:35:11.0447389+03:00",
+      "updated_at": "2025-07-09T17:35:11.0447389+03:00"
     }
   ],
   "messages": [
@@ -1143,7 +1143,7 @@
       "username": "Ziyaretçi",
       "user_agent": "",
       "status": "offline",
-      "last_message_at": "2024-06-30T23:23:26.8328332+03:00",
+      "last_message_at": "2024-07-09T17:14:07.0310544+03:00",
       "created_at": "2025-06-28T22:46:30.0383752+03:00",
       "unread_count": 0
     },
@@ -1208,8 +1208,8 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-      "status": "offline",
-      "last_message_at": "2024-07-05T19:20:43.3377466+03:00",
+      "status": "active",
+      "last_message_at": "2025-07-09T17:35:08.0150994+03:00",
       "created_at": "2025-07-05T19:19:35.4753528+03:00",
       "unread_count": 0
     }

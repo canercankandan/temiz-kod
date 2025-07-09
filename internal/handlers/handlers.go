@@ -1080,6 +1080,15 @@ func (h *Handler) HandleCheckout(c *gin.Context) {
 
 	log.Printf("HandleCheckout - Order created successfully: ID=%d, OrderNumber=%s", order.ID, order.OrderNumber)
 
+	// Admin'e sipariş bildirimi gönder (asenkron)
+	go func() {
+		if err := h.email.SendAdminOrderNotification("irmaksuaritmam@gmail.com", &order); err != nil {
+			log.Printf("HandleCheckout - Admin email notification error: %v", err)
+		} else {
+			log.Printf("HandleCheckout - Admin email notification sent successfully for order: %s", order.OrderNumber)
+		}
+	}()
+
 	h.cartService.ClearCart(sessionID)
 
 	// Sipariş başarı sayfasına yönlendir

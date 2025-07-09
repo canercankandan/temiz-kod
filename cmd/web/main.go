@@ -272,16 +272,16 @@ func main() {
 	}
 
 	// Certificate yükle
-	cert, err := tls.LoadX509KeyPair("localhost.crt", "localhost.key")
+	cert, err := tls.LoadX509KeyPair("/etc/letsencrypt/live/xn--suartmauzman-44bi.com/fullchain.pem", "/etc/letsencrypt/live/xn--suartmauzman-44bi.com/privkey.pem")
 	if err != nil {
-		log.Printf("External certificate yüklenemedi, self-signed kullanılıyor: %v", err)
+		log.Printf("Let's Encrypt certificate yüklenemedi, self-signed kullanılıyor: %v", err)
 		// Fallback to self-signed certificate
 		cert, err = generateSelfSignedCert()
 		if err != nil {
 			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
 		}
 	} else {
-		log.Printf("✅ External certificate yüklendi: localhost.crt")
+		log.Printf("✅ Let's Encrypt certificate yüklendi: xn--suartmauzman-44bi.com")
 	}
 
 	// Configure TLS
