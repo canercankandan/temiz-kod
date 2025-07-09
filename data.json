@@ -66,9 +66,9 @@
       "id": 1,
       "user_id": 0,
       "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
-      "order_number": "ORD-b2006abb",
+      "order_number": "ORD-9d10e52e",
       "customer_name": "Cenap Oktay",
-      "email": "None@gmail.com",
+      "email": "irmaksuaritmam@gmail.com",
       "phone": "06225555555",
       "address": "g\r\ndükkan",
       "items": [
@@ -86,8 +86,8 @@
       "payment_method": "",
       "notes": "",
       "admin_notes": "",
-      "created_at": "2025-07-09T17:35:11.0447389+03:00",
-      "updated_at": "2025-07-09T17:35:11.0447389+03:00"
+      "created_at": "2025-07-10T00:42:47.9877776+03:00",
+      "updated_at": "2025-07-10T00:42:47.9877776+03:00"
     }
   ],
   "messages": [
@@ -1208,8 +1208,8 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
-      "status": "active",
-      "last_message_at": "2025-07-09T17:35:08.0150994+03:00",
+      "status": "offline",
+      "last_message_at": "2024-07-10T00:41:55.1196043+03:00",
       "created_at": "2025-07-05T19:19:35.4753528+03:00",
       "unread_count": 0
     }
