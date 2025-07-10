@@ -1,52 +1,52 @@
 {
   "products": [
     {
-      "id": 5,
-      "name": "valıh",
-      "description": "tr",
-      "price": 77,
-      "image": "/static/uploads/60af0572-6307-4d62-936c-73b9d986a8e0.jpg",
-      "category": "Su Arıtma Ürünleri",
-      "stock": 66,
-      "features": "",
-      "created_at": "2025-06-20T21:39:14.7761704+03:00",
-      "updated_at": "2025-06-20T21:39:14.7761704+03:00"
-    },
-    {
-      "id": 7,
-      "name": "Premium Su Arıtma Cihazı",
-      "description": "8 Aşamalı filtreleme sistemi ile musluk suyunu içme suyuna çeviren profesyonel su arıtma cihazı. NSF sertifikalı filtreler kullanır.",
-      "price": 2500,
-      "image": "/static/uploads/75d45004-bf34-4c2c-99bf-9167885f8391.jpg",
-      "category": "Su Arıtma Ürünleri",
-      "stock": 15,
-      "features": "",
-      "created_at": "2025-06-29T00:55:00+03:00",
-      "updated_at": "2025-06-29T00:55:00+03:00"
-    },
-    {
       "id": 10,
       "name": "Kompakt Su Filtresi",
       "description": "Mutfak musluğuna kolayca takılabilen kompakt su filtresi. Aktif karbon ve sediment filtreleme özelliği.",
-      "price": 450,
-      "image": "/static/uploads/60af0572-6307-4d62-936c-73b9d986a8e0.jpg",
+      "price": 8500,
+      "image": "/static/uploads/ecedfa5b-e486-42fd-a6de-3ceb1b679bf2.jpg",
       "category": "Su Arıtma Ürünleri",
       "stock": 25,
       "features": "",
       "created_at": "2025-06-29T00:55:00+03:00",
-      "updated_at": "2025-06-29T00:55:00+03:00"
+      "updated_at": "2025-07-10T17:54:05.0206507+03:00"
     },
     {
       "id": 13,
       "name": ".deneme",
       "description": "555",
-      "price": 89,
-      "image": "/static/uploads/9d0d1309-3a9f-4560-a9cb-a1bff44975c6.png",
+      "price": 2500,
+      "image": "/static/uploads/3fa4fdbe-d559-429d-bd82-19092161702c.png",
       "category": "Yedek Parça",
       "stock": 9,
       "features": "{\"5\":\"5\"}",
       "created_at": "2025-06-29T13:15:01.7993525+03:00",
-      "updated_at": "2025-06-29T13:15:01.7993525+03:00"
+      "updated_at": "2025-07-10T16:24:34.6001553+03:00"
+    },
+    {
+      "id": 15,
+      "name": "Rolife Vista",
+      "description": "yy",
+      "price": 1500,
+      "image": "/static/uploads/398da070-1f62-4617-b3d1-23cd88dc1b51.png",
+      "category": "Su Arıtma Ürünleri",
+      "stock": 5,
+      "features": "{\"5\":\"5\"}",
+      "created_at": "2025-07-10T13:23:24.2350577+03:00",
+      "updated_at": "2025-07-10T13:46:17.5266865+03:00"
+    },
+    {
+      "id": 16,
+      "name": ".deneme",
+      "description": "kı",
+      "price": 10000,
+      "image": "/static/uploads/7a1a865e-b8bd-43ae-9e5a-72d58f7ef705.png",
+      "category": "Su Arıtma Ürünleri",
+      "stock": 6,
+      "features": "{\"6\":\"6\"}",
+      "created_at": "2025-07-10T13:29:39.829277+03:00",
+      "updated_at": "2025-07-10T13:46:30.2742181+03:00"
     }
   ],
   "users": [
@@ -1143,7 +1143,7 @@
       "username": "Ziyaretçi",
       "user_agent": "",
       "status": "offline",
-      "last_message_at": "2024-07-09T17:14:07.0310544+03:00",
+      "last_message_at": "2024-07-10T17:56:50.5594953+03:00",
       "created_at": "2025-06-28T22:46:30.0383752+03:00",
       "unread_count": 0
     },
@@ -1209,8 +1209,41 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-10T00:41:55.1196043+03:00",
+      "last_message_at": "2024-07-10T14:36:48.1964839+03:00",
       "created_at": "2025-07-05T19:19:35.4753528+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 21,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-10T13:16:31.0843736+03:00",
+      "created_at": "2025-07-10T13:16:31.0843736+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 22,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
+      "status": "offline",
+      "last_message_at": "2024-07-10T16:03:53.2410134+03:00",
+      "created_at": "2025-07-10T15:47:05.1366284+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 23,
+      "session_id": "e141af4c-e6bc-4dd8-890d-0859fda17f9b",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-10T19:26:34.6465841+03:00",
+      "created_at": "2025-07-10T19:25:12.9514043+03:00",
       "unread_count": 0
     }
   ],

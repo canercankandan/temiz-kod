@@ -362,6 +362,10 @@ func (h *Handler) ProductsPage(c *gin.Context) {
 	
 	username, _ := c.Cookie("username")
 	isLoggedIn := username != ""
+	
+	// Admin kontrolü
+	adminSession, _ := c.Cookie("admin_session")
+	isAdmin := adminSession != ""
 
 	c.HTML(http.StatusOK, "products.html", gin.H{
 		"products":         filteredProducts,
@@ -370,6 +374,7 @@ func (h *Handler) ProductsPage(c *gin.Context) {
 		"selectedCategory": category,
 		"isLoggedIn":       isLoggedIn,
 		"username":         username,
+		"isAdmin":          isAdmin,
 	})
 }
 
@@ -532,6 +537,38 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 	existingProduct.Price = price
 	existingProduct.Stock = stock
 
+	// Dinamik özellikleri güncelle (AddProduct'taki gibi)
+	features := make(map[string]string)
+	formValues := c.Request.PostForm
+	
+	for key, values := range formValues {
+		if len(values) > 0 && strings.HasPrefix(key, "features[") && strings.Contains(key, "_key") {
+			// Key'i çıkar
+			keyValue := values[0]
+			// Value'yu bul
+			valueKey := strings.Replace(key, "_key", "_value", 1)
+			if valueValues, exists := formValues[valueKey]; exists && len(valueValues) > 0 {
+				valueValue := valueValues[0]
+				if keyValue != "" && valueValue != "" {
+					features[keyValue] = valueValue
+				}
+			}
+		}
+	}
+
+	// Dinamik özellikleri JSON'a çevir
+	var featuresJSON string
+	if len(features) > 0 {
+		featuresBytes, err := json.Marshal(features)
+		if err != nil {
+			log.Printf("Error marshaling features: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Özellikler güncellenirken hata oluştu"})
+			return
+		}
+		featuresJSON = string(featuresBytes)
+		existingProduct.Features = featuresJSON
+	}
+
 	// Yeni görsel yüklendiyse işle
 	file, header, err := c.Request.FormFile("image")
 	if err == nil && file != nil {
@@ -558,12 +595,17 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 
 		// Eski görseli sil (varsa)
 		if existingProduct.Image != "" {
-			oldImagePath := filepath.Join("static", "uploads", existingProduct.Image)
+			// Eski görsel yolundan sadece dosya adını al
+			oldImageName := strings.TrimPrefix(existingProduct.Image, "/static/uploads/")
+			oldImagePath := filepath.Join("static", "uploads", oldImageName)
 			os.Remove(oldImagePath)
 		}
 
-		existingProduct.Image = filename
+		existingProduct.Image = "/static/uploads/" + filename
 	}
+
+	// Updated_at alanını güncelle
+	existingProduct.UpdatedAt = time.Now()
 
 	// Veritabanını güncelle
 	err = h.db.UpdateProduct(existingProduct)
