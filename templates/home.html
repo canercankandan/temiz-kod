@@ -63,10 +63,10 @@
 }
 </script>
 
-<div class="container home-page">
+<div class="container">
     <!-- Hero Section -->
-    <section class="hero-section text-center py-3 mb-4 hero-bg">
-        <div class="container d-flex align-items-center justify-content-center" style="min-height: 300px;">
+    <section class="hero-section text-center py-5 mb-5 hero-bg">
+        <div class="container d-flex align-items-center justify-content-center" style="min-height: 520px;">
             <div class="row w-100 align-items-center">
                 <div class="col-lg-6 col-md-12 hero-content text-start">
                     <h1 class="display-4 fw-bold mb-3">Su Arıtma Sistemleri</h1>
@@ -79,7 +79,7 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="stats-section py-3 mb-4">
+    <section class="stats-section py-5 mb-5">
         <div class="row text-center">
             <div class="col-lg-3 col-md-6 mb-4">
                 <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
@@ -121,11 +121,11 @@
     </section>
 
     <!-- Featured Products -->
-    <section class="featured-products mb-4">
+    <section class="featured-products mb-5">
         <div class="row mb-4">
             <div class="col-12 text-center">
-                <h2 class="section-title fw-bold mb-3 text-dark">Öne Çıkan Ürünler</h2>
-                <p class="section-subtitle lead text-dark">En çok tercih edilen su arıtma çözümlerimiz</p>
+                <h2 class="fw-bold mb-3 text-dark">Öne Çıkan Ürünler</h2>
+                <p class="lead text-dark">En çok tercih edilen su arıtma çözümlerimiz</p>
             </div>
         </div>
         
@@ -133,37 +133,33 @@
             <div class="row">
                 {{range .products}}
                 <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="home-page product-card h-100 shadow-sm">
+                    <div class="product-card h-100 shadow-sm">
                         {{if .Image}}
-                        <img src="{{.Image}}" class="card-img-top" alt="{{.Name}}" style="cursor: pointer;" 
+                        <img src="{{.Image}}" class="card-img-top" alt="{{.Name}}" style="height: 250px; object-fit: cover; cursor: pointer;" 
                              onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
                         {{else}}
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="cursor: pointer;" 
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px; cursor: pointer;" 
                              onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
                             <i class="fas fa-filter text-primary" style="font-size: 4rem; opacity: 0.3;"></i>
                         </div>
                         {{end}}
                         <div class="card-body">
-                            <div class="card-content">
-                                <h5 class="card-title fw-bold" style="color: #1e3a8a; cursor: pointer;" 
-                                    onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Name}}</h5>
-                                <p class="card-text text-muted" style="cursor: pointer;" 
-                                   onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Description}}</p>
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="badge bg-primary" style="cursor: pointer;" 
-                                          onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Category}}</span>
-                                    <span class="price-tag text-success fw-bold fs-4" style="cursor: pointer;" 
-                                          onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Price}} ₺</span>
-                                </div>
+                            <h5 class="card-title fw-bold" style="color: #1e3a8a; cursor: pointer;" 
+                                onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Name}}</h5>
+                            <p class="card-text text-muted" style="cursor: pointer;" 
+                               onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Description}}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-primary" style="cursor: pointer;" 
+                                      onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Category}}</span>
+                                <span class="text-success fw-bold fs-5" style="cursor: pointer;" 
+                                      onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Price}} ₺</span>
                             </div>
-                            <div class="card-actions">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <small class="stock-info text-dark" style="cursor: pointer;" 
-                                           onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">Stok: {{.Stock}} adet</small>
-                                    <button class="btn btn-success" onclick="addToCart('{{.ID}}', '{{.Name}}', '{{.Price}}')">
-                                        <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
-                                    </button>
-                                </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-dark" style="cursor: pointer;" 
+                                       onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">Stok: {{.Stock}} adet</small>
+                                <button class="btn btn-success btn-sm" onclick="addToCart('{{.ID}}', '{{.Name}}', '{{.Price}}')">
+                                    <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
+                                </button>
                             </div>
                         </div>
                     </div>
