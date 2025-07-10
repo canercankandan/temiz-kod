@@ -775,7 +775,7 @@ footer h5 {
 /* Genel ürün resmi stilleri - tüm kartlar için */
 .card-img-top {
     height: 400px !important;
-    width: 85% !important;
+    width: 100% !important;
     object-fit: cover !important;
     object-position: center !important;
     display: block !important;
@@ -783,25 +783,20 @@ footer h5 {
     background: #ffffff !important;
     padding: 0 !important;
     min-height: 400px !important;
-    margin: 0 auto !important;
 }
 
 /* Grid view için özel ayarlar */
 #gridView .card-img-top {
     height: 190px !important;
-    width: 85% !important;
     border-radius: 12px 12px 0 0 !important;
     object-fit: contain !important;
     padding: 3px !important;
     background: #ffffff !important;
-    margin: 0 auto !important;
 }
 
 /* Ana sayfa için özel ayarlar */
 .home-page .card-img-top {
     height: 190px !important;
-    width: 85% !important;
-    margin: 0 auto !important;
     border-radius: 12px 12px 0 0 !important;
     object-fit: contain !important;
     padding: 3px !important;

@@ -434,18 +434,13 @@ function addToCart(productId, productName, productPrice) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Sepet sayısını güncelle
+            // Sadece sepet sayısını güncelle
             updateCartCount();
-            // Başarı bildirimi göster
-            showToast('✅ Ürün sepete eklendi! Sepete bakın', 'success');
-        } else {
-            // Hata bildirimi göster
-            showToast('❌ ' + (data.error || 'Ürün sepete eklenirken hata oluştu'), 'danger');
         }
+        // Başarısızlıkta veya hatada hiçbir şey gösterme
     })
     .catch(error => {
-        // Hata durumunda bildirim göster
-        showToast('❌ Ürün sepete eklenirken hata oluştu', 'danger');
+        // Hata durumunda da hiçbir şey gösterme
     });
 }
 

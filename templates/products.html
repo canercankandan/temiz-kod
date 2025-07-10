@@ -447,22 +447,18 @@ function addToCart(productId, productName, productPrice) {
         if (data.success) {
             // Sepet sayısını güncelle
             updateCartCount();
-            // Başarı bildirimi göster
-            showToast('✅ Ürün sepete eklendi! Sepete bakın', 'success');
             // Modal'ı kapat
             const modal = bootstrap.Modal.getInstance(document.getElementById('productDetailsModal'));
             if (modal) {
                 modal.hide();
             }
         } else {
-            // Hata bildirimi göster
-            showToast('❌ ' + (data.error || data.message || 'Ürün sepete eklenirken hata oluştu'), 'danger');
+            showToast('error', data.message || 'Ürün sepete eklenirken hata oluştu.');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        // Hata durumunda bildirim göster
-        showToast('❌ Ürün sepete eklenirken hata oluştu', 'danger');
+        showToast('error', 'Ürün sepete eklenirken hata oluştu.');
     });
 }
 

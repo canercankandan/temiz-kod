@@ -5,12 +5,12 @@
       "name": "Kompakt Su Filtresi",
       "description": "Mutfak musluğuna kolayca takılabilen kompakt su filtresi. Aktif karbon ve sediment filtreleme özelliği.",
       "price": 8500,
-      "image": "/static/uploads/ecedfa5b-e486-42fd-a6de-3ceb1b679bf2.jpg",
+      "image": "/static/uploads/50b64ff3-f176-44cc-9ac5-f1d6a9a20464.png",
       "category": "Su Arıtma Ürünleri",
       "stock": 25,
       "features": "",
       "created_at": "2025-06-29T00:55:00+03:00",
-      "updated_at": "2025-07-10T17:54:05.0206507+03:00"
+      "updated_at": "2025-07-10T16:28:27.7971134+03:00"
     },
     {
       "id": 13,
@@ -1143,7 +1143,7 @@
       "username": "Ziyaretçi",
       "user_agent": "",
       "status": "offline",
-      "last_message_at": "2024-07-10T17:56:50.5594953+03:00",
+      "last_message_at": "2024-07-10T17:39:14.6532292+03:00",
       "created_at": "2025-06-28T22:46:30.0383752+03:00",
       "unread_count": 0
     },
@@ -1233,17 +1233,6 @@
       "status": "offline",
       "last_message_at": "2024-07-10T16:03:53.2410134+03:00",
       "created_at": "2025-07-10T15:47:05.1366284+03:00",
-      "unread_count": 0
-    },
-    {
-      "id": 23,
-      "session_id": "e141af4c-e6bc-4dd8-890d-0859fda17f9b",
-      "user_id": null,
-      "username": "Ziyaretçi",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-      "status": "active",
-      "last_message_at": "2025-07-10T19:26:34.6465841+03:00",
-      "created_at": "2025-07-10T19:25:12.9514043+03:00",
       "unread_count": 0
     }
   ],
