@@ -523,11 +523,7 @@ footer h5 {
 .hero-content {
     position: relative;
     z-index: 2;
-<<<<<<< HEAD
-    background: rgba(255, 255, 255, 0.12);
-=======
     background: rgba(255, 255, 255, 0.12); /* Çok daha şeffaf */
->>>>>>> 2aa404e0b7605ad556e34d9d139d954f7cbe3f60
     border-radius: 16px;
     padding: 32px 24px;
     margin: 0;
@@ -564,13 +560,10 @@ footer h5 {
         text-align: center;
         color: #F5F5DC !important;
         text-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
-<<<<<<< HEAD
     }
     .hero-content .lead {
         color: #0066cc !important;
         text-shadow: none !important;
-=======
->>>>>>> 2aa404e0b7605ad556e34d9d139d954f7cbe3f60
     }
 }
 
@@ -617,11 +610,8 @@ footer h5 {
     align-items: center !important;
     text-align: left !important;
   }
-<<<<<<< HEAD
-=======
 }
 @media (max-width: 768px) {
->>>>>>> 2aa404e0b7605ad556e34d9d139d954f7cbe3f60
   .hero-baby-img {
     width: 180px !important;
     height: 240px !important;
@@ -650,23 +640,16 @@ footer h5 {
 /* Mobile için mavi metin rengi */
 @media (max-width: 768px) {
   .hero-content .lead {
-<<<<<<< HEAD
-    color: #0066cc !important;
+    color: #0066cc !important; /* Su mavisi */
     text-shadow: none !important;
   }
-}
+} 
 
 .product-title, .product-features, .product-features li { color: #1a237e !important; }
 .product-desc { color: #1a237e !important; }
 .modal * { color: #1a237e !important; }
 .modal .product-desc, .modal-desc, .modal .product-details-desc { color: #1a237e !important; }
 .product-category { color: #1a237e !important; }
-=======
-    color: #0066cc !important; /* Su mavisi */
-    text-shadow: none !important;
-  }
-} 
->>>>>>> 2aa404e0b7605ad556e34d9d139d954f7cbe3f60
 
 .product-image {
     width: 100%;

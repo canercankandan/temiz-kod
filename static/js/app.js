@@ -145,3 +145,73 @@ function confirmDelete(message = 'Bu öğeyi silmek istediğinizden emin misiniz
         });
     });
 } 
+
+function showCartSuccessMessage() {
+    var msg = document.getElementById('cart-success-message');
+    msg.style.display = 'block';
+    setTimeout(function() {
+        msg.style.display = 'none';
+    }, 1200); // 1.2 saniye sonra kaybolur
+} 
+
+function sepeteEkle(btn) {
+    // Butonun hemen yanındaki mesajı bul
+    const successMessage = btn.nextElementSibling;
+    if (successMessage && successMessage.classList.contains('cart-success-message')) {
+        successMessage.style.display = 'inline';
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+        }, 1200);
+    }
+} 
+
+function showGlobalCartSuccess() {
+    var msg = document.getElementById('cart-global-success');
+    if (msg) {
+        msg.style.display = 'inline';
+        setTimeout(function() {
+            msg.style.display = 'none';
+        }, 1200);
+    }
+} 
+
+function addToCart(productId, productName, productPrice) {
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: parseInt(productId),
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartCount();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('productDetailsModal'));
+            if (modal) {
+                modal.hide();
+            }
+            // Mesajı göster
+            var modalBtn = document.getElementById('modalAddToCart');
+            if (modalBtn) {
+                var successMessage = modalBtn.nextElementSibling;
+                if (successMessage && successMessage.classList.contains('cart-success-message')) {
+                    successMessage.style.display = 'inline';
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 1200);
+                }
+            }
+            showGlobalCartSuccess(); // Sepete ekleme işlemi başarılı olduğunda global mesajı göster
+        } else {
+            showToast('error', data.message || 'Ürün sepete eklenirken hata oluştu.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Ürün sepete eklenirken hata oluştu.');
+    });
+} 
