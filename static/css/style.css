@@ -143,6 +143,13 @@ body {
     display: flex;
     flex-direction: column;
     background: #fff;
+    height: 350px;      /* Kart yüksekliğini ayarla */
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .home-page .product-card .card-body {
@@ -660,3 +667,34 @@ footer h5 {
   }
 } 
 >>>>>>> 2aa404e0b7605ad556e34d9d139d954f7cbe3f60
+
+.product-image {
+    width: 100%;
+    height: 200px;         /* Kart yüksekliğine göre ayarla */
+    object-fit: contain;   /* Resmi orantılı şekilde sığdırır */
+    display: block;
+    margin: 0 auto;
+    background: #f3f3f3;   /* Arka plan rengi, istersen kaldır */
+    border-radius: 12px;   /* Köşeleri yuvarlat */
+}
+
+/* Kartın kendisi için de responsive ayar */
+.product-card {
+    height: 350px;
+    padding: 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Büyük ekranlar için resmi ve kartı büyüt */
+@media (min-width: 1200px) {
+    .product-image {
+        height: 250px;
+    }
+    .product-card {
+        height: 400px;
+    }
+}
