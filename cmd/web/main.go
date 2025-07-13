@@ -305,8 +305,8 @@ func main() {
 	}
 
 	// HTTP ve HTTPS sunucusu çalıştır
-	httpPort := "8080"
-	httpsPort := "8443"
+	httpPort := "80"
+	httpsPort := "443"
 
 	// HTTP sunucusu için ayrı bir Gin engine oluştur
 	httpEngine := gin.New()
