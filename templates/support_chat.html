@@ -1059,6 +1059,13 @@ async function handleSignalingMessage(message) {
             case 'offer':
                 console.log('Received offer from admin:', message);
                 console.log('Offer SDP:', message.sdp);
+                
+                // Admin'den offer geldiğinde, önce kendi stream'ini peer connection'a ekle
+                if (localStream && !peerConnection) {
+                    console.log('Initializing peer connection for admin call...');
+                    await initializePeerConnection();
+                }
+                
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(message.sdp));
                 console.log('Remote description set successfully');
                 
@@ -1171,7 +1178,11 @@ async function acceptAdminCall() {
             window.adminCallModal = null;
         }
         
+<<<<<<< HEAD
         // Start video call
+=======
+        // Start video call (bu fonksiyon kendi stream'ini alacak ve peer connection'ı başlatacak)
+>>>>>>> 2aa404e0b7605ad556e34d9d139d954f7cbe3f60
         await startVideoCall();
         
         // Send acceptance to admin
@@ -1599,12 +1610,12 @@ async function updateVideoCallButton() {
 let signalingPollInterval;
 
 function startSignalingPolling() {
-    // Poll for signaling messages every 2 seconds (reduced frequency)
+    // Poll for signaling messages every 1 second
     signalingPollInterval = setInterval(async () => {
-        if (sessionID) { // Always poll if sessionID exists to catch admin call requests
+        if (sessionID) { // Always poll if sessionID exists, not just when call is active
             await pollSignalingMessages();
         }
-    }, 2000); // 2 saniye - daha az sıklıkta
+    }, 1000);
 }
 
 function stopSignalingPolling() {
@@ -1616,6 +1627,7 @@ function stopSignalingPolling() {
 
 async function pollSignalingMessages() {
     try {
+        console.log('Polling signaling messages for sessionID:', sessionID); // Debug log
         const response = await fetch(`/support/webrtc-signals/${sessionID}`);
         const data = await response.json();
         
@@ -1627,8 +1639,6 @@ async function pollSignalingMessages() {
         }
     } catch (error) {
         console.error('Error polling signaling messages:', error);
-        // Stop polling on error to prevent spam
-        stopSignalingPolling();
     }
 }
 </script>

@@ -557,11 +557,23 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 	defer db.mu.RUnlock()
 	
 	var sessions []models.SupportSession
-	// Son 5 dakika içinde aktif olan sessionları göster
+	// Son 5 dakika içinde aktif olan sessionları göster (admin hariç)
 	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
 	
+	// Admin username'lerini tanımla
+	adminUsernames := []string{"admin", "Admin", "ADMIN", "admın", "Admın", "ADMİN"}
+	
 	for _, session := range db.data.SupportSessions {
-		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) {
+		// Admin session'larını filtrele (admin kullanıcısının session'larını gösterme)
+		isAdmin := false
+		for _, adminUsername := range adminUsernames {
+			if session.Username == adminUsername {
+				isAdmin = true
+				break
+			}
+		}
+		
+		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) && !isAdmin {
 			sessions = append(sessions, session)
 		}
 	}
@@ -571,7 +583,7 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
 	
-	log.Printf("GetActiveSupportSessions - Found %d active sessions (last 5 minutes)", len(sessions))
+	log.Printf("GetActiveSupportSessions - Found %d active sessions (last 5 minutes, admin excluded)", len(sessions))
 	
 	return sessions, nil
 }
@@ -625,6 +637,18 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 	// Check if session exists with same sessionID and userAgent
 	for _, session := range db.data.SupportSessions {
 		if session.SessionID == sessionID && session.UserAgent == userAgent {
+			// Session exists, update user info if userID is provided
+			if userID != nil {
+				for i, s := range db.data.SupportSessions {
+					if s.SessionID == sessionID && s.UserAgent == userAgent {
+						db.data.SupportSessions[i].UserID = userID
+						db.data.SupportSessions[i].Username = username
+						db.data.SupportSessions[i].LastMessageAt = time.Now()
+						db.saveData()
+						return &db.data.SupportSessions[i], nil
+					}
+				}
+			}
 			return &session, nil
 		}
 	}
