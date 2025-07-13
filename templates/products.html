@@ -169,11 +169,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 text-end">
-                <a href="/admin" class="btn btn-warning">
-                    <i class="fas fa-edit me-2"></i>Güncelle
-                </a>
-            </div>
+            <!-- Güncelle butonu kaldırıldı -->
         </div>
     </section>
 
@@ -224,7 +220,7 @@
                     </div>
                     <div class="col-md-6">
                         <h4 id="modalProductName" class="fw-bold mb-3" style="color: #1e3a8a;"></h4>
-                        <p id="modalProductDescription" class="text-muted mb-3"></p>
+                        <p id="modalProductDescription" class="mb-3" style="color: #0d47a1; font-weight: 500;"></p>
                         <div class="mb-3">
                             <span class="badge bg-primary" id="modalProductCategory"></span>
                         </div>
@@ -398,7 +394,6 @@
 </style>
 
 <script>
-// Show product details modal
 function showProductDetails(id, name, description, category, price, stock, image) {
     // Set modal content
     document.getElementById('modalProductName').textContent = name;
@@ -540,56 +535,27 @@ function sortProducts(products, sortBy) {
         }
     });
     
-    // Reorder in DOM
+    // Re-append sorted products
     products.forEach(product => {
-        if (container.contains(product)) {
-            container.appendChild(product);
-        }
+        container.appendChild(product);
     });
 }
 
-// Load saved view preference
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if there's a category parameter in URL and set the filter
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryParam = urlParams.get('category');
-    if (categoryParam) {
-        const categoryFilter = document.getElementById('categoryFilter');
-        if (categoryFilter) {
-            // URL-encoded kategori parametresini decode et
-            const decodedCategory = decodeURIComponent(categoryParam);
-            categoryFilter.value = decodedCategory;
-            console.log('URL category parameter:', categoryParam, 'decoded:', decodedCategory);
-            // Kategori select ayarlandıktan sonra filtreyi tetikle
-            filterProducts();
-        }
-    } else {
-        // Sayfa ilk açıldığında da ürünleri göster
-        filterProducts();
-    }
-});
-
-// Show toast notification
+// Show toast message
 function showToast(type, message) {
-    let toast = document.getElementById('toast');
-    let toastTitle = document.getElementById('toastTitle');
-    let toastMessage = document.getElementById('toastMessage');
+    const toast = document.getElementById('toast');
+    let toastTitle, toastMessage;
+    
     if (!toast) {
-        // Create toast container if not exists
-        const toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-        toastContainer.innerHTML = `
-            <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header">
-                    <strong class="me-auto" id="toastTitle">Bildirim</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body" id="toastMessage"></div>
-            </div>
-        `;
-        document.body.appendChild(toastContainer);
-        toast = document.getElementById('toast');
+        console.error('Toast element not found');
+        return;
+    }
+    
+    toastTitle = document.getElementById('toastTitle');
+    if (!toastTitle) {
         toastTitle = document.getElementById('toastTitle');
+    }
+    if (!toastMessage) {
         toastMessage = document.getElementById('toastMessage');
     }
     toastTitle.textContent = type === 'success' ? 'Başarılı!' : 'Hata!';
@@ -629,4 +595,4 @@ function updateURL() {
     window.history.replaceState(null, '', url.toString());
 }
 </script>
-{{end}} 
+{{end}}

@@ -132,19 +132,99 @@ body {
     color: #22c55e !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .hero-section {
-        text-align: center;
-    }
-    
-    .display-4 {
-        font-size: 2rem;
-    }
-    
-    .card-img-top {
-        height: 200px !important;
-    }
+/* Product card enhancements */
+.product-card {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    min-height: 580px !important; /* Kartları maksimum yüksek yap */
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.home-page .product-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem !important; /* Daha fazla padding */
+    min-height: 140px !important; /* Açıklama alanını genişlet */
+}
+
+/* TEK VE TUTARLI ÜRÜN RESMİ BOYUTLARI */
+.product-card .card-img-top {
+    transition: transform 0.3s ease;
+    height: 380px !important; /* Maksimum büyüklük */
+    object-fit: cover !important;
+    width: 100% !important;
+    object-position: center !important;
+}
+
+.home-page .product-card .card-img-top {
+    height: 380px !important; /* Ana sayfa için aynı boyut */
+    object-fit: cover !important;
+    width: 100% !important;
+    object-position: center !important;
+}
+
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.home-page .product-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.home-page .product-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem !important;
+}
+
+.home-page .product-card .card-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: #222;
+}
+
+/* Ürün açıklamaları için mavi renk */
+.card-text {
+    color: #2563eb !important; /* Mavi renk */
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.home-page .product-card .card-text {
+    color: #2563eb !important; /* Ana sayfa ürün açıklamaları mavi */
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+#gridView .card-text {
+    color: #2563eb !important; /* Grid görünümünde mavi */
+    font-size: 0.98rem;
+    margin-bottom: 1rem;
+    min-height: 2.2em;
+}
+
+/* Liste görünümünde de mavi olsun */
+#listView .table td {
+    color: #2563eb !important;
+}
+
+/* Ürün detay sayfasında da mavi */
+.product-description {
+    color: #2563eb !important;
 }
 
 /* Animation for loading */
@@ -161,60 +241,6 @@ footer {
 
 footer h5 {
     color: #ffffff;
-}
-
-/* Product card enhancements */
-.product-card {
-    border: none;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.product-card .card-img-top {
-    transition: transform 0.3s ease;
-    height: 200px;
-    object-fit: contain;
-    width: 100%;
-}
-
-.product-card:hover .card-img-top {
-    transform: scale(1.05);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-}
-
-.product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-}
-
-/* Home page specific product image styling */
-.home-page .product-card .card-img-top {
-    height: 180px;
-    object-fit: contain;
-    width: 100%;
-}
-
-.home-page .product-card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.home-page .product-card .card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.home-page .product-card .card-title {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-.home-page .product-card .card-text {
-    font-size: 0.9rem;
-    flex: 1;
 }
 
 /* Category cards on home page */
@@ -370,10 +396,10 @@ footer h5 {
 }
 #gridView .card-img-top.product-image {
     width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 0;
-    background: #f8f9fa;
+    height: 350px !important; /* Grid görünümü için maksimum büyük */
+    object-fit: cover !important;
+    border-radius: 0 !important;
+    background: #f8f9fa !important;
 }
 #gridView .card-body {
     padding: 20px 18px 16px 18px;
@@ -411,40 +437,72 @@ footer h5 {
 
 /* Responsive düzen */
 @media (max-width: 900px) {
+    .product-card .card-img-top {
+        height: 300px !important;
+    }
+    .home-page .product-card .card-img-top {
+        height: 300px !important;
+    }
+    #gridView .card-img-top.product-image {
+        height: 280px !important;
+    }
+    .product-card {
+        min-height: 500px !important;
+    }
     #gridView .product-item {
         max-width: 100%;
         min-width: 180px;
         margin: 8px;
-    }
-    #gridView .card-img-top.product-image {
-        height: 120px;
     }
     #listView .table th, #listView .table td {
         padding: 10px 6px;
         font-size: 0.95rem;
     }
 }
+
 @media (max-width: 600px) {
+    .product-card .card-img-top {
+        height: 250px !important;
+    }
+    .home-page .product-card .card-img-top {
+        height: 250px !important;
+    }
+    #gridView .card-img-top.product-image {
+        height: 230px !important;
+    }
+    .card-img-top {
+        height: 250px !important; /* Mobilde çok büyük */
+    }
+    .product-card {
+        min-height: 450px !important;
+    }
     #gridView .product-item {
         min-width: 100%;
         margin: 4px 0;
-    }
-    #gridView .card-img-top.product-image {
-        height: 90px;
     }
     #listView .table th, #listView .table td {
         padding: 6px 2px;
         font-size: 0.92rem;
     }
     #listView .product-thumb {
-        width: 36px;
-        height: 36px;
+        width: 48px;
+        height: 48px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        text-align: center;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
     }
 }
 
 /* Hero arka planı tamamen bebek resmi */
 .hero-bg {
-    min-height: 520px;
+    min-height: 720px;
     width: 100%;
     background: url('/static/uploads/bebek.jpeg') center center/cover no-repeat !important;
     position: relative;
@@ -458,14 +516,13 @@ footer h5 {
 .hero-content {
     position: relative;
     z-index: 2;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 16px;
     padding: 32px 24px;
     margin: 0;
     margin-right: 50px;
-    color: #F5F5DC;
-    text-shadow: 0 2px 16px rgba(245,245,220,0.6);
+    color: #222;
+    text-shadow: none;
     text-align: right;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -475,20 +532,31 @@ footer h5 {
     text-align: right;
 }
 @media (max-width: 768px) {
-    .hero-bg {
-        min-height: 320px;
-        background-size: cover;
-        justify-content: center;
-        margin: 10px 0;
-    }
+  .hero-bg {
+    min-height: 320px;
+    background-size: contain;
+    background-position: center top;
+    background-repeat: no-repeat;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 10px 0;
+  }
     .hero-content {
-        text-align: center;
-        margin: 0;
-        padding: 16px;
-        margin: 0 10px;
+        background: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 16px 8px !important;
+        margin: 0 !important;
+        text-align: center !important;
     }
     .hero-content h1, .hero-content p {
         text-align: center;
+        color: #F5F5DC !important;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8) !important;
+    }
+    .hero-content .lead {
+        color: #0066cc !important;
+        text-shadow: none !important;
     }
 }
 
@@ -508,22 +576,68 @@ footer h5 {
 }
 .hero-baby-img {
     width: 600px;
-    height: 600px;
+    height: 800px;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: cover;
     border-radius: 48px;
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+    display: block;
+    margin: 0 auto;
 }
 @media (max-width: 768px) {
-    .hero-baby-img {
-        width: 300px;
-        height: 300px;
-        border-radius: 24px;
-    }
-    
-    .hero-frame {
-        width: 300px;
-        height: 300px;
-        padding: 12px;
-        border-radius: 24px;
-    }
-} 
+  .hero-frame {
+    width: 95vw !important;
+    max-width: 370px !important;
+    height: 95vw !important;
+    max-height: 450px !important;
+    padding: 10px !important;
+    border-radius: 20px !important;
+    margin: 0 auto !important;
+    display: block !important;
+  }
+  .hero-frame-wrapper {
+    min-height: auto !important;
+    padding: 20px 10px !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    text-align: left !important;
+  }
+  .hero-baby-img {
+    width: 180px !important;
+    height: 240px !important;
+    border-radius: 16px !important;
+  }
+}
+@media (max-width: 480px) {
+  .hero-bg {
+    background-size: contain !important;
+    background-position: top center !important;
+    background-repeat: no-repeat !important;
+    min-height: unset !important;
+    padding-bottom: 12px !important;
+  }
+  .hero-baby-img {
+    width: 100vw !important;
+    max-width: 220px !important;
+    height: auto !important;
+    object-fit: contain !important;
+    object-position: top center !important;
+    display: block !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Mobile için mavi metin rengi */
+@media (max-width: 768px) {
+  .hero-content .lead {
+    color: #0066cc !important;
+    text-shadow: none !important;
+  }
+}
+
+.product-title, .product-features, .product-features li { color: #1a237e !important; }
+.product-desc { color: #1a237e !important; }
+.modal * { color: #1a237e !important; }
+.modal .product-desc, .modal-desc, .modal .product-details-desc { color: #1a237e !important; }
+.product-category { color: #1a237e !important; }

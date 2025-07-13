@@ -61,35 +61,7 @@
       "updated_at": "2025-06-23T13:51:50.0283231+03:00"
     }
   ],
-  "orders": [
-    {
-      "id": 1,
-      "user_id": 1,
-      "session_id": "742ee9f1-7e61-438b-a5db-4b5cd1be4bc0",
-      "order_number": "ORD-7b6eaf8a",
-      "customer_name": "Cenap Oktay",
-      "email": "cenapoktay@gmail.com",
-      "phone": "05448113105",
-      "address": "Gultepe\r\n3",
-      "items": [
-        {
-          "product_id": 1,
-          "name": "deneme",
-          "price": 6,
-          "image": "/static/uploads/75d45004-bf34-4c2c-99bf-9167885f8391.jpg",
-          "quantity": 1,
-          "total_price": 6
-        }
-      ],
-      "total_price": 6,
-      "status": "ended",
-      "payment_method": "",
-      "notes": "",
-      "admin_notes": "",
-      "created_at": "2025-06-23T13:54:49.6710926+03:00",
-      "updated_at": "2025-06-23T13:54:49.6710926+03:00"
-    }
-  ],
+  "orders": [],
   "messages": [
     {
       "id": 1,
@@ -1278,7 +1250,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-02T17:47:06.6244744+03:00",
+      "last_message_at": "2024-07-02T17:13:04.545215+03:00",
       "created_at": "2025-06-30T15:27:24.4837251+03:00",
       "unread_count": 0
     },
@@ -1291,6 +1263,17 @@
       "status": "offline",
       "last_message_at": "2024-07-02T17:10:00.8870156+03:00",
       "created_at": "2025-07-02T16:56:51.5690828+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 21,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "offline",
+      "last_message_at": "2024-07-13T15:02:09.7309241+03:00",
+      "created_at": "2025-07-13T01:15:32.2527177+03:00",
       "unread_count": 0
     }
   ],
@@ -3024,46 +3007,6 @@
       "requested_at": "2025-07-02T17:12:55.9139168+03:00",
       "responded_at": "2025-07-02T17:13:01.5022679+03:00",
       "initiator": ""
-    },
-    {
-      "id": 174,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
-      "user_id": null,
-      "username": "Ziyaretçi",
-      "status": "ended",
-      "requested_at": "2025-07-02T17:41:49.4014958+03:00",
-      "responded_at": "2025-07-02T17:42:08.6790793+03:00",
-      "initiator": "admin"
-    },
-    {
-      "id": 175,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
-      "user_id": null,
-      "username": "Misafir-36b8bdf4",
-      "status": "rejected",
-      "requested_at": "2025-07-02T17:42:13.895887+03:00",
-      "responded_at": "2025-07-02T17:42:15.8951941+03:00",
-      "initiator": ""
-    },
-    {
-      "id": 176,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
-      "user_id": null,
-      "username": "Ziyaretçi",
-      "status": "ended",
-      "requested_at": "2025-07-02T17:42:56.1856214+03:00",
-      "responded_at": "2025-07-02T17:43:34.584997+03:00",
-      "initiator": "admin"
-    },
-    {
-      "id": 177,
-      "session_id": "36b8bdf4-9e32-4abf-8280-54b1afb2d04a",
-      "user_id": null,
-      "username": "Ziyaretçi",
-      "status": "pending",
-      "requested_at": "2025-07-02T17:43:44.2642964+03:00",
-      "responded_at": null,
-      "initiator": "admin"
     }
   ]
 }

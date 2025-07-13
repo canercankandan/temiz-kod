@@ -297,20 +297,6 @@ func main() {
 		log.Printf("🌐 HTTP Server başlatılıyor (port: %s)...", port)
 		log.Printf("📱 Erişim için: http://localhost:%s", port)
 		
-		// Render için CORS ayarları
-		r.Use(func(c *gin.Context) {
-			c.Header("Access-Control-Allow-Origin", "*")
-			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-			
-			if c.Request.Method == "OPTIONS" {
-				c.AbortWithStatus(204)
-				return
-			}
-			
-			c.Next()
-		})
-		
 		if err := r.Run(":" + port); err != nil {
 			log.Fatalf("HTTP Server başlatılamadı: %v", err)
 		}
