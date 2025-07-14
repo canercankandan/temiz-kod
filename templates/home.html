@@ -1,0 +1,614 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<!-- Google Structured Data for Homepage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Su Aritma Uzmani",
+  "url": "https://xn--suartmauzman-44bi.com",
+  "logo": "https://xn--suartmauzman-44bi.com/static/images/logo.png",
+  "description": "Ev ve is yeriniz icin saglikli, guvenli ve ekonomik su aritma cozumleri",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "TR",
+    "addressLocality": "Turkiye"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "availableLanguage": "Turkish",
+    "areaServed": "TR"
+  },
+  "sameAs": [
+    "https://xn--suartmauzman-44bi.com"
+  ],
+  "foundingDate": "2015",
+  "numberOfEmployees": "50+"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Su Aritma Uzmani",
+  "url": "https://xn--suartmauzman-44bi.com",
+  "description": "Su aritma sistemleri ve cozumleri",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://xn--suartmauzman-44bi.com/products?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Su Aritma Uzmani"
+  }
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana Sayfa",
+      "item": "https://xn--suartmauzman-44bi.com"
+    }
+  ]
+}
+</script>
+
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section text-center py-5 mb-5 hero-bg">
+        <div class="container d-flex align-items-center justify-content-center" style="min-height: 520px;">
+            <div class="row w-100 align-items-center">
+                <div class="col-lg-6 col-md-12 hero-content text-start">
+                    <h1 class="display-4 fw-bold mb-3">Su Arıtma Sistemleri</h1>
+                    <p class="lead mb-4">Ev ve iş yeriniz için sağlıklı, güvenli ve ekonomik su arıtma çözümleri.</p>
+                    <a href="/products" class="btn btn-primary btn-lg me-2">Ürünleri İncele</a>
+                    <a href="/contact" class="btn btn-outline-primary btn-lg">İletişim</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section py-5 mb-5">
+        <div class="row text-center">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-primary mb-3">
+                        <i class="fas fa-users" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-primary">15,000+</h3>
+                    <p class="text-dark mb-0">Mutlu Müşteri</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-success mb-3">
+                        <i class="fas fa-calendar-alt" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-success">10+</h3>
+                    <p class="text-dark mb-0">Yıllık Deneyim</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-warning mb-3">
+                        <i class="fas fa-headset" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-warning">24/7</h3>
+                    <p class="text-dark mb-0">Teknik Destek</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="stat-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stat-icon text-info mb-3">
+                        <i class="fas fa-thumbs-up" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold text-info">99%</h3>
+                    <p class="text-dark mb-0">Memnuniyet Oranı</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured-products mb-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3 text-dark">Öne Çıkan Ürünler</h2>
+                <p class="lead text-dark">En çok tercih edilen su arıtma çözümlerimiz</p>
+            </div>
+        </div>
+        
+        {{if .products}}
+            <div class="row">
+                {{range .products}}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="product-card h-100 shadow-sm">
+                        {{if .Image}}
+                        <img src="{{.Image}}" class="card-img-top" alt="{{.Name}}" style="height: 250px; object-fit: cover; cursor: pointer;" 
+                             onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
+                        {{else}}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px; cursor: pointer;" 
+                             onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">
+                            <i class="fas fa-filter text-primary" style="font-size: 4rem; opacity: 0.3;"></i>
+                        </div>
+                        {{end}}
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold" style="color: #1e3a8a; cursor: pointer;" 
+                                onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Name}}</h5>
+                            <p class="card-text text-muted" style="cursor: pointer;" 
+                               onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Description}}</p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-primary" style="cursor: pointer;" 
+                                      onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Category}}</span>
+                                <span class="text-success fw-bold fs-5" style="cursor: pointer;" 
+                                      onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Price}} ₺</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-dark" style="cursor: pointer;" 
+                                       onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">Stok: {{.Stock}} adet</small>
+                                <button class="btn btn-success btn-sm" onclick="addToCart('{{.ID}}', '{{.Name}}', '{{.Price}}')">
+                                    <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        {{else}}
+            <div class="col-12 text-center py-5">
+                <div class="bg-light rounded-4 p-5">
+                    <i class="fas fa-box-open text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted">Yakında Ürünler Eklenecek</h4>
+                    <p class="text-muted">En kaliteli su arıtma ürünleri için bizi takip edin.</p>
+                </div>
+            </div>
+        {{end}}
+        
+        <div class="text-center mt-4">
+            <a href="/products" class="btn btn-primary btn-lg">
+                <i class="fas fa-eye me-2"></i>Tüm Ürünleri Görüntüle
+            </a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section rounded-4">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="fw-bold mb-3">Neden Su Arıtma Uzmanı?</h2>
+                    <p class="lead">Müşterilerimize sunduğumuz benzersiz avantajlar</p>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Güvenli Su</h4>
+                    <p>Aileniz için en güvenli ve temiz su arıtma çözümleri. Uluslararası kalite standartlarında üretim.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Kaliteli Ürünler</h4>
+                    <p>En kaliteli su arıtma cihazları ve yedek parçalar. Test edilmiş ve onaylanmış ürünler.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Teknik Destek</h4>
+                    <p>Kurulum ve bakım için profesyonel teknik destek. 7/24 müşteri hizmetleri.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Hızlı Teslimat</h4>
+                    <p>Siparişleriniz 24-48 saat içinde ücretsiz kargo ile kapınızda.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Sertifikalı Ürünler</h4>
+                    <p>Tüm ürünlerimiz TSE, CE ve ISO sertifikalarına sahiptir.</p>
+                </div>
+                <div class="col-lg-4 col-md-6 text-center mb-4">
+                    <div class="feature-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Güven</h4>
+                    <p>15,000+ mutlu müşterimizin güveni ve %99 memnuniyet oranı.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Reviews Section -->
+    <section class="reviews-section py-5 mb-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="fw-bold mb-3" style="color: #1e3a8a;">Müşteri Yorumları</h2>
+                <p class="lead" style="color: #1e3a8a;">Müşterilerimizin deneyimleri bizim en büyük motivasyonumuz</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stars text-warning mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-3 fst-italic" style="color: #1e3a8a;">"3 yıldır kullanıyorum, su kalitesi gerçekten çok iyi. Ailecek çok memnunuz. Servis hizmeti de mükemmel, her sorunumuzda hemen yardımcı oluyorlar."</p>
+                    <div class="reviewer d-flex align-items-center">
+                        <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Mehmet Yılmaz</h6>
+                            <small class="text-muted">İstanbul</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stars text-warning mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Kurulum çok profesyoneldi. Teknik ekip çok bilgiliydi ve her şeyi detaylı anlattılar. Su tadı gerçekten değişti, çok daha temiz ve lezzetli."</p>
+                    <div class="reviewer d-flex align-items-center">
+                        <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Ayşe Kaya</h6>
+                            <small class="text-muted">Ankara</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="review-card bg-white p-4 rounded-4 shadow-sm h-100">
+                    <div class="stars text-warning mb-3">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-3 fst-italic" style="color: #1e3a8a;">"Fiyat performans açısından çok başarılı. 2 yıldır hiç sorun yaşamadık. Kesinlikle tavsiye ederim, kaliteli ürün ve hizmet."</p>
+                    <div class="reviewer d-flex align-items-center">
+                        <div class="avatar bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Ali Demir</h6>
+                            <small class="text-muted">İzmir</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section text-center py-5 mb-5">
+        <div class="bg-primary text-white rounded-4 p-5">
+            <h2 class="fw-bold mb-3">Hemen Başlayın!</h2>
+            <p class="lead mb-4">Ailenizin sağlığı için en doğru seçimi yapın. Ücretsiz danışmanlık için hemen iletişime geçin.</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="/contact" class="btn btn-light btn-lg">
+                    <i class="fas fa-phone me-2"></i>Hemen Ara
+                </a>
+                <a href="https://wa.me/905448113105" class="btn btn-success btn-lg" target="_blank">
+                    <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Product Detail Modal -->
+<div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productDetailModalLabel">Ürün Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modalProductImage" src="" alt="Ürün Resmi" class="img-fluid rounded" style="height: 300px; object-fit: cover; width: 100%;">
+                    </div>
+                    <div class="col-md-6">
+                        <h4 id="modalProductName" class="fw-bold mb-2" style="color: #1e3a8a;"></h4>
+                        <p id="modalProductDescription" class="text-muted mb-3"></p>
+                        <div class="mb-3">
+                            <span id="modalProductCategory" class="badge bg-primary"></span>
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-success fw-bold fs-4" id="modalProductPrice"></span>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Stok: <span id="modalProductStock"></span> adet</small>
+                        </div>
+                        <div class="features mb-4">
+                            <h6 class="fw-semibold mb-2" style="color: #1e3a8a;">Özellikler:</h6>
+                            <ul class="list-unstyled" id="modalProductFeatures">
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Yüksek kalite malzeme</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Uzun ömürlü kullanım</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Kolay kurulum</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>Ücretsiz teknik destek</li>
+                                <li style="color: #1e3a8a;"><i class="fas fa-check text-success me-2"></i>2 yıl garanti</li>
+                            </ul>
+                        </div>
+                        <button class="btn btn-success w-100" id="modalAddToCartBtn">
+                            <i class="fas fa-cart-plus me-2"></i>Sepete Ekle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Bildirim</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage">
+        </div>
+    </div>
+</div>
+
+<script>
+// Show product details modal
+function showProductDetails(id, name, description, category, price, stock, image) {
+    document.getElementById('modalProductName').textContent = name;
+    document.getElementById('modalProductDescription').textContent = description;
+    document.getElementById('modalProductCategory').textContent = category;
+    document.getElementById('modalProductPrice').textContent = price + ' ₺';
+    document.getElementById('modalProductStock').textContent = stock;
+    document.getElementById('modalProductImage').src = image;
+    
+    // Fiyatı mutlaka sayı olarak al
+    var numericPrice = Number(price);
+
+    // Set up add to cart button
+    document.getElementById('modalAddToCartBtn').onclick = function() {
+        addToCart(id, name, numericPrice);
+    };
+    
+    // Show modal
+    var modal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+    modal.show();
+}
+
+// Add to cart function
+function addToCart(productId, productName, productPrice) {
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: parseInt(productId),
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Sadece sepet sayısını güncelle
+            updateCartCount();
+        }
+        // Başarısızlıkta veya hatada hiçbir şey gösterme
+    })
+    .catch(error => {
+        // Hata durumunda da hiçbir şey gösterme
+    });
+}
+
+// Show toast notification
+function showToast(type, message) {
+    let toast = document.getElementById('toast');
+    let toastTitle = document.getElementById('toastTitle');
+    let toastMessage = document.getElementById('toastMessage');
+    if (!toast) {
+        // Create toast container if not exists
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.innerHTML = `
+            <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto" id="toastTitle">Bildirim</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="toastMessage"></div>
+            </div>
+        `;
+        document.body.appendChild(toastContainer);
+        toast = document.getElementById('toast');
+        toastTitle = document.getElementById('toastTitle');
+        toastMessage = document.getElementById('toastMessage');
+    }
+    toastTitle.textContent = type === 'success' ? 'Başarılı!' : 'Hata!';
+    toastMessage.textContent = message;
+    toast.className = `toast ${type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'}`;
+    const bsToast = new bootstrap.Toast(toast, { delay: 2000 });
+    bsToast.show();
+}
+
+// Update cart count
+function updateCartCount() {
+    fetch('/cart/count')
+        .then(response => response.json())
+        .then(data => {
+            const cartCountElement = document.getElementById('cartCount');
+            const mobileCartCountElement = document.getElementById('cartCountMobile');
+            
+            console.log('updateCartCount - Count:', data.count);
+            
+            if (cartCountElement) {
+                cartCountElement.textContent = data.count;
+                if (data.count > 0) {
+                    cartCountElement.style.display = 'flex';
+                    cartCountElement.classList.add('show');
+                } else {
+                    cartCountElement.style.display = 'none';
+                    cartCountElement.classList.remove('show');
+                }
+                console.log('Desktop cart count updated:', data.count);
+            }
+            
+            if (mobileCartCountElement) {
+                mobileCartCountElement.textContent = data.count;
+                if (data.count > 0) {
+                    mobileCartCountElement.style.display = 'flex';
+                    mobileCartCountElement.classList.add('show');
+                } else {
+                    mobileCartCountElement.style.display = 'none';
+                    mobileCartCountElement.classList.remove('show');
+                }
+                console.log('Mobile cart count updated:', data.count);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating cart count:', error);
+        });
+}
+
+// Ping system for visitor tracking
+let pingInterval = null;
+
+// Start ping interval
+function startPingInterval() {
+    if (!pingInterval) {
+        pingInterval = setInterval(function() {
+            fetch('/support/ping', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Ping sent successfully (home page)');
+                }
+            })
+            .catch(error => {
+                console.error('Ping error (home page):', error);
+            });
+        }, 15000); // 15 saniye
+    }
+}
+
+// Stop ping interval
+function stopPingInterval() {
+    if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+    }
+}
+
+// Sayfa yüklendiğinde ping sistemini başlat
+document.addEventListener('DOMContentLoaded', function() {
+    startPingInterval();
+    updateCartCount();
+});
+
+// Sayfa kapatıldığında veya kullanıcı ayrıldığında
+window.addEventListener('beforeunload', function() {
+    stopPingInterval();
+    // Sunucuya kullanıcının ayrıldığını bildir
+    navigator.sendBeacon('/support/leave');
+    console.log('Sayfa kapatıldı - Ping sistemi durduruldu');
+});
+
+// Sayfa gizlendiğinde veya görünür olduğunda
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        // Sayfa gizlendiğinde ping interval'ını durdur
+        stopPingInterval();
+        // Sunucuya kullanıcının ayrıldığını bildir
+        navigator.sendBeacon('/support/leave');
+        console.log('Sayfa gizlendi - Ping sistemi durduruldu');
+    } else {
+        // Sayfa tekrar görünür olduğunda ping interval'ını yeniden başlat
+        startPingInterval();
+        console.log('Sayfa görünür - Ping sistemi başlatıldı');
+    }
+});
+</script>
+
+<style>
+.hero-section {
+    padding: 4rem 0;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    border-color: #667eea;
+}
+
+.review-card {
+    transition: all 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+}
+
+.cta-section .bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+    
+    .hero-image > div {
+        width: 200px !important;
+        height: 200px !important;
+    }
+    
+    .hero-image i {
+        font-size: 5rem !important;
+    }
+}
+</style>
+{{end}} 

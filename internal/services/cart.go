@@ -3,67 +3,63 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"sync"
 	"time"
 
-	"cenap/internal/database"
 	"cenap/internal/models"
 )
 
 // CartService, sepet işlemlerini yönetir
 type CartService struct {
-	db database.DBInterface
+	carts map[string]*models.Cart
+	mutex sync.RWMutex
 }
 
 // NewCartService, yeni bir CartService örneği oluşturur
-func NewCartService(db database.DBInterface) *CartService {
+func NewCartService() *CartService {
 	return &CartService{
-		db: db,
+		carts: make(map[string]*models.Cart),
 	}
 }
 
 // GetCart, session ID'ye göre sepeti döndürür
 func (cs *CartService) GetCart(sessionID string) *models.Cart {
-	log.Printf("CartService.GetCart - SessionID: %s", sessionID)
-
-	cart, err := cs.db.GetCartBySessionID(sessionID)
-	if err != nil {
-		log.Printf("CartService.GetCart - Creating new cart for session: %s", sessionID)
-		// Yeni sepet oluştur
-		cart = &models.Cart{
-			Items:      []models.CartItem{},
-			TotalItems: 0,
-			TotalPrice: 0,
-			SessionID:  sessionID,
-			CreatedAt:  time.Now(),
-			UpdatedAt:  time.Now(),
-		}
-
-		// Veritabanına kaydet
-		if err := cs.db.CreateCart(cart); err != nil {
-			log.Printf("CartService.GetCart - Error creating cart: %v", err)
-			return cart
-		}
-	} else {
-		log.Printf("CartService.GetCart - Found existing cart with %d items", len(cart.Items))
+	cs.mutex.Lock()
+	defer cs.mutex.Unlock()
+	
+	if cart, exists := cs.carts[sessionID]; exists {
+		return cart
 	}
-
+	
+	// Yeni sepet oluştur
+	cart := &models.Cart{
+		Items:      []models.CartItem{},
+		TotalItems: 0,
+		TotalPrice: 0,
+		SessionID:  sessionID,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+	
+	cs.carts[sessionID] = cart
 	return cart
 }
 
 // AddToCart, sepete ürün ekler
 func (cs *CartService) AddToCart(sessionID string, product models.Product, quantity int) error {
-	log.Printf("CartService.AddToCart - SessionID: %s, ProductID: %d, Quantity: %d", sessionID, product.ID, quantity)
-
+	cs.mutex.Lock()
+	defer cs.mutex.Unlock()
+	
 	// Geçersiz quantity kontrolü
 	if quantity <= 0 {
 		return fmt.Errorf("geçersiz miktar: %d", quantity)
 	}
-
-	// Sepeti al
-	cart, err := cs.db.GetCartBySessionID(sessionID)
-	if err != nil {
-		log.Printf("CartService.AddToCart - Creating new cart for session: %s", sessionID)
+	
+	// Sepeti al (GetCart fonksiyonu zaten mutex kullanıyor, bu yüzden buradan çağırmayalım)
+	var cart *models.Cart
+	if existingCart, exists := cs.carts[sessionID]; exists {
+		cart = existingCart
+	} else {
 		// Yeni sepet oluştur
 		cart = &models.Cart{
 			Items:      []models.CartItem{},
@@ -73,38 +69,21 @@ func (cs *CartService) AddToCart(sessionID string, product models.Product, quant
 			CreatedAt:  time.Now(),
 			UpdatedAt:  time.Now(),
 		}
-
-		if err := cs.db.CreateCart(cart); err != nil {
-			log.Printf("CartService.AddToCart - Error creating cart: %v", err)
-			return err
-		}
-	} else {
-		log.Printf("CartService.AddToCart - Found existing cart with %d items", len(cart.Items))
+		cs.carts[sessionID] = cart
 	}
-
+	
 	// Ürün zaten sepette var mı kontrol et
 	for i, item := range cart.Items {
 		if item.ProductID == product.ID {
-			log.Printf("CartService.AddToCart - Product already in cart, updating quantity from %d to %d", item.Quantity, item.Quantity+quantity)
 			cart.Items[i].Quantity += quantity
 			cart.Items[i].TotalPrice = float64(cart.Items[i].Quantity) * cart.Items[i].Price
-
-			// Veritabanında güncelle
-			if err := cs.db.UpdateCartItem(&cart.Items[i]); err != nil {
-				log.Printf("CartService.AddToCart - Error updating cart item: %v", err)
-				return err
-			}
-
 			cs.updateCartTotals(cart)
-			log.Printf("CartService.AddToCart - Updated cart totals: TotalItems=%d, TotalPrice=%.2f", cart.TotalItems, cart.TotalPrice)
 			return nil
 		}
 	}
-
+	
 	// Yeni ürün ekle
-	log.Printf("CartService.AddToCart - Adding new product to cart")
 	cartItem := models.CartItem{
-		CartID:     cart.ID,
 		ProductID:  product.ID,
 		Name:       product.Name,
 		Price:      product.Price,
@@ -112,131 +91,97 @@ func (cs *CartService) AddToCart(sessionID string, product models.Product, quant
 		Quantity:   quantity,
 		TotalPrice: product.Price * float64(quantity),
 	}
-
-	// Veritabanına ekle
-	if err := cs.db.AddCartItem(&cartItem); err != nil {
-		log.Printf("CartService.AddToCart - Error adding cart item: %v", err)
-		return err
-	}
-
+	
 	cart.Items = append(cart.Items, cartItem)
 	cs.updateCartTotals(cart)
-	log.Printf("CartService.AddToCart - Added new product, cart totals: TotalItems=%d, TotalPrice=%.2f", cart.TotalItems, cart.TotalPrice)
 	return nil
 }
 
 // UpdateCartItem, sepet öğesini günceller
 func (cs *CartService) UpdateCartItem(sessionID string, productID int, quantity int) error {
-	log.Printf("CartService.UpdateCartItem - SessionID: %s, ProductID: %d, Quantity: %d", sessionID, productID, quantity)
-
+	cs.mutex.Lock()
+	defer cs.mutex.Unlock()
+	
+	fmt.Printf("CartService.UpdateCartItem - SessionID: %s, ProductID: %d, Quantity: %d\n", sessionID, productID, quantity)
+	
 	// Sepeti al
-	cart, err := cs.db.GetCartBySessionID(sessionID)
-	if err != nil {
-		log.Printf("CartService.UpdateCartItem - Cart not found for session: %s", sessionID)
+	cart, exists := cs.carts[sessionID]
+	if !exists {
+		fmt.Printf("CartService.UpdateCartItem - Cart not found for session: %s\n", sessionID)
 		return fmt.Errorf("sepet bulunamadı")
 	}
-
-	log.Printf("CartService.UpdateCartItem - Cart found with %d items", len(cart.Items))
-
+	
+	fmt.Printf("CartService.UpdateCartItem - Cart found with %d items\n", len(cart.Items))
+	
 	for i, item := range cart.Items {
-		log.Printf("CartService.UpdateCartItem - Checking item %d: ProductID=%d", i, item.ProductID)
+		fmt.Printf("CartService.UpdateCartItem - Checking item %d: ProductID=%d\n", i, item.ProductID)
 		if item.ProductID == productID {
-			log.Printf("CartService.UpdateCartItem - Found matching product, updating quantity from %d to %d", item.Quantity, quantity)
+			fmt.Printf("CartService.UpdateCartItem - Found matching product, updating quantity from %d to %d\n", item.Quantity, quantity)
 			if quantity <= 0 {
 				// Ürünü sepetten kaldır
-				log.Printf("CartService.UpdateCartItem - Removing item from cart")
-				if err := cs.db.DeleteCartItem(item.ID); err != nil {
-					log.Printf("CartService.UpdateCartItem - Error deleting cart item: %v", err)
-					return err
-				}
+				fmt.Printf("CartService.UpdateCartItem - Removing item from cart\n")
 				cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
 			} else {
 				cart.Items[i].Quantity = quantity
 				cart.Items[i].TotalPrice = float64(quantity) * cart.Items[i].Price
-				log.Printf("CartService.UpdateCartItem - Updated item: Quantity=%d, TotalPrice=%.2f", cart.Items[i].Quantity, cart.Items[i].TotalPrice)
-
-				// Veritabanında güncelle
-				if err := cs.db.UpdateCartItem(&cart.Items[i]); err != nil {
-					log.Printf("CartService.UpdateCartItem - Error updating cart item: %v", err)
-					return err
-				}
+				fmt.Printf("CartService.UpdateCartItem - Updated item: Quantity=%d, TotalPrice=%.2f\n", cart.Items[i].Quantity, cart.Items[i].TotalPrice)
 			}
 			cs.updateCartTotals(cart)
-			log.Printf("CartService.UpdateCartItem - Cart totals updated: TotalItems=%d, TotalPrice=%.2f", cart.TotalItems, cart.TotalPrice)
+			fmt.Printf("CartService.UpdateCartItem - Cart totals updated: TotalItems=%d, TotalPrice=%.2f\n", cart.TotalItems, cart.TotalPrice)
 			return nil
 		}
 	}
-
-	log.Printf("CartService.UpdateCartItem - Product %d not found in cart", productID)
+	
+	fmt.Printf("CartService.UpdateCartItem - Product %d not found in cart\n", productID)
 	return fmt.Errorf("ürün sepette bulunamadı")
 }
 
 // RemoveFromCart, sepetten ürün kaldırır
 func (cs *CartService) RemoveFromCart(sessionID string, productID int) error {
-	log.Printf("CartService.RemoveFromCart - SessionID: %s, ProductID: %d", sessionID, productID)
-
+	cs.mutex.Lock()
+	defer cs.mutex.Unlock()
+	
 	// Sepeti al
-	cart, err := cs.db.GetCartBySessionID(sessionID)
-	if err != nil {
-		log.Printf("CartService.RemoveFromCart - Cart not found for session: %s", sessionID)
+	cart, exists := cs.carts[sessionID]
+	if !exists {
 		return fmt.Errorf("sepet bulunamadı")
 	}
-
+	
 	for i, item := range cart.Items {
 		if item.ProductID == productID {
-			log.Printf("CartService.RemoveFromCart - Removing item %d from cart", item.ID)
-			if err := cs.db.DeleteCartItem(item.ID); err != nil {
-				log.Printf("CartService.RemoveFromCart - Error deleting cart item: %v", err)
-				return err
-			}
 			cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
 			cs.updateCartTotals(cart)
 			return nil
 		}
 	}
-
+	
 	return fmt.Errorf("ürün sepette bulunamadı")
 }
 
 // ClearCart, sepeti temizler
 func (cs *CartService) ClearCart(sessionID string) {
-	log.Printf("CartService.ClearCart - SessionID: %s", sessionID)
-
-	cart, err := cs.db.GetCartBySessionID(sessionID)
-	if err != nil {
-		log.Printf("CartService.ClearCart - Cart not found for session: %s", sessionID)
-		return
+	cs.mutex.Lock()
+	defer cs.mutex.Unlock()
+	
+	if cart, exists := cs.carts[sessionID]; exists {
+		cart.Items = []models.CartItem{}
+		cs.updateCartTotals(cart)
 	}
-
-	// Tüm sepet öğelerini sil
-	for _, item := range cart.Items {
-		if err := cs.db.DeleteCartItem(item.ID); err != nil {
-			log.Printf("CartService.ClearCart - Error deleting cart item: %v", err)
-		}
-	}
-
-	cart.Items = []models.CartItem{}
-	cs.updateCartTotals(cart)
 }
 
 // updateCartTotals, sepet toplamlarını günceller
 func (cs *CartService) updateCartTotals(cart *models.Cart) {
 	totalItems := 0
 	totalPrice := 0.0
-
+	
 	for _, item := range cart.Items {
 		totalItems += item.Quantity
 		totalPrice += item.TotalPrice
 	}
-
+	
 	cart.TotalItems = totalItems
 	cart.TotalPrice = totalPrice
 	cart.UpdatedAt = time.Now()
-
-	// Veritabanında güncelle
-	if err := cs.db.UpdateCart(cart); err != nil {
-		log.Printf("CartService.updateCartTotals - Error updating cart: %v", err)
-	}
 }
 
 // GetCartCount, sepetteki toplam ürün sayısını döndürür
@@ -253,4 +198,4 @@ func (cs *CartService) GetCartJSON(sessionID string) (string, error) {
 		return "", err
 	}
 	return string(cartJSON), nil
-}
+} 
