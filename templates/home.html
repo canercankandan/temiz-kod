@@ -146,8 +146,6 @@
                         <div class="card-body">
                             <h5 class="card-title fw-bold" style="color: #1e3a8a; cursor: pointer;" 
                                 onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Name}}</h5>
-                            <p class="card-text text-muted" style="cursor: pointer;" 
-                               onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Description}}</p>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="badge bg-primary" style="cursor: pointer;" 
                                       onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Category}}</span>
@@ -155,9 +153,8 @@
                                       onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">{{.Price}} ₺</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-dark" style="cursor: pointer;" 
-                                       onclick="showProductDetails('{{.ID}}', '{{.Name}}', '{{.Description}}', '{{.Category}}', '{{.Price}}', '{{.Stock}}', '{{.Image}}')">Stok: {{.Stock}} adet</small>
-                                <button class="btn btn-success btn-sm" onclick="addToCart('{{.ID}}', '{{.Name}}', '{{.Price}}')">
+                                <small class="text-dark mb-0">Stok: {{.Stock}} adet</small>
+                                <button class="btn btn-success btn-sm ms-2" onclick="addToCart('{{.ID}}', '{{.Name}}', '{{.Price}}')">
                                     <i class="fas fa-cart-plus me-1"></i>Sepete Ekle
                                 </button>
                             </div>
