@@ -191,8 +191,8 @@
                     <div class="small" style="color: #1e3a8a;">{{.Category}}</div>
                 </div>
                 <div class="fw-bold text-primary" style="font-size: 1.1rem; min-width: 70px; text-align: right; margin-right: 15px;">{{.Price}} ₺</div>
-                <button class="btn btn-primary btn-sm" onclick="sepeteEkle(this)">Sepete Ekle</button>
-                <span class="cart-success-message" style="display:none; color:#22c55e; font-weight:bold; margin-left:10px;">Ürün sepete eklendi</span>
+                <!-- <button class="btn btn-primary btn-sm" onclick="sepeteEkle(this)">Sepete Ekle</button> -->
+                <!-- <span class="cart-success-message" style="display:none;">✓ Ürün sepete eklendi!</span> -->
             </div>
         </div>
         {{end}}
@@ -422,7 +422,13 @@ function showProductDetails(id, name, description, category, price, stock, image
 
 // Add to cart function
 function addToCart(productId, productName, productPrice) {
-    console.log('Adding to cart:', { productId, productName, productPrice });
+    console.log('addToCart called with:', { productId, productName, productPrice });
+    
+    if (!productId) {
+        console.error('Product ID not provided');
+        showToast('error', 'Ürün ID bulunamadı');
+        return;
+    }
     
     fetch('/cart/add', {
         method: 'POST',
@@ -449,18 +455,8 @@ function addToCart(productId, productName, productPrice) {
             if (modal) {
                 modal.hide();
             }
-            // Mesajı göster
-            const btn = document.querySelector('.btn-primary.btn-sm'); // Find the button that triggered this
-            if (btn) {
-                const card = btn.closest('.product-item');
-                const successMessage = card.querySelector('.cart-success-message');
-                if (successMessage) {
-                    successMessage.style.display = 'inline';
-                    setTimeout(() => {
-                        successMessage.style.display = 'none';
-                    }, 1200);
-                }
-            }
+            // Toast mesajı göster
+            showToast('success', 'Ürün sepete eklendi!');
         } else {
             showToast('error', data.message || 'Ürün sepete eklenirken hata oluştu.');
         }
@@ -583,13 +579,32 @@ function updateCartCount() {
         .then(response => response.json())
         .then(data => {
             const cartCountElement = document.getElementById('cartCount');
+            const mobileCartCountElement = document.getElementById('cartCountMobile');
+            
+            console.log('updateCartCount - Count:', data.count);
+            
             if (cartCountElement) {
                 cartCountElement.textContent = data.count;
                 if (data.count > 0) {
-                    cartCountElement.style.display = 'inline';
+                    cartCountElement.style.display = 'flex';
+                    cartCountElement.classList.add('show');
                 } else {
                     cartCountElement.style.display = 'none';
+                    cartCountElement.classList.remove('show');
                 }
+                console.log('Desktop cart count updated:', data.count);
+            }
+            
+            if (mobileCartCountElement) {
+                mobileCartCountElement.textContent = data.count;
+                if (data.count > 0) {
+                    mobileCartCountElement.style.display = 'flex';
+                    mobileCartCountElement.classList.add('show');
+                } else {
+                    mobileCartCountElement.style.display = 'none';
+                    mobileCartCountElement.classList.remove('show');
+                }
+                console.log('Mobile cart count updated:', data.count);
             }
         })
         .catch(error => console.error('Cart count error:', error));
@@ -608,65 +623,40 @@ function updateURL() {
 }
 
 function sepeteEkle(btn) {
-    const successMessage = btn.nextElementSibling;
-    if (successMessage && successMessage.classList.contains('cart-success-message')) {
-        successMessage.style.display = 'inline';
-        setTimeout(() => {
-            successMessage.style.display = 'none';
-        }, 1200);
-    }
+    const productItem = btn.closest('.product-item');
+    const productId = productItem.dataset.id;
+
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: parseInt(productId),
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateCartCount();
+            // İstersen sepete yönlendirme ekle:
+            // window.location.href = '/cart';
+        } else {
+            alert(data.message || 'Ürün sepete eklenirken hata oluştu.');
+        }
+    })
+    .catch(error => {
+        alert('Ürün sepete eklenirken hata oluştu.');
+    });
 }
 
-document.querySelectorAll('.btn-primary.btn-sm').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        const productId = btn.closest('.product-item').dataset.id;
-        const productName = btn.closest('.product-item').dataset.name;
-        const productPrice = btn.closest('.product-item').dataset.price;
+// Eski event listener kaldırıldı - artık sepeteEkle fonksiyonu kullanılıyor
 
-        console.log('Adding to cart:', { productId, productName, productPrice });
-        
-        fetch('/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                product_id: parseInt(productId),
-                quantity: 1
-            })
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Response data:', data);
-            if (data.success) {
-                // Sepet sayısını güncelle
-                updateCartCount();
-                // Modal'ı kapat
-                const modal = bootstrap.Modal.getInstance(document.getElementById('productDetailsModal'));
-                if (modal) {
-                    modal.hide();
-                }
-                // Mesajı göster
-                const successMessage = btn.closest('.product-item').querySelector('.cart-success-message');
-                if (successMessage) {
-                    successMessage.style.display = 'inline';
-                    setTimeout(() => {
-                        successMessage.style.display = 'none';
-                    }, 1200);
-                }
-            } else {
-                showToast('error', data.message || 'Ürün sepete eklenirken hata oluştu.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('error', 'Ürün sepete eklenirken hata oluştu.');
-        });
-    });
+// Sayfa yüklendiğinde sepet sayısını güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Products page loaded, updating cart count...');
+    updateCartCount();
 });
 </script>
 {{end}}

@@ -14,35 +14,7 @@
     }
   ],
   "users": [],
-  "orders": [
-    {
-      "id": 1,
-      "user_id": 0,
-      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
-      "order_number": "ORD-319a38f7",
-      "customer_name": "Cenap Oktay",
-      "email": "cenapoktay@gmail.com",
-      "phone": "06225555555",
-      "address": "g\r\ndükkan",
-      "items": [
-        {
-          "product_id": 1,
-          "name": "Rolife Vista",
-          "price": 10,
-          "image": "/static/uploads/445ea50c-8f89-4f7c-9d1f-0d50052c5fcf.jpg",
-          "quantity": 2,
-          "total_price": 20
-        }
-      ],
-      "total_price": 20,
-      "status": "pending",
-      "payment_method": "",
-      "notes": "",
-      "admin_notes": "",
-      "created_at": "2025-07-13T19:24:48.1579096+03:00",
-      "updated_at": "2025-07-13T19:24:48.1579096+03:00"
-    }
-  ],
+  "orders": [],
   "messages": [],
   "support_sessions": [
     {
@@ -52,7 +24,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-13T22:44:34.1465494+03:00",
+      "last_message_at": "2024-07-14T13:29:49.1209663+03:00",
       "created_at": "2025-07-13T17:14:34.7358992+03:00",
       "unread_count": 0
     },
@@ -65,6 +37,17 @@
       "status": "offline",
       "last_message_at": "2024-07-13T23:42:48.8848424+03:00",
       "created_at": "2025-07-13T20:45:55.2308261+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 3,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
+      "status": "offline",
+      "last_message_at": "2024-07-14T12:52:18.774638+03:00",
+      "created_at": "2025-07-14T12:07:47.6037105+03:00",
       "unread_count": 0
     }
   ],

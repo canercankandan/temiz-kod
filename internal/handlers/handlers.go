@@ -63,6 +63,15 @@ type DBInterface interface {
 	UpdateProduct(product *models.Product) error
 	UpdateSupportSessionLastActive(sessionID string) error
 	MarkSupportSessionOffline(sessionID string) error
+	// Cart methods
+	GetCartBySessionID(sessionID string) (*models.Cart, error)
+	CreateCart(cart *models.Cart) error
+	UpdateCart(cart *models.Cart) error
+	DeleteCart(cartID int) error
+	AddCartItem(item *models.CartItem) error
+	UpdateCartItem(item *models.CartItem) error
+	DeleteCartItem(itemID int) error
+	GetCartItemsByCartID(cartID int) ([]models.CartItem, error)
 }
 
 // Handler, HTTP isteklerini yönetir.
@@ -77,7 +86,7 @@ func NewHandler(db DBInterface) *Handler {
 	return &Handler{
 		db:          db,
 		email:       services.NewEmailService(),
-		cartService: services.NewCartService(),
+		cartService: services.NewCartService(db),
 	}
 }
 
@@ -94,7 +103,7 @@ func (h *Handler) AuthMiddleware() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		
+
 		session, _ := c.Cookie("admin_session")
 		if session == "" {
 			c.Redirect(http.StatusSeeOther, "/admin/login")
@@ -114,9 +123,9 @@ func (h *Handler) AdminLoginPage(c *gin.Context) {
 func (h *Handler) AdminLogin(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	
+
 	log.Printf("Login attempt - Username: %s, Password: %s", username, password)
-	
+
 	if username == ADMIN_USERNAME && password == ADMIN_PASSWORD {
 		log.Printf("Login successful for user: %s", username)
 		sessionID := uuid.New().String()
@@ -124,7 +133,7 @@ func (h *Handler) AdminLogin(c *gin.Context) {
 		c.Redirect(http.StatusSeeOther, "/admin")
 		return
 	}
-	
+
 	log.Printf("Login failed for user: %s", username)
 	c.HTML(http.StatusUnauthorized, "admin_login.html", gin.H{
 		"title": "Admin Girişi",
@@ -187,19 +196,19 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 
 	// Mevcut session ID'yi al (eğer varsa)
 	oldSessionID, _ := c.Cookie("user_session")
-	
+
 	// Yeni session ID oluştur
 	sessionID := uuid.New().String()
 	c.SetCookie("user_session", sessionID, 3600, "/", "", false, true)
 	c.SetCookie("username", user.Username, 3600, "/", "", false, true)
-	
+
 	// Eğer eski session varsa, yeni session ID ile güncelle
 	if oldSessionID != "" {
 		userAgent := c.GetHeader("User-Agent")
 		if userAgent == "" {
 			userAgent = "Unknown"
 		}
-		
+
 		// Eski session'ı yeni session ID ile güncelle
 		_, err := h.db.GetOrCreateSupportSession(sessionID, user.Username, &user.ID, userAgent)
 		if err != nil {
@@ -208,7 +217,7 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 			log.Printf("HandleLogin - Support session updated for user %s: %s -> %s", user.Username, oldSessionID, sessionID)
 		}
 	}
-	
+
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
@@ -299,7 +308,7 @@ func (h *Handler) ProfilePage(c *gin.Context) {
 
 func (h *Handler) HomePage(c *gin.Context) {
 	log.Printf("🔍 HomePage çağrıldı - URL: %s", c.Request.URL.Path)
-	
+
 	// Veritabanından ürünleri al
 	log.Printf("📦 Ürünler veritabanından alınıyor...")
 	products, err := h.db.GetAllProducts()
@@ -309,27 +318,27 @@ func (h *Handler) HomePage(c *gin.Context) {
 	} else {
 		log.Printf("✅ %d ürün başarıyla alındı", len(products))
 	}
-	
+
 	// Kullanıcı bilgilerini al
 	username, _ := c.Cookie("username")
 	isLoggedIn := username != ""
 	log.Printf("👤 Kullanıcı durumu - Username: %s, IsLoggedIn: %t", username, isLoggedIn)
-	
+
 	// Template verilerini hazırla
 	templateData := gin.H{
-		"products":   products,
-		"title":      "Su Arıtma Uzmanı - Ana Sayfa",
-		"isLoggedIn": isLoggedIn,
-		"username":   username,
+		"products":    products,
+		"title":       "Su Arıtma Uzmanı - Ana Sayfa",
+		"isLoggedIn":  isLoggedIn,
+		"username":    username,
 		"current_url": c.Request.URL.Path,
 	}
-	
+
 	log.Printf("📄 Template render ediliyor: home.html")
 	log.Printf("📊 Template verileri: %+v", templateData)
-	
+
 	// Template'i render et
 	c.HTML(http.StatusOK, "home.html", templateData)
-	
+
 	log.Printf("✅ HomePage başarıyla tamamlandı")
 }
 
@@ -359,7 +368,7 @@ func (h *Handler) ProductsPage(c *gin.Context) {
 		"Yedek Parça",
 		"Aksesuarlar",
 	}
-	
+
 	username, _ := c.Cookie("username")
 	isLoggedIn := username != ""
 
@@ -422,7 +431,7 @@ func (h *Handler) AddProduct(c *gin.Context) {
 	// Dinamik özellikleri manuel olarak parse et
 	features := make(map[string]string)
 	formValues := c.Request.PostForm
-	
+
 	for key, values := range formValues {
 		if len(values) > 0 && strings.HasPrefix(key, "features[") && strings.Contains(key, "_key") {
 			// Key'i çıkar
@@ -579,7 +588,7 @@ func (h *Handler) UpdateProduct(c *gin.Context) {
 func (h *Handler) AboutPage(c *gin.Context) {
 	username, _ := c.Cookie("username")
 	isLoggedIn := username != ""
-	
+
 	c.HTML(http.StatusOK, "about.html", gin.H{
 		"title":      "Hakkımızda",
 		"isLoggedIn": isLoggedIn,
@@ -771,7 +780,7 @@ func (h *Handler) UserCancelOrder(c *gin.Context) {
 	// Sadece "pending" durumundaki siparişler iptal edilebilir
 	if order.Status != "pending" {
 		log.Printf("UserCancelOrder - Cannot cancel order %d with status %s", orderID, order.Status)
-		
+
 		var errorMessage string
 		switch order.Status {
 		case "confirmed":
@@ -785,7 +794,7 @@ func (h *Handler) UserCancelOrder(c *gin.Context) {
 		default:
 			errorMessage = "Bu sipariş durumunda iptal işlemi yapılamaz"
 		}
-		
+
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": errorMessage})
 		return
 	}
@@ -884,9 +893,13 @@ func (h *Handler) CartPage(c *gin.Context) {
 	if sessionID == "" {
 		sessionID = generateSessionID()
 		c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, true)
+		log.Printf("CartPage - Created new session ID: %s", sessionID)
+	} else {
+		log.Printf("CartPage - Using existing session ID: %s", sessionID)
 	}
 
 	cart := h.cartService.GetCart(sessionID)
+	log.Printf("CartPage - Cart has %d items, total: %.2f", len(cart.Items), cart.TotalPrice)
 
 	username, _ := c.Cookie("username")
 	isLoggedIn := username != ""
@@ -904,6 +917,9 @@ func (h *Handler) AddToCart(c *gin.Context) {
 	if sessionID == "" {
 		sessionID = generateSessionID()
 		c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, true)
+		log.Printf("AddToCart - Created new session ID: %s", sessionID)
+	} else {
+		log.Printf("AddToCart - Using existing session ID: %s", sessionID)
 	}
 
 	var req struct {
@@ -912,22 +928,32 @@ func (h *Handler) AddToCart(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("AddToCart - JSON bind error: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz veri"})
 		return
 	}
 
+	log.Printf("AddToCart - Adding product %d, quantity %d to session %s", req.ProductID, req.Quantity, sessionID)
+
 	product, err := h.db.GetProductByID(req.ProductID)
 	if err != nil {
+		log.Printf("AddToCart - Product not found: %d", req.ProductID)
 		c.JSON(http.StatusNotFound, gin.H{"success": false, "error": "Ürün bulunamadı"})
 		return
 	}
 
 	err = h.cartService.AddToCart(sessionID, *product, req.Quantity)
 	if err != nil {
+		log.Printf("AddToCart - Error adding to cart: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Sepete eklenemedi"})
 		return
 	}
 
+	// Sepet sayısını da logla
+	cart := h.cartService.GetCart(sessionID)
+	log.Printf("AddToCart - Cart now has %d items, total: %.2f", len(cart.Items), cart.TotalPrice)
+
+	log.Printf("AddToCart - Successfully added product %d to cart for session %s", req.ProductID, sessionID)
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Ürün sepete eklendi"})
 }
 
@@ -1114,7 +1140,7 @@ func (h *Handler) OrderSuccessPage(c *gin.Context) {
 // Admin handlers
 func (h *Handler) AdminGetOrders(c *gin.Context) {
 	log.Printf("AdminGetOrders - Getting all orders for admin panel")
-	
+
 	orders, err := h.db.GetAllOrders()
 	if err != nil {
 		log.Printf("AdminGetOrders - Error getting orders: %v", err)
@@ -1124,7 +1150,7 @@ func (h *Handler) AdminGetOrders(c *gin.Context) {
 
 	log.Printf("AdminGetOrders - Found %d orders", len(orders))
 	for i, order := range orders {
-		log.Printf("AdminGetOrders - Order %d: ID=%d, OrderNumber=%s, CustomerName=%s, Status=%s", 
+		log.Printf("AdminGetOrders - Order %d: ID=%d, OrderNumber=%s, CustomerName=%s, Status=%s",
 			i+1, order.ID, order.OrderNumber, order.CustomerName, order.Status)
 	}
 
@@ -1382,9 +1408,9 @@ func (h *Handler) GetPublicOrderDetail(c *gin.Context) {
 	// Yetki kontrolü - sadece sipariş sahibi görebilir
 	sessionID, _ := c.Cookie("user_session")
 	username, _ := c.Cookie("username")
-	
+
 	var authorized bool
-	
+
 	// Kayıtlı kullanıcı kontrolü
 	if username != "" {
 		user, err := h.db.GetUserByUsername(username)
@@ -1392,7 +1418,7 @@ func (h *Handler) GetPublicOrderDetail(c *gin.Context) {
 			authorized = true
 		}
 	}
-	
+
 	// Session kontrolü (kayıt olmayan kullanıcılar için)
 	if !authorized && sessionID != "" && order.SessionID == sessionID {
 		authorized = true
@@ -1430,9 +1456,9 @@ func (h *Handler) CustomerCancelOrder(c *gin.Context) {
 	// Yetki kontrolü
 	sessionID, _ := c.Cookie("user_session")
 	username, _ := c.Cookie("username")
-	
+
 	var authorized bool
-	
+
 	// Kayıtlı kullanıcı kontrolü
 	if username != "" {
 		user, err := h.db.GetUserByUsername(username)
@@ -1440,7 +1466,7 @@ func (h *Handler) CustomerCancelOrder(c *gin.Context) {
 			authorized = true
 		}
 	}
-	
+
 	// Session kontrolü (kayıt olmayan kullanıcılar için)
 	if !authorized && sessionID != "" && order.SessionID == sessionID {
 		authorized = true
@@ -1469,7 +1495,7 @@ func (h *Handler) CustomerCancelOrder(c *gin.Context) {
 		default:
 			errorMessage = "Bu sipariş durumunda iptal işlemi yapılamaz"
 		}
-		
+
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"error":   errorMessage,
@@ -1501,7 +1527,7 @@ func (h *Handler) SupportChatPage(c *gin.Context) {
 	username, _ := c.Cookie("username")
 	sessionID, _ := c.Cookie("user_session")
 	isLoggedIn := username != ""
-	
+
 	if sessionID == "" {
 		sessionID = generateSessionID()
 		c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, false)
@@ -1520,28 +1546,28 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 	var request struct {
 		Message string `json:"message"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz mesaj"})
 		return
 	}
-	
+
 	if strings.TrimSpace(request.Message) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Mesaj boş olamaz"})
 		return
 	}
-	
+
 	username, _ := c.Cookie("username")
 	sessionID, _ := c.Cookie("user_session")
-	
+
 	if sessionID == "" {
 		sessionID = generateSessionID()
 		c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, false)
 	}
-	
+
 	var userID *int
 	displayName := "Ziyaretçi"
-	
+
 	if username != "" {
 		user, err := h.db.GetUserByUsername(username)
 		if err == nil {
@@ -1549,7 +1575,7 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 			displayName = user.Username
 		}
 	}
-	
+
 	// Create or get support session
 	userAgent := c.GetHeader("User-Agent")
 	if userAgent == "" {
@@ -1561,7 +1587,7 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Oturum oluşturulamadı"})
 		return
 	}
-	
+
 	// Save message
 	message := &models.Message{
 		UserID:    userID,
@@ -1571,14 +1597,14 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 		IsAdmin:   false,
 		IsRead:    false,
 	}
-	
+
 	err = h.db.SaveMessage(message)
 	if err != nil {
 		log.Printf("SendSupportMessage - Error saving message: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Mesaj gönderilemedi"})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": message,
@@ -1592,17 +1618,17 @@ func (h *Handler) GetSupportMessages(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Oturum bulunamadı"})
 		return
 	}
-	
+
 	messages, err := h.db.GetMessagesBySession(sessionID)
 	if err != nil {
 		log.Printf("GetSupportMessages - Error getting messages: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Mesajlar getirilemedi"})
 		return
 	}
-	
+
 	// Mark admin messages as read
 	h.db.MarkMessagesAsRead(sessionID, false)
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"messages": messages,
@@ -1618,7 +1644,7 @@ func (h *Handler) AdminSupportPage(c *gin.Context) {
 		log.Printf("AdminSupportPage - Error getting sessions: %v", err)
 		sessions = []models.SupportSession{}
 	}
-	
+
 	c.HTML(http.StatusOK, "admin_support.html", gin.H{
 		"title":    "Canlı Destek Yönetimi",
 		"sessions": sessions,
@@ -1633,7 +1659,7 @@ func (h *Handler) AdminGetSupportSessions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Oturumlar getirilemedi"})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"sessions": sessions,
@@ -1647,17 +1673,17 @@ func (h *Handler) AdminGetSupportMessages(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	messages, err := h.db.GetMessagesBySession(sessionID)
 	if err != nil {
 		log.Printf("AdminGetSupportMessages - Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Mesajlar getirilemedi"})
 		return
 	}
-	
+
 	// Mark user messages as read
 	h.db.MarkMessagesAsRead(sessionID, true)
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"messages": messages,
@@ -1671,21 +1697,21 @@ func (h *Handler) AdminSendSupportMessage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	var request struct {
 		Message string `json:"message"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz mesaj"})
 		return
 	}
-	
+
 	if strings.TrimSpace(request.Message) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Mesaj boş olamaz"})
 		return
 	}
-	
+
 	// Save admin message
 	message := &models.Message{
 		UserID:    nil, // Admin mesajları için null
@@ -1695,14 +1721,14 @@ func (h *Handler) AdminSendSupportMessage(c *gin.Context) {
 		IsAdmin:   true,
 		IsRead:    false,
 	}
-	
+
 	err := h.db.SaveMessage(message)
 	if err != nil {
 		log.Printf("AdminSendSupportMessage - Error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Mesaj gönderilemedi"})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": message,
@@ -1717,24 +1743,24 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 		SessionID string `json:"session_id"`
 		Action    string `json:"action"` // start, end
 	}
-	
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
-	
+
 	if request.SessionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	switch request.Action {
 	case "start":
 		// Get user info
 		username, _ := c.Cookie("username")
 		var userID *int
 		displayName := "Ziyaretçi"
-		
+
 		if username != "" {
 			user, err := h.db.GetUserByUsername(username)
 			if err == nil {
@@ -1745,7 +1771,7 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 			// Generate guest number for anonymous users
 			displayName = fmt.Sprintf("Misafir-%s", request.SessionID[:8])
 		}
-		
+
 		// Create video call request
 		err := h.db.CreateVideoCallRequest(request.SessionID, displayName, userID)
 		if err != nil {
@@ -1753,30 +1779,30 @@ func (h *Handler) HandleVideoCallRequest(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video görüşme talebi oluşturulamadı"})
 			return
 		}
-		
+
 		// Send email notification to admin
 		adminEmail := os.Getenv("ADMIN_EMAIL")
 		if adminEmail == "" {
 			adminEmail = "irmaksuaritmam@gmail.com" // Default admin email
 		}
-		
+
 		go func() {
 			if err := h.email.SendVideoCallNotification(adminEmail, displayName, request.SessionID); err != nil {
 				log.Printf("HandleVideoCallRequest - Error sending email notification: %v", err)
 			}
 		}()
-		
+
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme talebi gönderildi"})
-		
+
 	case "end":
 		// End video call request
 		err := h.db.EndVideoCallRequest(request.SessionID)
 		if err != nil {
 			log.Printf("HandleVideoCallRequest - Error ending request: %v", err)
 		}
-		
+
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme sonlandırıldı"})
-		
+
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz aksiyon"})
 	}
@@ -1788,17 +1814,17 @@ func (h *Handler) AdminVideoCallResponse(c *gin.Context) {
 		SessionID string `json:"session_id"`
 		Action    string `json:"action"` // accept, reject, end
 	}
-	
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
-	
+
 	if request.SessionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	switch request.Action {
 	case "accept":
 		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "accepted")
@@ -1808,7 +1834,7 @@ func (h *Handler) AdminVideoCallResponse(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme kabul edildi"})
-		
+
 	case "reject":
 		err := h.db.UpdateVideoCallRequestStatus(request.SessionID, "rejected")
 		if err != nil {
@@ -1817,14 +1843,14 @@ func (h *Handler) AdminVideoCallResponse(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme reddedildi"})
-		
+
 	case "end":
 		err := h.db.EndVideoCallRequest(request.SessionID)
 		if err != nil {
 			log.Printf("AdminVideoCallResponse - Error ending: %v", err)
 		}
 		c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video görüşme sonlandırıldı"})
-		
+
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz aksiyon"})
 	}
@@ -1837,13 +1863,13 @@ func (h *Handler) CheckVideoCallStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	request, err := h.db.GetVideoCallRequestBySession(sessionID)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": true, "has_request": false})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":     true,
 		"has_request": true,
@@ -1863,11 +1889,11 @@ func (h *Handler) AdminGetVideoCallRequests(c *gin.Context) {
 	var result []map[string]interface{}
 	for _, r := range requests {
 		item := map[string]interface{}{
-			"id": r.ID,
-			"session_id": r.SessionID,
-			"user_id": r.UserID,
-			"username": r.Username,
-			"status": r.Status,
+			"id":           r.ID,
+			"session_id":   r.SessionID,
+			"user_id":      r.UserID,
+			"username":     r.Username,
+			"status":       r.Status,
 			"requested_at": r.RequestedAt,
 			"responded_at": r.RespondedAt,
 		}
@@ -1896,17 +1922,17 @@ func (h *Handler) HandleWebRTCSignal(c *gin.Context) {
 		SessionID string      `json:"session_id"`
 		Message   interface{} `json:"message"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
-	
+
 	if request.SessionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	// Store signaling message for admin to retrieve
 	signalingMutex.Lock()
 	key := "customer_to_admin_" + request.SessionID
@@ -1915,9 +1941,9 @@ func (h *Handler) HandleWebRTCSignal(c *gin.Context) {
 	}
 	signalingMessages[key] = append(signalingMessages[key], request.Message)
 	signalingMutex.Unlock()
-	
+
 	log.Printf("WebRTC Signal from customer %s: %+v", request.SessionID, request.Message)
-	
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Signaling mesajı alındı"})
 }
 
@@ -1927,17 +1953,17 @@ func (h *Handler) HandleAdminWebRTCSignal(c *gin.Context) {
 		SessionID string      `json:"session_id"`
 		Message   interface{} `json:"message"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
-	
+
 	if request.SessionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	// Store signaling message for customer to retrieve
 	signalingMutex.Lock()
 	key := "admin_to_customer_" + request.SessionID
@@ -1946,9 +1972,9 @@ func (h *Handler) HandleAdminWebRTCSignal(c *gin.Context) {
 	}
 	signalingMessages[key] = append(signalingMessages[key], request.Message)
 	signalingMutex.Unlock()
-	
+
 	log.Printf("WebRTC Signal from admin to %s: %+v", request.SessionID, request.Message)
-	
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Admin signaling mesajı alındı"})
 }
 
@@ -1959,14 +1985,14 @@ func (h *Handler) GetWebRTCSignals(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	signalingMutex.Lock()
 	key := "admin_to_customer_" + sessionID
 	messages := signalingMessages[key]
 	// Clear messages after reading
 	signalingMessages[key] = []interface{}{}
 	signalingMutex.Unlock()
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"messages": messages,
@@ -1980,14 +2006,14 @@ func (h *Handler) GetAdminWebRTCSignals(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	signalingMutex.Lock()
 	key := "customer_to_admin_" + sessionID
 	messages := signalingMessages[key]
 	// Clear messages after reading
 	signalingMessages[key] = []interface{}{}
 	signalingMutex.Unlock()
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":  true,
 		"messages": messages,
@@ -1999,17 +2025,17 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 	var request struct {
 		SessionID string `json:"session_id"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
 		return
 	}
-	
+
 	if request.SessionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Session ID gerekli"})
 		return
 	}
-	
+
 	// Check if session exists
 	userAgent := c.GetHeader("User-Agent")
 	if userAgent == "" {
@@ -2021,7 +2047,7 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Session bulunamadı"})
 		return
 	}
-	
+
 	// Create video call request (username 'Admin' ve initiator 'admin' olarak kaydet)
 	err = h.db.CreateVideoCallRequestWithInitiator(request.SessionID, session.Username, session.UserID, "admin")
 	if err != nil {
@@ -2029,7 +2055,7 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Video call talebi oluşturulamadı"})
 		return
 	}
-	
+
 	// Send admin-call-request signal to customer
 	signalingMutex.Lock()
 	key := "admin_to_customer_" + request.SessionID
@@ -2041,85 +2067,84 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 		"timestamp": time.Now().Unix(),
 	})
 	signalingMutex.Unlock()
-	
+
 	log.Printf("AdminStartVideoCall - Video call request sent to session %s", request.SessionID)
-	
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Video call talebi gönderildi"})
 }
 
 // Kullanıcıdan ping al
 func (h *Handler) SupportPing(c *gin.Context) {
-    username, _ := c.Cookie("username")
-    sessionID, _ := c.Cookie("user_session")
-    
-    if sessionID == "" {
-        sessionID = generateSessionID()
-        c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, false)
-    }
-    
-    var userID *int
-    displayName := "Ziyaretçi"
-    
-    if username != "" {
-        user, err := h.db.GetUserByUsername(username)
-        if err == nil {
-            userID = &user.ID
-            displayName = user.Username
-        }
-    }
-    
-    // Create or get support session
-    userAgent := c.GetHeader("User-Agent")
-    if userAgent == "" {
-        userAgent = "Unknown"
-    }
-    session, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID, userAgent)
-    if err != nil {
-        log.Printf("SupportPing - Error creating session: %v", err)
-        c.JSON(500, gin.H{"success": false, "error": "Session oluşturulamadı"})
-        return
-    }
-    
-    // Mail gönderme kontrolü - yeni session veya son aktiviteden 5 dakika geçmişse
-    if session.CreatedAt == session.LastMessageAt || time.Since(session.LastMessageAt) > 5*time.Minute {
-        // Mail gönder
-        err = h.email.SendSupportChatNotification("irmaksuaritmam@gmail.com", displayName, sessionID, userAgent)
-        if err != nil {
-            log.Printf("SupportPing - Mail gönderme hatası: %v", err)
-        } else {
-            log.Printf("SupportPing - Mail notification sent to irmaksuaritmam@gmail.com for visitor: %s (Session: %s)", displayName, sessionID)
-        }
-    }
-    
-    // Update last active time
-    err = h.db.UpdateSupportSessionLastActive(sessionID)
-    if err != nil {
-        log.Printf("SupportPing - Error updating last active: %v", err)
-    }
-    
-    c.JSON(200, gin.H{"success": true})
+	username, _ := c.Cookie("username")
+	sessionID, _ := c.Cookie("user_session")
+
+	if sessionID == "" {
+		sessionID = generateSessionID()
+		c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, false)
+	}
+
+	var userID *int
+	displayName := "Ziyaretçi"
+
+	if username != "" {
+		user, err := h.db.GetUserByUsername(username)
+		if err == nil {
+			userID = &user.ID
+			displayName = user.Username
+		}
+	}
+
+	// Create or get support session
+	userAgent := c.GetHeader("User-Agent")
+	if userAgent == "" {
+		userAgent = "Unknown"
+	}
+	session, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID, userAgent)
+	if err != nil {
+		log.Printf("SupportPing - Error creating session: %v", err)
+		c.JSON(500, gin.H{"success": false, "error": "Session oluşturulamadı"})
+		return
+	}
+
+	// Mail gönderme kontrolü - yeni session veya son aktiviteden 5 dakika geçmişse
+	if session.CreatedAt == session.LastMessageAt || time.Since(session.LastMessageAt) > 5*time.Minute {
+		// Mail gönder
+		err = h.email.SendSupportChatNotification("irmaksuaritmam@gmail.com", displayName, sessionID, userAgent)
+		if err != nil {
+			log.Printf("SupportPing - Mail gönderme hatası: %v", err)
+		} else {
+			log.Printf("SupportPing - Mail notification sent to irmaksuaritmam@gmail.com for visitor: %s (Session: %s)", displayName, sessionID)
+		}
+	}
+
+	// Update last active time
+	err = h.db.UpdateSupportSessionLastActive(sessionID)
+	if err != nil {
+		log.Printf("SupportPing - Error updating last active: %v", err)
+	}
+
+	c.JSON(200, gin.H{"success": true})
 }
 
 // Kullanıcı destek sayfasından ayrıldı
 func (h *Handler) SupportLeave(c *gin.Context) {
-    sessionID, _ := c.Cookie("user_session")
-    
-    if sessionID == "" {
-        log.Printf("SupportLeave - No session ID found in cookie")
-        c.JSON(400, gin.H{"error": "Session ID bulunamadı"})
-        return
-    }
-    
-    log.Printf("SupportLeave called for sessionID: %s", sessionID)
-    
-    // Session'ı offline olarak işaretle
-    err := h.db.MarkSupportSessionOffline(sessionID)
-    if err != nil {
-        log.Printf("SupportLeave - Error marking session offline: %v", err)
-    } else {
-        log.Printf("SupportLeave - Session %s marked as offline successfully", sessionID)
-    }
-    
-    c.JSON(200, gin.H{"success": true})
+	sessionID, _ := c.Cookie("user_session")
+
+	if sessionID == "" {
+		log.Printf("SupportLeave - No session ID found in cookie")
+		c.JSON(400, gin.H{"error": "Session ID bulunamadı"})
+		return
+	}
+
+	log.Printf("SupportLeave called for sessionID: %s", sessionID)
+
+	// Session'ı offline olarak işaretle
+	err := h.db.MarkSupportSessionOffline(sessionID)
+	if err != nil {
+		log.Printf("SupportLeave - Error marking session offline: %v", err)
+	} else {
+		log.Printf("SupportLeave - Session %s marked as offline successfully", sessionID)
+	}
+
+	c.JSON(200, gin.H{"success": true})
 }
-  

@@ -494,8 +494,9 @@
             <a class="navbar-brand" href="/">
                 <i class="fas fa-tint"></i>Su Arıtma Uzmanı
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler position-relative" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
+                <span class="cart-badge-mobile" id="cartCountMobile" style="display: none;">0</span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
@@ -707,11 +708,26 @@
             .then(response => response.json())
             .then(data => {
                 const badge = document.getElementById('cartCount');
+                const mobileBadge = document.getElementById('cartCountMobile');
+                
                 if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'flex';
+                    if (badge) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'flex';
+                    }
+                    if (mobileBadge) {
+                        mobileBadge.textContent = data.count;
+                        mobileBadge.style.display = 'flex';
+                        mobileBadge.classList.add('show');
+                    }
                 } else {
-                    badge.style.display = 'none';
+                    if (badge) {
+                        badge.style.display = 'none';
+                    }
+                    if (mobileBadge) {
+                        mobileBadge.style.display = 'none';
+                        mobileBadge.classList.remove('show');
+                    }
                 }
             })
             .catch(error => console.log('Cart count error:', error));

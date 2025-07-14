@@ -476,13 +476,32 @@ function updateCartCount() {
         .then(response => response.json())
         .then(data => {
             const cartCountElement = document.getElementById('cartCount');
+            const mobileCartCountElement = document.getElementById('cartCountMobile');
+            
+            console.log('updateCartCount - Count:', data.count);
+            
             if (cartCountElement) {
                 cartCountElement.textContent = data.count;
                 if (data.count > 0) {
-                    cartCountElement.style.display = 'inline';
+                    cartCountElement.style.display = 'flex';
+                    cartCountElement.classList.add('show');
                 } else {
                     cartCountElement.style.display = 'none';
+                    cartCountElement.classList.remove('show');
                 }
+                console.log('Desktop cart count updated:', data.count);
+            }
+            
+            if (mobileCartCountElement) {
+                mobileCartCountElement.textContent = data.count;
+                if (data.count > 0) {
+                    mobileCartCountElement.style.display = 'flex';
+                    mobileCartCountElement.classList.add('show');
+                } else {
+                    mobileCartCountElement.style.display = 'none';
+                    mobileCartCountElement.classList.remove('show');
+                }
+                console.log('Mobile cart count updated:', data.count);
             }
         })
         .catch(error => {
