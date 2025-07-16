@@ -86,7 +86,7 @@ func NewHandler(db DBInterface) *Handler {
 	return &Handler{
 		db:          db,
 		email:       services.NewEmailService(),
-		cartService: services.NewCartService(db),
+		cartService: services.NewCartService(),
 	}
 }
 
