@@ -63,6 +63,56 @@
 }
 </script>
 
+<!-- Product Structured Data for Featured Products -->
+{{if .products}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Öne Çıkan Su Arıtma Ürünleri",
+  "description": "En çok tercih edilen su arıtma çözümleri",
+  "url": "https://xn--suartmauzman-44bi.com",
+  "numberOfItems": {{len .products}},
+  "itemListElement": [
+    {{range $index, $product := .products}}
+    {
+      "@type": "ListItem",
+      "position": {{add $index 1}},
+      "item": {
+        "@type": "Product",
+        "name": "{{$product.Name}}",
+        "description": "{{$product.Description}}",
+        "category": "{{$product.Category}}",
+        "brand": {
+          "@type": "Brand",
+          "name": "Su Arıtma Uzmanı"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "{{$product.Price}}",
+          "priceCurrency": "TRY",
+          "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
+          "priceValidUntil": "2025-12-31",
+          "seller": {
+            "@type": "Organization",
+            "name": "Su Arıtma Uzmanı",
+            "url": "https://xn--suartmauzman-44bi.com"
+          }
+        },
+        "url": "https://xn--suartmauzman-44bi.com/products",
+        "sku": "{{$product.ID}}",
+        "mpn": "{{$product.ID}}"
+        {{if $product.Image}},
+        "image": "{{$product.Image}}"
+        {{end}}
+      }
+    }{{if not (eq $index (sub (len $.products) 1))}},{{end}}
+    {{end}}
+  ]
+}
+</script>
+{{end}}
+
 <div class="container">
     <!-- Hero Section -->
     <section class="hero-section text-center py-5 mb-5 hero-bg">
