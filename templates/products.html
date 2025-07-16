@@ -26,15 +26,18 @@
           "name": "Su Aritma Uzmani"
         },
         "offers": {
-          "@type": "Offer",
-          "price": "{{$product.Price}}",
-          "priceCurrency": "TRY",
-          "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
-          "seller": {
-            "@type": "Organization",
-            "name": "Su Aritma Uzmani",
-            "url": "https://xn--suartmauzman-44bi.com"
-          },
+  "@type": "Offer",
+  "price": "{{$product.Price}}",
+  "priceCurrency": "TRY",
+  "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
+  "priceValidUntil": "2025-12-31",
+  "seller": {
+    "@type": "Organization",
+    "name": "Su Aritma Uzmani",
+    "url": "https://xn--suartmauzman-44bi.com"
+  },
+  "url": "https://xn--suartmauzman-44bi.com/products"
+},
           "url": "https://xn--suartmauzman-44bi.com/products"
         },
         {{if $product.Image}}
