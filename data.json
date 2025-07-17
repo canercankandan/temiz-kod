@@ -11,38 +11,22 @@
       "features": "{\"4\":\"4\"}",
       "created_at": "2025-07-13T19:24:10.9857254+03:00",
       "updated_at": "2025-07-13T19:24:10.9857254+03:00"
+    },
+    {
+      "id": 2,
+      "name": "Rolife Vista",
+      "description": "JKJ",
+      "price": 67,
+      "image": "/static/uploads/c88a1e8b-2ab2-4ebb-a322-6e844fd8c3a1.png",
+      "category": "Su Arıtma Ürünleri",
+      "stock": 77,
+      "features": "{\"7\":\"7\"}",
+      "created_at": "2025-07-13T21:19:55.709559535Z",
+      "updated_at": "2025-07-13T21:19:55.709559796Z"
     }
   ],
   "users": [],
-  "orders": [
-    {
-      "id": 1,
-      "user_id": 0,
-      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
-      "order_number": "ORD-319a38f7",
-      "customer_name": "Cenap Oktay",
-      "email": "cenapoktay@gmail.com",
-      "phone": "06225555555",
-      "address": "g\r\ndükkan",
-      "items": [
-        {
-          "product_id": 1,
-          "name": "Rolife Vista",
-          "price": 10,
-          "image": "/static/uploads/445ea50c-8f89-4f7c-9d1f-0d50052c5fcf.jpg",
-          "quantity": 2,
-          "total_price": 20
-        }
-      ],
-      "total_price": 20,
-      "status": "pending",
-      "payment_method": "",
-      "notes": "",
-      "admin_notes": "",
-      "created_at": "2025-07-13T19:24:48.1579096+03:00",
-      "updated_at": "2025-07-13T19:24:48.1579096+03:00"
-    }
-  ],
+  "orders": [],
   "messages": [],
   "support_sessions": [
     {
@@ -65,6 +49,28 @@
       "status": "offline",
       "last_message_at": "2024-07-13T20:59:18.3533249+03:00",
       "created_at": "2025-07-13T20:45:55.2308261+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 3,
+      "session_id": "b8b3625c-543e-4a98-8d16-d63efdbb8729",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "offline",
+      "last_message_at": "2024-07-14T14:54:52.694225636Z",
+      "created_at": "2025-07-14T14:53:26.216576021Z",
+      "unread_count": 0
+    },
+    {
+      "id": 4,
+      "session_id": "447e6e27-8ee4-44eb-a2f0-cdb26a54e44d",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "offline",
+      "last_message_at": "2024-07-17T13:36:45.986235442Z",
+      "created_at": "2025-07-17T13:32:37.536165234Z",
       "unread_count": 0
     }
   ],

@@ -1,0 +1,16 @@
+{
+  "name": "Su Arıtma Uzmanı",
+  "short_name": "SuArıtma",
+  "description": "Ailenizin sağlığı için en kaliteli su arıtma çözümleri",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007bff",
+  "icons": [
+    {
+      "src": "/static/favicon.ico",
+      "sizes": "16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}
