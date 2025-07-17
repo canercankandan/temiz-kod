@@ -45,8 +45,8 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 		NotAfter:     time.Now().Add(365 * 24 * time.Hour), // 1 year
 		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback, net.ParseIP("192.168.1.133"), net.ParseIP("135.181.81.88")},
-		DNSNames:     []string{"localhost", "*.localhost", "192.168.1.133", "135.181.81.88"},
+		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback, net.ParseIP("xn--suartmauzman-44bi.com"), net.ParseIP("xn--suartmauzman-44bi.com")},
+		DNSNames:     []string{"localhost", "*.localhost", "xn--suartmauzman-44bi.com", "xn--suartmauzman-44bi.com"},
 	}
 
 	// Create certificate
@@ -571,17 +571,17 @@ func main() {
 	go func() {
 		log.Printf("🌐 HTTP Server başlatılıyor...")
 		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
-		log.Printf("🌐 Mobil HTTP erişim için: http://192.168.1.133:%s", httpPort)
+		log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
 		
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("HTTP Server hatası: %v", err)
 		}
 	}()
 
-	// HTTPS Server'ı başlat
-	log.Printf("🔒 HTTPS Server başlatılıyor...")
+	// HTTPS Server devre dışı - sadece HTTP
+	// log.Printf("🔒 HTTPS Server başlatılıyor...")
 	log.Printf("📱 HTTPS erişim için: https://localhost:%s", httpsPort)
-	log.Printf("🌐 Mobil HTTPS erişim için: https://192.168.1.133:%s", httpsPort)
+	log.Printf("🌐 Mobil HTTPS erişim için: https://xn--suartmauzman-44bi.com:%s", httpsPort)
 	log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
 	
 	if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
