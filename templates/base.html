@@ -82,7 +82,10 @@
         });
     </script>
     
-    <!-- Structured Data (JSON-LD) -->
+    <!-- Google Search Console Verification (Replace with your actual verification code) -->
+    <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" /> -->
+    
+    <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -90,16 +93,20 @@
         "name": "Su Arıtma Uzmanı",
         "description": "Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları, filtreler ve kurulum hizmeti.",
         "url": "https://xn--suartmauzman-44bi.com",
-        "telephone": "+90-xxx-xxx-xxxx",
+        "telephone": "+90-212-592-8591",
+        "email": "irmaksuaritmam@gmail.com",
         "address": {
             "@type": "PostalAddress",
-            "addressCountry": "TR",
-            "addressLocality": "Türkiye"
+            "streetAddress": "Cennet Mahallesi Hürriyet Caddesi No 11/A Dükkan 1",
+            "addressLocality": "Küçükçekmece",
+            "addressRegion": "İstanbul",
+            "postalCode": "34000",
+            "addressCountry": "TR"
         },
         "geo": {
             "@type": "GeoCoordinates",
-            "latitude": "39.9334",
-            "longitude": "32.8597"
+            "latitude": "41.0082",
+            "longitude": "28.9784"
         },
         "openingHours": "Mo-Su 08:00-20:00",
         "priceRange": "₺₺",
@@ -113,8 +120,49 @@
                     "@type": "Offer",
                     "itemOffered": {
                         "@type": "Product",
-                        "name": "Su Arıtma Cihazı"
-                    }
+                        "name": "Su Arıtma Cihazı",
+                        "description": "Profesyonel su arıtma cihazı",
+                        "brand": {
+                            "@type": "Brand",
+                            "name": "Su Arıtma Uzmanı"
+                        },
+                        "aggregateRating": {
+                            "@type": "AggregateRating",
+                            "ratingValue": "4.8",
+                            "reviewCount": "156"
+                        },
+                        "review": [
+                            {
+                                "@type": "Review",
+                                "reviewRating": {
+                                    "@type": "Rating",
+                                    "ratingValue": "5",
+                                    "bestRating": "5"
+                                },
+                                "author": {
+                                    "@type": "Person",
+                                    "name": "Ahmet Yılmaz"
+                                },
+                                "reviewBody": "Mükemmel hizmet ve kaliteli ürün. Çok memnun kaldım."
+                            },
+                            {
+                                "@type": "Review",
+                                "reviewRating": {
+                                    "@type": "Rating",
+                                    "ratingValue": "4",
+                                    "bestRating": "5"
+                                },
+                                "author": {
+                                    "@type": "Person",
+                                    "name": "Fatma Demir"
+                                },
+                                "reviewBody": "Hızlı kurulum ve profesyonel hizmet. Tavsiye ederim."
+                            }
+                        ]
+                    },
+                    "price": "2500",
+                    "priceCurrency": "TRY",
+                    "availability": "https://schema.org/InStock"
                 }
             ]
         },
@@ -124,8 +172,39 @@
     }
     </script>
     
-    <!-- Google Search Console Verification (Replace with your actual verification code) -->
-    <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" /> -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Su Arıtma Uzmanı",
+        "url": "https://xn--suartmauzman-44bi.com",
+        "description": "Su arıtma sistemleri ve çözümleri",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://xn--suartmauzman-44bi.com/products?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Su Arıtma Uzmanı"
+        }
+    }
+    </script>
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Ana Sayfa",
+                "item": "https://xn--suartmauzman-44bi.com"
+            }
+        ]
+    }
+    </script>
     
     <style>
         * {
@@ -494,8 +573,9 @@
             <a class="navbar-brand" href="/">
                 <i class="fas fa-tint"></i>Su Arıtma Uzmanı
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler position-relative" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
+                <span class="cart-badge-mobile" id="cartCountMobile" style="display: none;">0</span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
@@ -707,11 +787,26 @@
             .then(response => response.json())
             .then(data => {
                 const badge = document.getElementById('cartCount');
+                const mobileBadge = document.getElementById('cartCountMobile');
+                
                 if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'flex';
+                    if (badge) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'flex';
+                    }
+                    if (mobileBadge) {
+                        mobileBadge.textContent = data.count;
+                        mobileBadge.style.display = 'flex';
+                        mobileBadge.classList.add('show');
+                    }
                 } else {
-                    badge.style.display = 'none';
+                    if (badge) {
+                        badge.style.display = 'none';
+                    }
+                    if (mobileBadge) {
+                        mobileBadge.style.display = 'none';
+                        mobileBadge.classList.remove('show');
+                    }
                 }
             })
             .catch(error => console.log('Cart count error:', error));

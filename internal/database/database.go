@@ -11,17 +11,20 @@ import (
 	"time"
 
 	"cenap/internal/models"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
 // dbData, JSON dosyasındaki tüm verileri temsil eder.
 type dbData struct {
-	Products         []models.Product         `json:"products"`
-	Users            []models.User            `json:"users"`
-	Orders           []models.Order           `json:"orders"`
-	Messages         []models.Message         `json:"messages"`
-	SupportSessions  []models.SupportSession  `json:"support_sessions"`
+	Products          []models.Product          `json:"products"`
+	Users             []models.User             `json:"users"`
+	Orders            []models.Order            `json:"orders"`
+	Messages          []models.Message          `json:"messages"`
+	SupportSessions   []models.SupportSession   `json:"support_sessions"`
 	VideoCallRequests []models.VideoCallRequest `json:"video_call_requests"`
+	Carts             []models.Cart             `json:"carts"`
+	CartItems         []models.CartItem         `json:"cart_items"`
 }
 
 // JSONDatabase, veritabanı işlemlerini yönetir.
@@ -62,6 +65,8 @@ func (db *JSONDatabase) loadData() error {
 		db.data.Messages = []models.Message{}
 		db.data.SupportSessions = []models.SupportSession{}
 		db.data.VideoCallRequests = []models.VideoCallRequest{}
+		db.data.Carts = []models.Cart{}
+		db.data.CartItems = []models.CartItem{}
 		return db.saveData()
 	}
 
@@ -77,6 +82,8 @@ func (db *JSONDatabase) loadData() error {
 		db.data.Messages = []models.Message{}
 		db.data.SupportSessions = []models.SupportSession{}
 		db.data.VideoCallRequests = []models.VideoCallRequest{}
+		db.data.Carts = []models.Cart{}
+		db.data.CartItems = []models.CartItem{}
 		return nil
 	}
 
@@ -329,7 +336,7 @@ func (db *JSONDatabase) SaveOrder(order *models.Order) error {
 		}
 		order.ID = maxID + 1
 		order.CreatedAt = time.Now()
-		
+
 		// Varsayılan değerler
 		if order.Status == "" {
 			order.Status = "pending"
@@ -338,7 +345,7 @@ func (db *JSONDatabase) SaveOrder(order *models.Order) error {
 			order.OrderNumber = generateOrderNumber()
 		}
 	}
-	
+
 	order.UpdatedAt = time.Now()
 
 	// Mevcut siparişi güncelle veya yeni sipariş ekle
@@ -350,7 +357,7 @@ func (db *JSONDatabase) SaveOrder(order *models.Order) error {
 			break
 		}
 	}
-	
+
 	if !found {
 		db.data.Orders = append(db.data.Orders, *order)
 	}
@@ -419,15 +426,15 @@ func generateOrderNumber() string {
 func (db *JSONDatabase) GetAllOrders() ([]models.Order, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	orders := make([]models.Order, len(db.data.Orders))
 	copy(orders, db.data.Orders)
-	
+
 	// Siparişleri tarihe göre sırala (en yeni önce)
 	sort.Slice(orders, func(i, j int) bool {
 		return orders[i].CreatedAt.After(orders[j].CreatedAt)
 	})
-	
+
 	return orders, nil
 }
 
@@ -435,19 +442,19 @@ func (db *JSONDatabase) GetAllOrders() ([]models.Order, error) {
 func (db *JSONDatabase) GetOrdersByStatus(status string) ([]models.Order, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	var filteredOrders []models.Order
 	for _, order := range db.data.Orders {
 		if order.Status == status {
 			filteredOrders = append(filteredOrders, order)
 		}
 	}
-	
+
 	// Siparişleri tarihe göre sırala (en yeni önce)
 	sort.Slice(filteredOrders, func(i, j int) bool {
 		return filteredOrders[i].CreatedAt.After(filteredOrders[j].CreatedAt)
 	})
-	
+
 	return filteredOrders, nil
 }
 
@@ -455,7 +462,7 @@ func (db *JSONDatabase) GetOrdersByStatus(status string) ([]models.Order, error)
 func (db *JSONDatabase) UpdateOrderWithNotes(orderID int, status string, adminNotes string) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	for i, order := range db.data.Orders {
 		if order.ID == orderID {
 			db.data.Orders[i].Status = status
@@ -464,7 +471,7 @@ func (db *JSONDatabase) UpdateOrderWithNotes(orderID int, status string, adminNo
 			return db.saveData()
 		}
 	}
-	
+
 	return errors.New("order not found")
 }
 
@@ -472,7 +479,7 @@ func (db *JSONDatabase) UpdateOrderWithNotes(orderID int, status string, adminNo
 func (db *JSONDatabase) DeleteOrder(orderID int) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	for i, order := range db.data.Orders {
 		if order.ID == orderID {
 			// Siparişi listeden çıkar
@@ -480,7 +487,7 @@ func (db *JSONDatabase) DeleteOrder(orderID int) error {
 			return db.saveData()
 		}
 	}
-	
+
 	return errors.New("order not found")
 }
 
@@ -488,7 +495,7 @@ func (db *JSONDatabase) DeleteOrder(orderID int) error {
 func (db *JSONDatabase) GetAllUsers() ([]models.User, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	return db.data.Users, nil
 }
 
@@ -496,14 +503,14 @@ func (db *JSONDatabase) GetAllUsers() ([]models.User, error) {
 func (db *JSONDatabase) DeleteUser(userID int) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	// Admin kullanıcısını silmeyi engelle
 	for _, user := range db.data.Users {
 		if user.ID == userID && user.Username == "admin" {
 			return errors.New("admin user cannot be deleted")
 		}
 	}
-	
+
 	for i, user := range db.data.Users {
 		if user.ID == userID {
 			// Kullanıcıyı slice'dan çıkar
@@ -511,7 +518,7 @@ func (db *JSONDatabase) DeleteUser(userID int) error {
 			return db.saveData()
 		}
 	}
-	
+
 	return errors.New("user not found")
 }
 
@@ -555,14 +562,14 @@ func (db *JSONDatabase) GetOrdersBySessionID(sessionID string) ([]models.Order, 
 func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	var sessions []models.SupportSession
 	// Son 5 dakika içinde aktif olan sessionları göster (admin hariç)
 	fiveMinutesAgo := time.Now().Add(-5 * time.Minute)
-	
+
 	// Admin username'lerini tanımla
 	adminUsernames := []string{"admin", "Admin", "ADMIN", "admın", "Admın", "ADMİN"}
-	
+
 	for _, session := range db.data.SupportSessions {
 		// Admin session'larını filtrele (admin kullanıcısının session'larını gösterme)
 		isAdmin := false
@@ -572,19 +579,19 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 				break
 			}
 		}
-		
+
 		if session.Status == "active" && session.LastMessageAt.After(fiveMinutesAgo) && !isAdmin {
 			sessions = append(sessions, session)
 		}
 	}
-	
+
 	// Sort by last_message_at DESC
 	sort.Slice(sessions, func(i, j int) bool {
 		return sessions[i].LastMessageAt.After(sessions[j].LastMessageAt)
 	})
-	
+
 	log.Printf("GetActiveSupportSessions - Found %d active sessions (last 5 minutes, admin excluded)", len(sessions))
-	
+
 	return sessions, nil
 }
 
@@ -592,7 +599,7 @@ func (db *JSONDatabase) GetActiveSupportSessions() ([]models.SupportSession, err
 func (db *JSONDatabase) SaveMessage(message *models.Message) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	// Generate new ID
 	maxID := 0
 	for _, m := range db.data.Messages {
@@ -602,38 +609,38 @@ func (db *JSONDatabase) SaveMessage(message *models.Message) error {
 	}
 	message.ID = maxID + 1
 	message.CreatedAt = time.Now()
-	
+
 	db.data.Messages = append(db.data.Messages, *message)
-	
+
 	// Update session last message time
 	db.updateSessionLastMessage(message.SessionID)
-	
+
 	return db.saveData()
 }
 
 func (db *JSONDatabase) GetMessagesBySession(sessionID string) ([]models.Message, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	var messages []models.Message
 	for _, msg := range db.data.Messages {
 		if msg.SessionID == sessionID {
 			messages = append(messages, msg)
 		}
 	}
-	
+
 	// Sort by created_at
 	sort.Slice(messages, func(i, j int) bool {
 		return messages[i].CreatedAt.Before(messages[j].CreatedAt)
 	})
-	
+
 	return messages, nil
 }
 
 func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, userID *int, userAgent string) (*models.SupportSession, error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	// Check if session exists with same sessionID and userAgent
 	for _, session := range db.data.SupportSessions {
 		if session.SessionID == sessionID && session.UserAgent == userAgent {
@@ -652,7 +659,7 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 			return &session, nil
 		}
 	}
-	
+
 	// Create new session
 	maxID := 0
 	for _, s := range db.data.SupportSessions {
@@ -660,7 +667,7 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 			maxID = s.ID
 		}
 	}
-	
+
 	newSession := models.SupportSession{
 		ID:            maxID + 1,
 		SessionID:     sessionID,
@@ -672,13 +679,13 @@ func (db *JSONDatabase) GetOrCreateSupportSession(sessionID, username string, us
 		CreatedAt:     time.Now(),
 		UnreadCount:   0,
 	}
-	
+
 	db.data.SupportSessions = append(db.data.SupportSessions, newSession)
 	err := db.saveData()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &newSession, nil
 }
 
@@ -694,13 +701,13 @@ func (db *JSONDatabase) updateSessionLastMessage(sessionID string) {
 func (db *JSONDatabase) MarkMessagesAsRead(sessionID string, isAdmin bool) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	for i, msg := range db.data.Messages {
 		if msg.SessionID == sessionID && msg.IsAdmin != isAdmin {
 			db.data.Messages[i].IsRead = true
 		}
 	}
-	
+
 	return db.saveData()
 }
 
@@ -710,14 +717,14 @@ func (db *JSONDatabase) MarkMessagesAsRead(sessionID string, isAdmin bool) error
 func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userID *int) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	// Check if there's already a pending request for this session
 	for _, req := range db.data.VideoCallRequests {
 		if req.SessionID == sessionID && req.Status == "pending" {
 			return errors.New("pending video call request already exists")
 		}
 	}
-	
+
 	// Generate new ID
 	maxID := 0
 	for _, req := range db.data.VideoCallRequests {
@@ -725,7 +732,7 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 			maxID = req.ID
 		}
 	}
-	
+
 	newRequest := models.VideoCallRequest{
 		ID:          maxID + 1,
 		SessionID:   sessionID,
@@ -734,7 +741,7 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 		Status:      "pending",
 		RequestedAt: time.Now(),
 	}
-	
+
 	db.data.VideoCallRequests = append(db.data.VideoCallRequests, newRequest)
 	return db.saveData()
 }
@@ -743,13 +750,13 @@ func (db *JSONDatabase) CreateVideoCallRequest(sessionID, username string, userI
 func (db *JSONDatabase) GetVideoCallRequestBySession(sessionID string) (*models.VideoCallRequest, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	for _, req := range db.data.VideoCallRequests {
 		if req.SessionID == sessionID && req.Status == "pending" {
 			return &req, nil
 		}
 	}
-	
+
 	return nil, errors.New("no pending video call request found")
 }
 
@@ -757,7 +764,7 @@ func (db *JSONDatabase) GetVideoCallRequestBySession(sessionID string) (*models.
 func (db *JSONDatabase) UpdateVideoCallRequestStatus(sessionID, status string) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	for i, req := range db.data.VideoCallRequests {
 		if req.SessionID == sessionID && req.Status == "pending" {
 			db.data.VideoCallRequests[i].Status = status
@@ -766,7 +773,7 @@ func (db *JSONDatabase) UpdateVideoCallRequestStatus(sessionID, status string) e
 			return db.saveData()
 		}
 	}
-	
+
 	return errors.New("no pending video call request found")
 }
 
@@ -774,7 +781,7 @@ func (db *JSONDatabase) UpdateVideoCallRequestStatus(sessionID, status string) e
 func (db *JSONDatabase) EndVideoCallRequest(sessionID string) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	for i, req := range db.data.VideoCallRequests {
 		if req.SessionID == sessionID && (req.Status == "pending" || req.Status == "accepted") {
 			db.data.VideoCallRequests[i].Status = "ended"
@@ -783,7 +790,7 @@ func (db *JSONDatabase) EndVideoCallRequest(sessionID string) error {
 			return db.saveData()
 		}
 	}
-	
+
 	return nil // Don't return error if no request found, it might already be ended
 }
 
@@ -791,22 +798,22 @@ func (db *JSONDatabase) EndVideoCallRequest(sessionID string) error {
 func (db *JSONDatabase) GetAllActiveVideoCallRequests() ([]models.VideoCallRequest, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
-	
+
 	var activeRequests []models.VideoCallRequest
 	// Son 30 dakika içinde talep edilmiş ve pending durumunda olan request'leri göster
 	thirtyMinutesAgo := time.Now().Add(-30 * time.Minute)
-	
+
 	for _, req := range db.data.VideoCallRequests {
 		if req.Status == "pending" && req.RequestedAt.After(thirtyMinutesAgo) {
 			activeRequests = append(activeRequests, req)
 		}
 	}
-	
+
 	// Sort by requested_at DESC (en yeni önce)
 	sort.Slice(activeRequests, func(i, j int) bool {
 		return activeRequests[i].RequestedAt.After(activeRequests[j].RequestedAt)
 	})
-	
+
 	return activeRequests, nil
 }
 
@@ -862,7 +869,7 @@ func (db *JSONDatabase) UpdateSupportSessionLastActive(sessionID string) error {
 func (db *JSONDatabase) MarkSupportSessionOffline(sessionID string) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
-	
+
 	// Session'ı bul ve offline olarak işaretle
 	for i, session := range db.data.SupportSessions {
 		if session.SessionID == sessionID {
@@ -873,9 +880,203 @@ func (db *JSONDatabase) MarkSupportSessionOffline(sessionID string) error {
 			return db.saveData()
 		}
 	}
-	
+
 	log.Printf("MarkSupportSessionOffline - Session %s not found", sessionID)
 	return nil
 }
 
- 
+// --- Cart Functions ---
+
+// GetCartBySessionID, session ID'ye göre sepeti döndürür
+func (db *JSONDatabase) GetCartBySessionID(sessionID string) (*models.Cart, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	for _, cart := range db.data.Carts {
+		if cart.SessionID == sessionID {
+			// Sepet öğelerini de getir
+			var items []models.CartItem
+			for _, item := range db.data.CartItems {
+				if item.CartID == cart.ID {
+					items = append(items, item)
+				}
+			}
+			cart.Items = items
+			return &cart, nil
+		}
+	}
+	return nil, os.ErrNotExist
+}
+
+// CreateCart, yeni bir sepet oluşturur
+func (db *JSONDatabase) CreateCart(cart *models.Cart) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// Yeni ID ata
+	maxID := 0
+	for _, c := range db.data.Carts {
+		if c.ID > maxID {
+			maxID = c.ID
+		}
+	}
+	cart.ID = maxID + 1
+	cart.CreatedAt = time.Now()
+	cart.UpdatedAt = time.Now()
+
+	db.data.Carts = append(db.data.Carts, *cart)
+	return db.saveData()
+}
+
+// UpdateCart, sepeti günceller
+func (db *JSONDatabase) UpdateCart(cart *models.Cart) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for i, c := range db.data.Carts {
+		if c.ID == cart.ID {
+			cart.UpdatedAt = time.Now()
+			db.data.Carts[i] = *cart
+			return db.saveData()
+		}
+	}
+	return os.ErrNotExist
+}
+
+// DeleteCart, sepeti siler
+func (db *JSONDatabase) DeleteCart(cartID int) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// Sepeti sil
+	for i, cart := range db.data.Carts {
+		if cart.ID == cartID {
+			db.data.Carts = append(db.data.Carts[:i], db.data.Carts[i+1:]...)
+			break
+		}
+	}
+
+	// Sepet öğelerini de sil
+	var newCartItems []models.CartItem
+	for _, item := range db.data.CartItems {
+		if item.CartID != cartID {
+			newCartItems = append(newCartItems, item)
+		}
+	}
+	db.data.CartItems = newCartItems
+
+	return db.saveData()
+}
+
+// AddCartItem, sepet öğesi ekler
+func (db *JSONDatabase) AddCartItem(item *models.CartItem) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// Yeni ID ata
+	maxID := 0
+	for _, i := range db.data.CartItems {
+		if i.ID > maxID {
+			maxID = i.ID
+		}
+	}
+	item.ID = maxID + 1
+
+	db.data.CartItems = append(db.data.CartItems, *item)
+	return db.saveData()
+}
+
+// UpdateCartItem, sepet öğesini günceller
+func (db *JSONDatabase) UpdateCartItem(item *models.CartItem) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for i, it := range db.data.CartItems {
+		if it.ID == item.ID {
+			db.data.CartItems[i] = *item
+			return db.saveData()
+		}
+	}
+	return os.ErrNotExist
+}
+
+// DeleteCartItem, sepet öğesini siler
+func (db *JSONDatabase) DeleteCartItem(itemID int) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for i, item := range db.data.CartItems {
+		if item.ID == itemID {
+			db.data.CartItems = append(db.data.CartItems[:i], db.data.CartItems[i+1:]...)
+			return db.saveData()
+		}
+	}
+	return os.ErrNotExist
+}
+
+// GetCartItemsByCartID, sepet ID'sine göre öğeleri döndürür
+func (db *JSONDatabase) GetCartItemsByCartID(cartID int) ([]models.CartItem, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	var items []models.CartItem
+	for _, item := range db.data.CartItems {
+		if item.CartID == cartID {
+			items = append(items, item)
+		}
+	}
+	return items, nil
+}
+
+// DBInterface, veritabanı işlemlerini tanımlar.
+type DBInterface interface {
+	GetAllProducts() ([]models.Product, error)
+	GetProductByID(id int) (*models.Product, error)
+	CreateProduct(product *models.Product) error
+	DeleteProduct(id int) error
+	// User methods
+	CreateUser(user *models.User) error
+	GetUserByUsername(username string) (*models.User, error)
+	GetUserByEmail(email string) (*models.User, error)
+	GetAllUsers() ([]models.User, error)
+	UpdateUser(user *models.User) error
+	DeleteUser(userID int) error
+	CreatePasswordResetToken(email string, token string) error
+	GetUserByResetToken(token string) (*models.User, error)
+	ClearResetToken(userID int) error
+	// Order methods
+	CreateOrder(order *models.Order) error
+	GetOrdersByUserID(userID int) ([]models.Order, error)
+	GetOrderByID(orderID int) (*models.Order, error)
+	GetAllOrders() ([]models.Order, error)
+	SaveOrder(order *models.Order) error
+	UpdateOrderStatus(orderID int, status string) error
+	UpdateOrderWithNotes(orderID int, status string, adminNotes string) error
+	DeleteOrder(orderID int) error
+	GetOrderByNumberAndEmail(orderNumber, email string) (*models.Order, error)
+	GetOrdersBySessionID(sessionID string) ([]models.Order, error)
+	GetOrCreateSupportSession(sessionID, displayName string, userID *int, userAgent string) (*models.SupportSession, error)
+	SaveMessage(message *models.Message) error
+	GetMessagesBySession(sessionID string) ([]models.Message, error)
+	MarkMessagesAsRead(sessionID string, isUser bool) error
+	GetActiveSupportSessions() ([]models.SupportSession, error)
+	// Video Call Request methods
+	CreateVideoCallRequest(sessionID, username string, userID *int) error
+	GetVideoCallRequestBySession(sessionID string) (*models.VideoCallRequest, error)
+	UpdateVideoCallRequestStatus(sessionID, status string) error
+	EndVideoCallRequest(sessionID string) error
+	GetAllActiveVideoCallRequests() ([]models.VideoCallRequest, error)
+	CreateVideoCallRequestWithInitiator(sessionID, username string, userID *int, initiator string) error
+	UpdateProduct(product *models.Product) error
+	UpdateSupportSessionLastActive(sessionID string) error
+	MarkSupportSessionOffline(sessionID string) error
+	// Cart methods
+	GetCartBySessionID(sessionID string) (*models.Cart, error)
+	CreateCart(cart *models.Cart) error
+	UpdateCart(cart *models.Cart) error
+	DeleteCart(cartID int) error
+	AddCartItem(item *models.CartItem) error
+	UpdateCartItem(item *models.CartItem) error
+	DeleteCartItem(itemID int) error
+	GetCartItemsByCartID(cartID int) ([]models.CartItem, error)
+}

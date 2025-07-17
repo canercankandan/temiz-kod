@@ -1,28 +1,16 @@
 {
   "products": [
     {
-      "id": 1,
-      "name": "Rolife Vista",
-      "description": "HJJH",
-      "price": 10,
-      "image": "/static/uploads/445ea50c-8f89-4f7c-9d1f-0d50052c5fcf.jpg",
-      "category": "Su Arıtma Ürünleri",
-      "stock": 1,
-      "features": "{\"4\":\"4\"}",
-      "created_at": "2025-07-13T19:24:10.9857254+03:00",
-      "updated_at": "2025-07-13T19:24:10.9857254+03:00"
-    },
-    {
       "id": 2,
-      "name": "Rolife Vista",
-      "description": "JKJ",
-      "price": 67,
-      "image": "/static/uploads/c88a1e8b-2ab2-4ebb-a322-6e844fd8c3a1.png",
+      "name": ".deneme",
+      "description": "Paket sistem ozmos su arıtma cihazımız, Avrupa dizayn ve kompakt tasarım ile tezgah altında minimum yer kaplar. Az yer kaplayan şık tasarımı ile saatte 8 litre arıtma kapasitesine sahip ev ve küçük ofis kullanımına uygun arıtma cihazımızdır.\r\n\r\nHindistan cevizi kabuğu karbon filtre sayesinde sağlıklı ve yüksek kaliteli içme suyu elde edilmesini sağlar. Elektrikle çalışmayan cihaz, son derece şık tasarımlı olup fonksiyonellik bakımından mükemmeldir. İnsana enerji veren su, besin maddelerini ve oksijeni tüm vücuda taşıyan hayati bir sıvıdır. Hem lezzetli hem de sağlıklı su temin eden Rolife su arıtma cihazı, istenilen tazyikte su sağlayan ve inline filtre sistemi ile filtreleri kolay değiştirilen kaliteli ve güvenilir bir üründür.\r\n\r\nTüm atıklardan arınan su Hindistan cevizi kabuğu karbon filtresi ile son kez işlem görmekte, lezzetli ve yumuşak bir su haline gelmektedir.\r\n\r\nRolife Gold Serisi adet\r\n1\r\nBuy now\r\nKategoriler: Evsel Su Arıtma Cihazı\r\nProduct ID: 21737\r\nAçıklama Ek bilgi",
+      "price": 23333,
+      "image": "/static/uploads/9ac10d99-1241-4a83-a13c-8f065cc3827a.png",
       "category": "Su Arıtma Ürünleri",
-      "stock": 77,
-      "features": "{\"7\":\"7\"}",
-      "created_at": "2025-07-13T21:19:55.709559535Z",
-      "updated_at": "2025-07-13T21:19:55.709559796Z"
+      "stock": 333,
+      "features": "",
+      "created_at": "2025-07-14T19:00:29.7523601+03:00",
+      "updated_at": "2025-07-14T19:00:29.7523601+03:00"
     }
   ],
   "users": [],
@@ -36,7 +24,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-13T21:05:21.9159302+03:00",
+      "last_message_at": "2024-07-16T21:54:11.8785471+03:00",
       "created_at": "2025-07-13T17:14:34.7358992+03:00",
       "unread_count": 0
     },
@@ -47,32 +35,63 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-13T20:59:18.3533249+03:00",
+      "last_message_at": "2024-07-14T18:56:45.9837883+03:00",
       "created_at": "2025-07-13T20:45:55.2308261+03:00",
       "unread_count": 0
     },
     {
       "id": 3,
-      "session_id": "b8b3625c-543e-4a98-8d16-d63efdbb8729",
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
       "user_id": null,
       "username": "Ziyaretçi",
-      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
       "status": "offline",
-      "last_message_at": "2024-07-14T14:54:52.694225636Z",
-      "created_at": "2025-07-14T14:53:26.216576021Z",
+      "last_message_at": "2024-07-14T12:52:18.774638+03:00",
+      "created_at": "2025-07-14T12:07:47.6037105+03:00",
       "unread_count": 0
     },
     {
       "id": 4,
-      "session_id": "447e6e27-8ee4-44eb-a2f0-cdb26a54e44d",
+      "session_id": "97f4bc48-a01a-4639-833a-796f6998207c",
       "user_id": null,
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-17T13:36:45.986235442Z",
-      "created_at": "2025-07-17T13:32:37.536165234Z",
+      "last_message_at": "2024-07-16T23:40:45.3142+03:00",
+      "created_at": "2025-07-16T23:40:35.1949923+03:00",
       "unread_count": 0
     }
   ],
-  "video_call_requests": []
+  "video_call_requests": [
+    {
+      "id": 1,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Misafir-a876aebd",
+      "status": "ended",
+      "requested_at": "2025-07-13T22:02:48.7481481+03:00",
+      "responded_at": "2025-07-13T22:02:52.7485984+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 2,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Misafir-a876aebd",
+      "status": "ended",
+      "requested_at": "2025-07-13T22:36:40.4697192+03:00",
+      "responded_at": "2025-07-13T22:36:41.661421+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 3,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Misafir-a876aebd",
+      "status": "ended",
+      "requested_at": "2025-07-16T21:31:36.3932856+03:00",
+      "responded_at": "2025-07-16T21:31:42.0334143+03:00",
+      "initiator": ""
+    }
+  ]
 }

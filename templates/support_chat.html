@@ -49,7 +49,7 @@
                             <i class="fas fa-comments fa-3x mb-3"></i>
                             <p>Merhaba! Size nasıl yardımcı olabiliriz?</p>
                             <div class="mt-3">
-                                <button id="videoCallBtn2" class="btn btn-success btn-md" onclick="startVideoCall()" style="font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.2);">
+                                <button id="videoCallBtn2" class="btn btn-success btn-md" onclick="startVideoCall().catch(console.error)" style="font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.2);">
                                     <i class="fas fa-video me-2"></i>📞 Hızlı Görüntülü Görüşme
                                 </button>
                                 <p class="mt-2 small text-muted">Mesaj yazmadan direkt görüntülü görüşme başlatabilirsiniz!</p>
@@ -1177,12 +1177,8 @@ async function acceptAdminCall() {
             document.body.removeChild(window.adminCallModal);
             window.adminCallModal = null;
         }
-        
-<<<<<<< HEAD
+    
         // Start video call
-=======
-        // Start video call (bu fonksiyon kendi stream'ini alacak ve peer connection'ı başlatacak)
->>>>>>> 2aa404e0b7605ad556e34d9d139d954f7cbe3f60
         await startVideoCall();
         
         // Send acceptance to admin
@@ -1642,4 +1638,4 @@ async function pollSignalingMessages() {
     }
 }
 </script>
-{{end}} 
+{{end}}
