@@ -68,8 +68,19 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-17T14:39:15.127220618Z",
+      "last_message_at": "2024-07-17T19:06:24.587791923Z",
       "created_at": "2025-07-17T14:32:20.036045623Z",
+      "unread_count": 0
+    },
+    {
+      "id": 6,
+      "session_id": "184023b4-f26c-406d-85c7-c10d6c89b928",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/377.0.781279791 Mobile/15E148 Safari/604.1",
+      "status": "offline",
+      "last_message_at": "2024-07-17T17:45:03.699996227Z",
+      "created_at": "2025-07-17T17:41:23.317458388Z",
       "unread_count": 0
     }
   ],
@@ -124,5 +135,7 @@
       "responded_at": "2025-07-17T14:34:15.835675417Z",
       "initiator": ""
     }
-  ]
+  ],
+  "carts": null,
+  "cart_items": null
 }
