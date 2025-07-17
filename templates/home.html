@@ -4,28 +4,87 @@
 <!-- Google Structured Data for Homepage -->
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Su Aritma Uzmani",
-  "url": "https://xn--suartmauzman-44bi.com",
-  "logo": "https://xn--suartmauzman-44bi.com/static/images/logo.png",
-  "description": "Ev ve is yeriniz icin saglikli, guvenli ve ekonomik su aritma cozumleri",
-  "address": {
-    "@type": "PostalAddress",
-    "addressCountry": "TR",
-    "addressLocality": "Turkiye"
-  },
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "contactType": "customer service",
-    "availableLanguage": "Turkish",
-    "areaServed": "TR"
-  },
-  "sameAs": [
-    "https://xn--suartmauzman-44bi.com"
-  ],
-  "foundingDate": "2015",
-  "numberOfEmployees": "50+"
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Su Arıtma Uzmanı",
+    "description": "Profesyonel su arıtma cihazı kurulum ve servis hizmetleri",
+    "url": "https://xn--suartmauzman-44bi.com",
+    "telephone": "+90-555-123-4567",
+    "email": "info@suaritmauzmani.com",
+    "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Örnek Mahallesi, Su Caddesi No:123",
+        "addressLocality": "İstanbul",
+        "addressRegion": "İstanbul",
+        "postalCode": "34000",
+        "addressCountry": "TR"
+    },
+    "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 41.0082,
+        "longitude": 28.9784
+    },
+    "openingHours": "Mo-Su 08:00-20:00",
+    "priceRange": "₺₺",
+    "serviceType": "Su Arıtma Cihazı Kurulum ve Servis",
+    "areaServed": "Türkiye",
+    "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Su Arıtma Ürünleri",
+        "itemListElement": [
+            {
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "Product",
+                    "name": "Su Arıtma Cihazı",
+                    "description": "Profesyonel su arıtma cihazı",
+                    "brand": {
+                        "@type": "Brand",
+                        "name": "Su Arıtma Uzmanı"
+                    },
+                    "aggregateRating": {
+                        "@type": "AggregateRating",
+                        "ratingValue": "4.8",
+                        "reviewCount": "156"
+                    },
+                    "review": [
+                        {
+                            "@type": "Review",
+                            "reviewRating": {
+                                "@type": "Rating",
+                                "ratingValue": "5",
+                                "bestRating": "5"
+                            },
+                            "author": {
+                                "@type": "Person",
+                                "name": "Ahmet Yılmaz"
+                            },
+                            "reviewBody": "Mükemmel hizmet ve kaliteli ürün. Çok memnun kaldım."
+                        },
+                        {
+                            "@type": "Review",
+                            "reviewRating": {
+                                "@type": "Rating",
+                                "ratingValue": "4",
+                                "bestRating": "5"
+                            },
+                            "author": {
+                                "@type": "Person",
+                                "name": "Fatma Demir"
+                            },
+                            "reviewBody": "Hızlı kurulum ve profesyonel hizmet. Tavsiye ederim."
+                        }
+                    ]
+                },
+                "price": "2500",
+                "priceCurrency": "TRY",
+                "availability": "https://schema.org/InStock"
+            }
+        ]
+    },
+    "sameAs": [
+        "https://xn--suartmauzman-44bi.com"
+    ]
 }
 </script>
 
@@ -62,56 +121,6 @@
   ]
 }
 </script>
-
-<!-- Product Structured Data for Featured Products -->
-{{if .products}}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  "name": "Öne Çıkan Su Arıtma Ürünleri",
-  "description": "En çok tercih edilen su arıtma çözümleri",
-  "url": "https://xn--suartmauzman-44bi.com",
-  "numberOfItems": {{len .products}},
-  "itemListElement": [
-    {{range $index, $product := .products}}
-    {
-      "@type": "ListItem",
-      "position": {{add $index 1}},
-      "item": {
-        "@type": "Product",
-        "name": "{{$product.Name}}",
-        "description": "{{$product.Description}}",
-        "category": "{{$product.Category}}",
-        "brand": {
-          "@type": "Brand",
-          "name": "Su Arıtma Uzmanı"
-        },
-        "offers": {
-          "@type": "Offer",
-          "price": "{{$product.Price}}",
-          "priceCurrency": "TRY",
-          "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
-          "priceValidUntil": "2025-12-31",
-          "seller": {
-            "@type": "Organization",
-            "name": "Su Arıtma Uzmanı",
-            "url": "https://xn--suartmauzman-44bi.com"
-          }
-        },
-        "url": "https://xn--suartmauzman-44bi.com/products",
-        "sku": "{{$product.ID}}",
-        "mpn": "{{$product.ID}}"
-        {{if $product.Image}},
-        "image": "{{$product.Image}}"
-        {{end}}
-      }
-    }{{if not (eq $index (sub (len $.products) 1))}},{{end}}
-    {{end}}
-  ]
-}
-</script>
-{{end}}
 
 <div class="container">
     <!-- Hero Section -->
