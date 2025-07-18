@@ -383,6 +383,11 @@ func (h *Handler) ProductsPage(c *gin.Context) {
 }
 
 func (h *Handler) AdminPage(c *gin.Context) {
+	// Cache kontrolü ekle
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
+	
 	products, err := h.db.GetAllProducts()
 	if err != nil {
 		log.Printf("Error getting products: %v", err)
@@ -402,6 +407,20 @@ func (h *Handler) AddProduct(c *gin.Context) {
 			"error": "Form verileri eksik veya hatalı",
 		})
 		return
+	}
+
+	// Aynı isimde ürün var mı kontrol et
+	existingProducts, err := h.db.GetAllProducts()
+	if err == nil {
+		for _, existing := range existingProducts {
+			if existing.Name == form.Name {
+				c.HTML(http.StatusBadRequest, "admin.html", gin.H{
+					"error": "Bu isimde bir ürün zaten mevcut",
+					"products": existingProducts,
+				})
+				return
+			}
+		}
 	}
 
 	file, err := c.FormFile("image")
@@ -473,11 +492,18 @@ func (h *Handler) AddProduct(c *gin.Context) {
 
 	if err := h.db.CreateProduct(product); err != nil {
 		log.Printf("Error creating product: %v", err)
+		products, _ := h.db.GetAllProducts()
 		c.HTML(http.StatusInternalServerError, "admin.html", gin.H{
 			"error": "Ürün eklenirken hata oluştu",
+			"products": products,
 		})
 		return
 	}
+
+	// Başarılı ekleme sonrası cache'i temizle
+	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
 
 	c.Redirect(http.StatusSeeOther, "/admin")
 }

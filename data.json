@@ -11,6 +11,30 @@
       "features": "",
       "created_at": "2025-07-14T19:00:29.7523601+03:00",
       "updated_at": "2025-07-14T19:00:29.7523601+03:00"
+    },
+    {
+      "id": 3,
+      "name": ".deneme",
+      "description": "JHJUHJ",
+      "price": 444,
+      "image": "/static/uploads/6dbac5ff-6f8e-441b-abb0-0043c1a30c5a.png",
+      "category": "Su Arıtma Ürünleri",
+      "stock": 44,
+      "features": "{\"4\":\"5\"}",
+      "created_at": "2025-07-18T14:40:42.0330028+03:00",
+      "updated_at": "2025-07-18T14:46:18.018862+03:00"
+    },
+    {
+      "id": 4,
+      "name": "Rolife Vista",
+      "description": "IUHUHUH",
+      "price": 55,
+      "image": "/static/uploads/11c2461e-ad31-4dd3-8f59-12645c3eb38c.jpg",
+      "category": "Su Arıtma Ürünleri",
+      "stock": 44,
+      "features": "",
+      "created_at": "2025-07-18T14:45:52.7642021+03:00",
+      "updated_at": "2025-07-18T14:45:52.7642021+03:00"
     }
   ],
   "users": [],
@@ -24,7 +48,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-16T21:54:11.8785471+03:00",
+      "last_message_at": "2024-07-18T14:47:44.4713545+03:00",
       "created_at": "2025-07-13T17:14:34.7358992+03:00",
       "unread_count": 0
     },
@@ -135,7 +159,5 @@
       "responded_at": "2025-07-17T14:34:15.835675417Z",
       "initiator": ""
     }
-  ],
-  "carts": null,
-  "cart_items": null
+  ]
 }
