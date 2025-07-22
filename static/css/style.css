@@ -916,3 +916,17 @@ footer h5 {
     right: 20px;
   }
 }
+
+.video-preview {
+    width: 600px !important;  /* 300px'den 600px'e */
+    height: 450px !important; /* Oranı koruyarak */
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.admin-video-preview {
+    width: 600px !important;
+    height: 450px !important;
+    border-radius: 8px;
+    object-fit: cover;
+}
