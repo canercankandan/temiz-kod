@@ -12,4 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
         adminVideoPreview.style.width = '600px';
         adminVideoPreview.style.height = '450px';
     }
+
+    // Video kontrol butonlarını sol tarafa taşıma
+    const videoControls = document.querySelector('.video-controls');
+    if (videoControls) {
+        videoControls.style.left = '20px';
+        videoControls.style.right = 'auto';
+    }
 });

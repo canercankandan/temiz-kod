@@ -917,47 +917,57 @@ footer h5 {
   }
 }
 
+/* Video önizleme boyutları - BİLGİSAYAR İÇİN */
 .video-preview {
-    width: 600px !important;  /* 300px'den 600px'e */
-    height: 450px !important; /* Oranı koruyarak */
+    width: 1000px !important;  /* 600px'den 1000px'e */
+    height: 750px !important;  /* 450px'den 750px'e */
     border-radius: 8px;
     object-fit: cover;
 }
 
 .admin-video-preview {
-    width: 600px !important;
-    height: 450px !important;
+    width: 1000px !important;
+    height: 750px !important;
     border-radius: 8px;
     object-fit: cover;
 }
 
-/* Video kontrol butonlarını sol tarafa taşıma */
+/* Video kontrol butonlarını sol tarafa taşıma - GÜÇLÜ OVERRIDE */
 .video-controls {
-    position: absolute;
-    left: 20px; /* Sağdan sola taşıma */
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    z-index: 1000;
+    position: absolute !important;
+    left: 20px !important; /* Sol tarafa taşıma */
+    right: auto !important; /* Sağ pozisyonu kaldır */
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    z-index: 1000 !important;
+}
+
+/* Tüm video kontrol butonlarını sol tarafa zorla */
+[class*="video-controls"],
+[class*="control-buttons"],
+[class*="video-buttons"] {
+    left: 20px !important;
+    right: auto !important;
 }
 
 /* Buton stilleri */
 .control-button {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    border: none !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
 }
 
 /* Buton renkleri */
-.mic-button { background-color: white; }
-.video-button { background-color: white; }
-.switch-button { background-color: #00CED1; }
-.end-button { background-color: #FF4444; }
+.mic-button { background-color: white !important; }
+.video-button { background-color: white !important; }
+.switch-button { background-color: #00CED1 !important; }
+.end-button { background-color: #FF4444 !important; }
