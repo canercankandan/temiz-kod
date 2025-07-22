@@ -74,15 +74,27 @@
     <link href="/static/css/style.css" rel="stylesheet">
     
     <!-- Google Analytics (Replace GA_MEASUREMENT_ID with your actual ID) -->
+    <!-- Mevcut GA kodu yerine -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5RDJT65L0Y"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', 'G-5RDJT65L0Y', {
-            'page_title': '{{.title}} - Su Arıtma Uzmanı',
-            'page_location': 'https://xn--suartmauzman-44bi.com{{.current_url}}'
-        });
+        
+        // Localhost kontrolü ekle
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            try {
+                gtag('config', 'G-5RDJT65L0Y', {
+                    'anonymize_ip': true,
+                    'allow_google_signals': false,
+                    'allow_ad_personalization_signals': false
+                });
+            } catch(e) {
+                console.log('Analytics yüklenemedi');
+            }
+        } else {
+            console.log('Localhost ortamında Analytics devre dışı');
+        }
     </script>
     
     <!-- Schema.org Structured Data -->
@@ -845,4 +857,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

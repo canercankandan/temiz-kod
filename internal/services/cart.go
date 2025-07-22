@@ -137,25 +137,26 @@ func (cs *CartService) UpdateCartItem(sessionID string, productID int, quantity 
 }
 
 // RemoveFromCart, sepetten ürün kaldırır
+// RemoveFromCart, sepetten ürün kaldırır
 func (cs *CartService) RemoveFromCart(sessionID string, productID int) error {
-	cs.mutex.Lock()
-	defer cs.mutex.Unlock()
-	
-	// Sepeti al
-	cart, exists := cs.carts[sessionID]
-	if !exists {
-		return fmt.Errorf("sepet bulunamadı")
-	}
-	
-	for i, item := range cart.Items {
-		if item.ProductID == productID {
-			cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
-			cs.updateCartTotals(cart)
-			return nil
-		}
-	}
-	
-	return fmt.Errorf("ürün sepette bulunamadı")
+    cs.mutex.Lock()
+    defer cs.mutex.Unlock()
+    
+    // Sepeti al
+    cart, exists := cs.carts[sessionID]
+    if !exists {
+        return fmt.Errorf("sepet bulunamadı")
+    }
+    
+    for i, item := range cart.Items {
+        if item.ProductID == productID {
+            cart.Items = append(cart.Items[:i], cart.Items[i+1:]...)
+            cs.updateCartTotals(cart)
+            return nil
+        }
+    }
+    
+    return fmt.Errorf("ürün sepette bulunamadı")
 }
 
 // ClearCart, sepeti temizler
@@ -198,4 +199,4 @@ func (cs *CartService) GetCartJSON(sessionID string) (string, error) {
 		return "", err
 	}
 	return string(cartJSON), nil
-} 
+}

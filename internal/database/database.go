@@ -47,8 +47,8 @@ func NewDatabase() (*JSONDatabase, error) {
 			db.data.Messages = []models.Message{}
 			db.data.SupportSessions = []models.SupportSession{}
 			db.data.VideoCallRequests = []models.VideoCallRequest{}
-			if err := db.saveData(); err != nil {
-				return nil, err
+			if saveErr := db.saveData(); saveErr != nil {
+				return nil, saveErr
 			}
 		} else {
 			return nil, err
@@ -819,6 +819,9 @@ func (db *JSONDatabase) GetAllActiveVideoCallRequests() ([]models.VideoCallReque
 
 // Yeni bir video görüşme talebi oluşturur (initiator ile)
 func (db *JSONDatabase) CreateVideoCallRequestWithInitiator(sessionID, username string, userID *int, initiator string) error {
+	// Önce eski request'leri temizle
+	db.CleanupOldVideoCallRequests()
+
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
@@ -849,6 +852,31 @@ func (db *JSONDatabase) CreateVideoCallRequestWithInitiator(sessionID, username 
 
 	db.data.VideoCallRequests = append(db.data.VideoCallRequests, newRequest)
 	return db.saveData()
+}
+
+// CleanupOldVideoCallRequests, eski video call request'lerini temizler
+func (db *JSONDatabase) CleanupOldVideoCallRequests() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// 30 dakikadan eski pending request'leri ended olarak işaretle
+	thirtyMinutesAgo := time.Now().Add(-30 * time.Minute)
+	updated := false
+
+	for i, req := range db.data.VideoCallRequests {
+		if req.Status == "pending" && req.RequestedAt.Before(thirtyMinutesAgo) {
+			db.data.VideoCallRequests[i].Status = "expired"
+			now := time.Now()
+			db.data.VideoCallRequests[i].RespondedAt = &now
+			updated = true
+			log.Printf("CleanupOldVideoCallRequests - Expired request for session %s", req.SessionID)
+		}
+	}
+
+	if updated {
+		return db.saveData()
+	}
+	return nil
 }
 
 func (db *JSONDatabase) UpdateSupportSessionLastActive(sessionID string) error {
@@ -925,7 +953,10 @@ func (db *JSONDatabase) CreateCart(cart *models.Cart) error {
 	cart.UpdatedAt = time.Now()
 
 	db.data.Carts = append(db.data.Carts, *cart)
-	return db.saveData()
+	if saveErr := db.saveData(); saveErr != nil {
+		return saveErr
+	}
+	return nil
 }
 
 // UpdateCart, sepeti günceller
@@ -937,7 +968,10 @@ func (db *JSONDatabase) UpdateCart(cart *models.Cart) error {
 		if c.ID == cart.ID {
 			cart.UpdatedAt = time.Now()
 			db.data.Carts[i] = *cart
-			return db.saveData()
+			if saveErr := db.saveData(); saveErr != nil {
+				return saveErr
+			}
+			return nil
 		}
 	}
 	return os.ErrNotExist
@@ -965,7 +999,10 @@ func (db *JSONDatabase) DeleteCart(cartID int) error {
 	}
 	db.data.CartItems = newCartItems
 
-	return db.saveData()
+	if saveErr := db.saveData(); saveErr != nil {
+		return saveErr
+	}
+	return nil
 }
 
 // AddCartItem, sepet öğesi ekler
@@ -983,7 +1020,10 @@ func (db *JSONDatabase) AddCartItem(item *models.CartItem) error {
 	item.ID = maxID + 1
 
 	db.data.CartItems = append(db.data.CartItems, *item)
-	return db.saveData()
+	if saveErr := db.saveData(); saveErr != nil {
+		return saveErr
+	}
+	return nil
 }
 
 // UpdateCartItem, sepet öğesini günceller
@@ -994,7 +1034,10 @@ func (db *JSONDatabase) UpdateCartItem(item *models.CartItem) error {
 	for i, it := range db.data.CartItems {
 		if it.ID == item.ID {
 			db.data.CartItems[i] = *item
-			return db.saveData()
+			if saveErr := db.saveData(); saveErr != nil {
+				return saveErr
+			}
+			return nil
 		}
 	}
 	return os.ErrNotExist
@@ -1008,7 +1051,10 @@ func (db *JSONDatabase) DeleteCartItem(itemID int) error {
 	for i, item := range db.data.CartItems {
 		if item.ID == itemID {
 			db.data.CartItems = append(db.data.CartItems[:i], db.data.CartItems[i+1:]...)
-			return db.saveData()
+			if saveErr := db.saveData(); saveErr != nil {
+				return saveErr
+			}
+			return nil
 		}
 	}
 	return os.ErrNotExist

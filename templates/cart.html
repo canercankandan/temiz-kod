@@ -210,7 +210,11 @@ function updateQuantity(productId, change, buttonElement) {
 }
 
 function removeFromCart(productId) {
+    console.log('removeFromCart çağrıldı, productId:', productId); // Debug
+    
     if (confirm('Bu ürünü sepetten kaldırmak istediğinizden emin misiniz?')) {
+        console.log('Kullanıcı onayladı, istek gönderiliyor...'); // Debug
+        
         fetch('/cart/remove', {
             method: 'POST',
             headers: {
@@ -221,12 +225,14 @@ function removeFromCart(productId) {
             })
         })
         .then(response => {
+            console.log('Response alındı:', response.status); // Debug
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             return response.json();
         })
         .then(data => {
+            console.log('Response data:', data); // Debug
             if (data.success) {
                 location.reload();
             } else {
@@ -281,4 +287,4 @@ function updateCartCount() {
     });
 }
 </script>
-{{end}} 
+{{end}}

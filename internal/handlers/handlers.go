@@ -1033,7 +1033,7 @@ func (h *Handler) RemoveFromCart(c *gin.Context) {
 
 	err := h.cartService.RemoveFromCart(sessionID, req.ProductID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Üründ sepetten çıkarılamadı"})
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Ürün sepetten çıkarılamadı"})
 		return
 	}
 
@@ -1436,10 +1436,11 @@ func (h *Handler) GetPublicOrderDetail(c *gin.Context) {
 	username, _ := c.Cookie("username")
 
 	var authorized bool
+	var user *models.User
 
 	// Kayıtlı kullanıcı kontrolü
 	if username != "" {
-		user, err := h.db.GetUserByUsername(username)
+		user, err = h.db.GetUserByUsername(username)
 		if err == nil && order.UserID == user.ID {
 			authorized = true
 		}
@@ -1484,10 +1485,11 @@ func (h *Handler) CustomerCancelOrder(c *gin.Context) {
 	username, _ := c.Cookie("username")
 
 	var authorized bool
+	var user *models.User
 
 	// Kayıtlı kullanıcı kontrolü
 	if username != "" {
-		user, err := h.db.GetUserByUsername(username)
+		user, err = h.db.GetUserByUsername(username)
 		if err == nil && order.UserID == user.ID {
 			authorized = true
 		}
@@ -2074,6 +2076,12 @@ func (h *Handler) AdminStartVideoCall(c *gin.Context) {
 		return
 	}
 
+	// Önce mevcut pending request'i sonlandır
+	err = h.db.EndVideoCallRequest(request.SessionID)
+	if err != nil {
+		log.Printf("AdminStartVideoCall - Warning: Could not end existing request: %v", err)
+	}
+
 	// Create video call request (username 'Admin' ve initiator 'admin' olarak kaydet)
 	err = h.db.CreateVideoCallRequestWithInitiator(request.SessionID, session.Username, session.UserID, "admin")
 	if err != nil {
@@ -2125,31 +2133,23 @@ func (h *Handler) SupportPing(c *gin.Context) {
 	if userAgent == "" {
 		userAgent = "Unknown"
 	}
-	session, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID, userAgent)
+	
+	// Session'ı oluştur veya güncelle
+	_, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID, userAgent)
 	if err != nil {
-		log.Printf("SupportPing - Error creating session: %v", err)
-		c.JSON(500, gin.H{"success": false, "error": "Session oluşturulamadı"})
+		log.Printf("SupportPing - Error creating/updating session: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Session güncellenemedi"})
 		return
 	}
 
-	// Mail gönderme kontrolü - yeni session veya son aktiviteden 5 dakika geçmişse
-	if session.CreatedAt == session.LastMessageAt || time.Since(session.LastMessageAt) > 5*time.Minute {
-		// Mail gönder
-		err = h.email.SendSupportChatNotification("irmaksuaritmam@gmail.com", displayName, sessionID, userAgent)
-		if err != nil {
-			log.Printf("SupportPing - Mail gönderme hatası: %v", err)
-		} else {
-			log.Printf("SupportPing - Mail notification sent to irmaksuaritmam@gmail.com for visitor: %s (Session: %s)", displayName, sessionID)
-		}
-	}
-
-	// Update last active time
+	// Session'ı aktif duruma getir
 	err = h.db.UpdateSupportSessionLastActive(sessionID)
 	if err != nil {
-		log.Printf("SupportPing - Error updating last active: %v", err)
+		log.Printf("SupportPing - Error updating session status: %v", err)
 	}
 
-	c.JSON(200, gin.H{"success": true})
+	log.Printf("SupportPing - Session %s ping received from %s", sessionID, displayName)
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
 // Kullanıcı destek sayfasından ayrıldı
@@ -2158,7 +2158,7 @@ func (h *Handler) SupportLeave(c *gin.Context) {
 
 	if sessionID == "" {
 		log.Printf("SupportLeave - No session ID found in cookie")
-		c.JSON(400, gin.H{"error": "Session ID bulunamadı"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Session ID bulunamadı"})
 		return
 	}
 
@@ -2172,5 +2172,5 @@ func (h *Handler) SupportLeave(c *gin.Context) {
 		log.Printf("SupportLeave - Session %s marked as offline successfully", sessionID)
 	}
 
-	c.JSON(200, gin.H{"success": true})
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }

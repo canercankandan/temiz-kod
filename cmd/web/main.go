@@ -2,16 +2,9 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
 	"html/template"
 	"log"
-	"math/big"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -21,46 +14,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-// generateSelfSignedCert creates a self-signed certificate for HTTPS
-func generateSelfSignedCert() (tls.Certificate, error) {
-	// Create private key
-	priv, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	// Create certificate template
-	template := x509.Certificate{
-		SerialNumber: big.NewInt(1),
-		Subject: pkix.Name{
-			Organization:  []string{"Cenap Water Filters"},
-			Country:       []string{"TR"},
-			Province:      []string{""},
-			Locality:      []string{"Istanbul"},
-			StreetAddress: []string{""},
-			PostalCode:    []string{""},
-		},
-		NotBefore:    time.Now(),
-		NotAfter:     time.Now().Add(365 * 24 * time.Hour), // 1 year
-		KeyUsage:     x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback, net.ParseIP("xn--suartmauzman-44bi.com"), net.ParseIP("xn--suartmauzman-44bi.com")},
-		DNSNames:     []string{"localhost", "*.localhost", "xn--suartmauzman-44bi.com", "xn--suartmauzman-44bi.com"},
-	}
-
-	// Create certificate
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	// Encode certificate
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
-
-	return tls.X509KeyPair(certPEM, keyPEM)
-}
 
 func main() {
 	// Production modunu aktif et
@@ -200,7 +153,7 @@ func main() {
 	r.GET("/cart", h.CartPage)
 	r.POST("/cart/add", h.AddToCart)
 	r.POST("/cart/update", h.UpdateCartItem)
-	r.POST("/cart/remove", h.RemoveFromCart)
+	r.POST("/cart/remove", h.RemoveFromCart)  // ✅ Doğru tanımlanmış
 	r.GET("/cart/count", h.GetCartCount)
 	r.GET("/checkout", h.CheckoutPage)
 	r.POST("/checkout", h.HandleCheckout)
@@ -272,22 +225,64 @@ func main() {
 		orders.DELETE("/:id", h.UserCancelOrder)
 	}
 
-	// Certificate yükle
-	cert, err := tls.LoadX509KeyPair("/etc/letsencrypt/live/xn--suartmauzman-44bi.com/fullchain.pem", "/etc/letsencrypt/live/xn--suartmauzman-44bi.com/privkey.pem")
-	if err != nil {
-		log.Printf("Let's Encrypt certificate yüklenemedi, self-signed kullanılıyor: %v", err)
-		// Fallback to self-signed certificate
-		cert, err = generateSelfSignedCert()
-		if err != nil {
-			log.Fatalf("SSL sertifikası oluşturulamadı: %v", err)
-		}
-	} else {
-		log.Printf("✅ Let's Encrypt certificate yüklendi: xn--suartmauzman-44bi.com")
+	// Certificate yükle ve HTTPS'i aktif et
+	certPath := os.Getenv("SSL_CERT_PATH")
+	keyPath := os.Getenv("SSL_KEY_PATH")
+	if certPath == "" {
+	    certPath = "localhost.crt"
 	}
-
-	// Configure TLS
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
+	if keyPath == "" {
+	    keyPath = "localhost.key"
+	}
+	
+	// Sertifika dosyalarının varlığını kontrol et
+	if _, err := os.Stat(certPath); os.IsNotExist(err) {
+		log.Printf("❌ Sertifika dosyası bulunamadı: %s", certPath)
+		log.Printf("HTTPS devre dışı, sadece HTTP kullanılıyor")
+	} else if _, err := os.Stat(keyPath); os.IsNotExist(err) {
+		log.Printf("❌ Anahtar dosyası bulunamadı: %s", keyPath)
+		log.Printf("HTTPS devre dışı, sadece HTTP kullanılıyor")
+	} else {
+		cert, certErr := tls.LoadX509KeyPair(certPath, keyPath)
+		if certErr != nil {
+			log.Printf("❌ Sertifika yüklenemedi: %v", certErr)
+			log.Printf("HTTPS devre dışı, sadece HTTP kullanılıyor")
+		} else {
+			log.Printf("✅ SSL Sertifikası başarıyla yüklendi")
+			
+			// TLS yapılandırması - Güvenlik ayarları iyileştirildi
+			tlsConfig := &tls.Config{
+				Certificates: []tls.Certificate{cert},
+				MinVersion:   tls.VersionTLS12,
+				CipherSuites: []uint16{
+					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+					tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+				},
+			}
+			
+			// HTTPS sunucusu - Port 8443
+			httpsServer := &http.Server{
+				Addr:      "0.0.0.0:8443",
+				Handler:   r,
+				TLSConfig: tlsConfig,
+				ReadTimeout:  15 * time.Second,
+				WriteTimeout: 15 * time.Second,
+				IdleTimeout:  60 * time.Second,
+			}
+			
+			// HTTPS sunucusunu arka planda başlat
+			go func() {
+				log.Printf("🔒 HTTPS Server başlatılıyor (port: 8443)...")
+				log.Printf("🔐 Yerel HTTPS erişim: https://localhost:8443")
+				log.Printf("🌐 HTTPS erişim için: https://xn--suartmauzman-44bi.com:8443")
+				if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
+					log.Printf("❌ HTTPS Server hatası: %v", err)
+				}
+			}()
+			
+			log.Printf("✅ HTTPS sunucusu başarıyla başlatıldı")
+		}
 	}
 
 	// Render.com için ortam değişkeni kontrolü
@@ -304,287 +299,22 @@ func main() {
 		return
 	}
 
-	// HTTP ve HTTPS sunucusu çalıştır
-	httpPort := "80"
-	httpsPort := "443"
+	// HTTP sunucusu çalıştır
+	httpPort := "3000"  // Port tanımlandı
 
-	// HTTP sunucusu için ayrı bir Gin engine oluştur
-	httpEngine := gin.New()
-	httpEngine.Use(gin.Logger())
-	httpEngine.Use(gin.Recovery())
-	httpEngine.SetTrustedProxies([]string{"127.0.0.1", "::1"})
-	
-	// HTTP engine için template renderer ayarla
-	httpEngine.HTMLRender = &handlers.HTMLRenderer{
-		Templates: templates,
-	}
-	
-	// HTTP engine için static dosyalar
-	httpEngine.Static("/static", "./static")
-	
-	// HTTP engine için tüm route'ları kopyala
-	httpEngine.GET("/", h.HomePage)
-	httpEngine.GET("/home", h.HomePage)
-	httpEngine.GET("/test", func(c *gin.Context) {
-		c.String(http.StatusOK, "Test sayfası - HTTP Server aktif!")
-	})
-	httpEngine.GET("/products", h.ProductsPage)
-	httpEngine.GET("/about", h.AboutPage)
-	httpEngine.GET("/contact", h.ContactPage)
-	
-	// Order tracking routes
-	httpEngine.GET("/track", h.OrderTrackingPage)
-	httpEngine.POST("/track-order", h.TrackOrderByNumber)
-	httpEngine.GET("/track-session-orders", h.TrackOrderBySession)
-	httpEngine.POST("/cancel-order/:id", h.CustomerCancelOrder)
-	
-	// Support chat routes
-	httpEngine.GET("/support", h.SupportChatPage)
-	httpEngine.POST("/support/send", h.SendSupportMessage)
-	httpEngine.GET("/support/messages", h.GetSupportMessages)
-	httpEngine.POST("/support/video-call-request", h.HandleVideoCallRequest)
-	httpEngine.POST("/support/webrtc-signal", h.HandleWebRTCSignal)
-	httpEngine.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
-	httpEngine.POST("/support/ping", h.SupportPing)
-	httpEngine.POST("/support/leave", h.SupportLeave)
-	
-	// Sepet rotaları
-	httpEngine.GET("/cart", h.CartPage)
-	httpEngine.POST("/cart/add", h.AddToCart)
-	httpEngine.POST("/cart/update", h.UpdateCartItem)
-	httpEngine.POST("/cart/remove", h.RemoveFromCart)
-	httpEngine.GET("/cart/count", h.GetCartCount)
-	httpEngine.GET("/checkout", h.CheckoutPage)
-	httpEngine.POST("/checkout", h.HandleCheckout)
-	httpEngine.GET("/order-success", h.OrderSuccessPage)
-	
-	// User authentication routes
-	httpEngine.GET("/login", h.LoginPage)
-	httpEngine.POST("/login", h.HandleLogin)
-	httpEngine.GET("/register", h.RegisterPage)
-	httpEngine.POST("/register", h.HandleRegister)
-	httpEngine.GET("/logout", h.UserLogout)
-	
-	// Şifre sıfırlama route'ları
-	httpEngine.GET("/forgot-password", h.ForgotPasswordPage)
-	httpEngine.POST("/forgot-password", h.HandleForgotPassword)
-	httpEngine.GET("/reset-password", h.ResetPasswordPage)
-	httpEngine.POST("/reset-password", h.HandleResetPassword)
-	
-	// Admin authentication rotaları
-	httpEngine.GET("/admin/login", h.AdminLoginPage)
-	httpEngine.POST("/admin/login", h.AdminLogin)
-	httpEngine.GET("/admin/logout", h.AdminLogout)
-	
-	// Admin paneli rotaları (korumalı)
-	httpAdmin := httpEngine.Group("/admin")
-	httpAdmin.Use(h.AuthMiddleware())
-	{
-		httpAdmin.GET("", h.AdminPage)
-		httpAdmin.POST("/add-product", h.AddProduct)
-		httpAdmin.POST("/update-product", h.UpdateProduct)
-		httpAdmin.DELETE("/delete-product/:id", h.DeleteProduct)
-		httpAdmin.GET("/orders", h.AdminGetOrders)
-		httpAdmin.GET("/orders/:id", h.AdminGetOrderDetail)
-		httpAdmin.PUT("/orders/:id", h.AdminUpdateOrder)
-		httpAdmin.DELETE("/orders/:id", h.AdminDeleteOrder)
-		httpAdmin.GET("/users", h.AdminGetUsers)
-		httpAdmin.DELETE("/users/:id", h.AdminDeleteUser)
-		httpAdmin.GET("/support", h.AdminSupportPage)
-		httpAdmin.GET("/support/sessions", h.AdminGetSupportSessions)
-		httpAdmin.GET("/support/messages/:sessionId", h.AdminGetSupportMessages)
-		httpAdmin.POST("/support/send/:sessionId", h.AdminSendSupportMessage)
-		httpAdmin.POST("/support/video-call-response", h.AdminVideoCallResponse)
-		httpAdmin.POST("/support/start-video-call", h.AdminStartVideoCall)
-		httpAdmin.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
-		httpAdmin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
-		httpAdmin.POST("/support/webrtc-signal", h.HandleAdminWebRTCSignal)
-		httpAdmin.GET("/support/webrtc-signals/:sessionId", h.GetAdminWebRTCSignals)
-	}
-	
-	// User profile routes (protected)
-	httpUser := httpEngine.Group("/profile")
-	httpUser.Use(h.AuthUserMiddleware())
-	{
-		httpUser.GET("", h.ProfilePage)
-		httpUser.POST("/change-password", h.HandleChangePassword)
-	}
-	
-	// Sipariş geçmişi (protected)
-	httpOrders := httpEngine.Group("/orders")
-	httpOrders.Use(h.AuthUserMiddleware())
-	{
-		httpOrders.GET("", h.OrdersPage)
-		httpOrders.GET("/:id", h.GetOrderDetail)
-		httpOrders.DELETE("/:id", h.UserCancelOrder)
-	}
-	
-	httpEngine.GET("/sitemap.xml", func(c *gin.Context) {
-		c.Header("Content-Type", "application/xml")
-		c.File("./templates/sitemap.xml")
-	})
-	httpEngine.GET("/robots.txt", func(c *gin.Context) {
-		c.Header("Content-Type", "text/plain")
-		c.File("./static/robots.txt")
-	})
-	httpEngine.GET("/favicon.ico", func(c *gin.Context) {
-		c.File("./static/favicon.ico")
-	})
-
-	// HTTP server
+	// HTTP server - r engine'ini kullan (httpEngine yerine)
 	httpServer := &http.Server{
 		Addr:    "0.0.0.0:" + httpPort,
-		Handler: httpEngine,
+		Handler: r,  // httpEngine yerine r kullan
 	}
 
-	// HTTPS sunucusu için ayrı bir Gin engine oluştur
-	httpsEngine := gin.New()
-	httpsEngine.Use(gin.Logger())
-	httpsEngine.Use(gin.Recovery())
-	httpsEngine.SetTrustedProxies([]string{"127.0.0.1", "::1"})
+	// HTTP Server'ı başlat
+	log.Printf("🌐 HTTP Server başlatılıyor...")
+	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
+	log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
+	log.Printf("✅ HTTP (3000) ve HTTPS (8443) sunucuları aktif")
 	
-	// HTTPS engine için template renderer ayarla
-	httpsEngine.HTMLRender = &handlers.HTMLRenderer{
-		Templates: templates,
+	if err := httpServer.ListenAndServe(); err != nil {
+		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
-	
-	// HTTPS engine için static dosyalar
-	httpsEngine.Static("/static", "./static")
-	
-	// HTTPS engine için tüm route'ları kopyala
-	httpsEngine.GET("/", h.HomePage)
-	httpsEngine.GET("/home", h.HomePage)
-	httpsEngine.GET("/test", func(c *gin.Context) {
-		c.String(http.StatusOK, "HTTPS Test sayfası - HTTPS Server aktif!")
-	})
-	httpsEngine.GET("/products", h.ProductsPage)
-	httpsEngine.GET("/about", h.AboutPage)
-	httpsEngine.GET("/contact", h.ContactPage)
-	
-	// Order tracking routes
-	httpsEngine.GET("/track", h.OrderTrackingPage)
-	httpsEngine.POST("/track-order", h.TrackOrderByNumber)
-	httpsEngine.GET("/track-session-orders", h.TrackOrderBySession)
-	httpsEngine.POST("/cancel-order/:id", h.CustomerCancelOrder)
-	
-	// Support chat routes
-	httpsEngine.GET("/support", h.SupportChatPage)
-	httpsEngine.POST("/support/send", h.SendSupportMessage)
-	httpsEngine.GET("/support/messages", h.GetSupportMessages)
-	httpsEngine.POST("/support/video-call-request", h.HandleVideoCallRequest)
-	httpsEngine.POST("/support/webrtc-signal", h.HandleWebRTCSignal)
-	httpsEngine.GET("/support/webrtc-signals/:sessionId", h.GetWebRTCSignals)
-	httpsEngine.POST("/support/ping", h.SupportPing)
-	httpsEngine.POST("/support/leave", h.SupportLeave)
-	
-	// Sepet rotaları
-	httpsEngine.GET("/cart", h.CartPage)
-	httpsEngine.POST("/cart/add", h.AddToCart)
-	httpsEngine.POST("/cart/update", h.UpdateCartItem)
-	httpsEngine.POST("/cart/remove", h.RemoveFromCart)
-	httpsEngine.GET("/cart/count", h.GetCartCount)
-	httpsEngine.GET("/checkout", h.CheckoutPage)
-	httpsEngine.POST("/checkout", h.HandleCheckout)
-	httpsEngine.GET("/order-success", h.OrderSuccessPage)
-	
-	// User authentication routes
-	httpsEngine.GET("/login", h.LoginPage)
-	httpsEngine.POST("/login", h.HandleLogin)
-	httpsEngine.GET("/register", h.RegisterPage)
-	httpsEngine.POST("/register", h.HandleRegister)
-	httpsEngine.GET("/logout", h.UserLogout)
-	
-	// Şifre sıfırlama route'ları
-	httpsEngine.GET("/forgot-password", h.ForgotPasswordPage)
-	httpsEngine.POST("/forgot-password", h.HandleForgotPassword)
-	httpsEngine.GET("/reset-password", h.ResetPasswordPage)
-	httpsEngine.POST("/reset-password", h.HandleResetPassword)
-	
-	// Admin authentication rotaları
-	httpsEngine.GET("/admin/login", h.AdminLoginPage)
-	httpsEngine.POST("/admin/login", h.AdminLogin)
-	httpsEngine.GET("/admin/logout", h.AdminLogout)
-	
-	// Admin paneli rotaları (korumalı)
-	httpsAdmin := httpsEngine.Group("/admin")
-	httpsAdmin.Use(h.AuthMiddleware())
-	{
-		httpsAdmin.GET("", h.AdminPage)
-		httpsAdmin.POST("/add-product", h.AddProduct)
-		httpsAdmin.POST("/update-product", h.UpdateProduct)
-		httpsAdmin.DELETE("/delete-product/:id", h.DeleteProduct)
-		httpsAdmin.GET("/orders", h.AdminGetOrders)
-		httpsAdmin.GET("/orders/:id", h.AdminGetOrderDetail)
-		httpsAdmin.PUT("/orders/:id", h.AdminUpdateOrder)
-		httpsAdmin.DELETE("/orders/:id", h.AdminDeleteOrder)
-		httpsAdmin.GET("/users", h.AdminGetUsers)
-		httpsAdmin.DELETE("/users/:id", h.AdminDeleteUser)
-		httpsAdmin.GET("/support", h.AdminSupportPage)
-		httpsAdmin.GET("/support/sessions", h.AdminGetSupportSessions)
-		httpsAdmin.GET("/support/messages/:sessionId", h.AdminGetSupportMessages)
-		httpsAdmin.POST("/support/send/:sessionId", h.AdminSendSupportMessage)
-		httpsAdmin.POST("/support/video-call-response", h.AdminVideoCallResponse)
-		httpsAdmin.POST("/support/start-video-call", h.AdminStartVideoCall)
-		httpsAdmin.GET("/support/video-call-status/:sessionId", h.CheckVideoCallStatus)
-		httpsAdmin.GET("/support/video-call-requests", h.AdminGetVideoCallRequests)
-		httpsAdmin.POST("/support/webrtc-signal", h.HandleAdminWebRTCSignal)
-		httpsAdmin.GET("/support/webrtc-signals/:sessionId", h.GetAdminWebRTCSignals)
-	}
-	
-	// User profile routes (protected)
-	httpsUser := httpsEngine.Group("/profile")
-	httpsUser.Use(h.AuthUserMiddleware())
-	{
-		httpsUser.GET("", h.ProfilePage)
-		httpsUser.POST("/change-password", h.HandleChangePassword)
-	}
-	
-	// Sipariş geçmişi (protected)
-	httpsOrders := httpsEngine.Group("/orders")
-	httpsOrders.Use(h.AuthUserMiddleware())
-	{
-		httpsOrders.GET("", h.OrdersPage)
-		httpsOrders.GET("/:id", h.GetOrderDetail)
-		httpsOrders.DELETE("/:id", h.UserCancelOrder)
-	}
-	
-	httpsEngine.GET("/sitemap.xml", func(c *gin.Context) {
-		c.Header("Content-Type", "application/xml")
-		c.File("./templates/sitemap.xml")
-	})
-	httpsEngine.GET("/robots.txt", func(c *gin.Context) {
-		c.Header("Content-Type", "text/plain")
-		c.File("./static/robots.txt")
-	})
-	httpsEngine.GET("/favicon.ico", func(c *gin.Context) {
-		c.File("./static/favicon.ico")
-	})
-
-	// HTTPS server
-	httpsServer := &http.Server{
-		Addr:      "0.0.0.0:" + httpsPort,
-		Handler:   httpsEngine,
-		TLSConfig: tlsConfig,
-	}
-
-	// HTTP Server'ı goroutine'de başlat
-	go func() {
-		log.Printf("🌐 HTTP Server başlatılıyor...")
-		log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
-		log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
-		
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Printf("HTTP Server hatası: %v", err)
-		}
-	}()
-
-	// HTTPS Server devre dışı - sadece HTTP
-	// log.Printf("🔒 HTTPS Server başlatılıyor...")
-	log.Printf("📱 HTTPS erişim için: https://localhost:%s", httpsPort)
-	log.Printf("🌐 Mobil HTTPS erişim için: https://xn--suartmauzman-44bi.com:%s", httpsPort)
-	log.Printf("⚠️  Self-signed certificate kullanılıyor - tarayıcıda güvenlik uyarısı çıkabilir")
-	
-	if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
-		log.Fatalf("HTTPS Server başlatılamadı: %v", err)
-	}
-} 
+}

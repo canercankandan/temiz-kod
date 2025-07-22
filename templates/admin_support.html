@@ -126,24 +126,57 @@
                     </div>
                 </div>
                 <div class="card-body p-0" style="background-color: white;">
-                    <!-- Video Call Area -->
-                    <div id="adminVideoCallArea" class="video-call-area" style="display: none; height: 300px; background: #000; position: relative;">
-                        <video id="adminLocalVideo" autoplay muted style="width: 150px; height: 100px; position: absolute; top: 10px; right: 10px; border: 2px solid #fff; border-radius: 8px; z-index: 10;"></video>
-                        <video id="adminRemoteVideo" autoplay style="width: 100%; height: 100%; object-fit: cover;"></video>
-                        <div class="video-controls" style="position: absolute; bottom: 10px; right: 20px; z-index: 10; display: flex; flex-direction: row; gap: 10px;">
-                            <button id="adminToggleMuteBtn" class="btn btn-secondary btn-sm me-2" title="Mikrofonu Aç/Kapat">
-                                <i class="fas fa-microphone"></i>
+                    <!-- Video Call Area - Düzeltilmiş Tasarım -->
+                    <div id="adminVideoCallArea" class="video-call-area" style="display: none; height: 350px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.3); margin: 10px;">
+                        <!-- Ana Video (Ziyaretçi/Müşteri) -->
+                        <video id="adminRemoteVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;"></video>
+                        
+                        <!-- Küçük Video (Admin) - Sağ Üst Köşe -->
+                        <div class="admin-pip-container" style="position: absolute; top: 15px; right: 15px; z-index: 20; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.3s ease; cursor: move;" id="adminPipContainer">
+                            <video id="adminLocalVideo" autoplay muted style="width: 80px; height: 60px; object-fit: cover; border: 2px solid rgba(255,255,255,0.9); border-radius: 8px;"></video>
+                        </div>
+                        
+                        <!-- Görüşme Durumu -->
+                        <div class="call-status-modern" style="position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 15; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); padding: 6px 12px; border-radius: 15px; color: white; font-size: 12px; font-weight: 500; border: 1px solid rgba(255,255,255,0.2);">
+                            <i class="fas fa-circle text-success me-2" style="font-size: 6px; animation: pulse 2s infinite;"></i>
+                            <span id="adminCallStatusText">Görüşme Aktif</span>
+                        </div>
+                        
+                        <!-- Dikey Kontroller (Sağ Taraf) -->
+                        <div class="admin-vertical-controls" style="position: absolute; top: 50%; right: 15px; transform: translateY(-50%); z-index: 15; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
+                            <button id="adminToggleMuteBtn" class="btn admin-control-btn" title="Mikrofonu Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>
                             </button>
-                            <button id="adminToggleVideoBtn" class="btn btn-secondary btn-sm me-2" title="Kamerayı Aç/Kapat">
-                                <i class="fas fa-video"></i>
+                            <button id="adminToggleVideoBtn" class="btn admin-control-btn" title="Kamerayı Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-video" style="font-size: 14px; color: white;"></i>
                             </button>
-                            <button id="adminEndCallBtn" class="btn btn-danger btn-sm" onclick="endAdminVideoCall()" title="Görüşmeyi Sonlandır">
-                                <i class="fas fa-phone-slash me-1"></i>Sonlandır
+                            <button id="adminSwitchCameraBtn" class="btn admin-control-btn" onclick="adminSwitchCameras()" title="Kamera Değiştir" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(23,162,184,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-sync-alt" style="font-size: 14px; color: white;"></i>
+                            </button>
+                            <button id="adminEndCallBtn" class="btn admin-control-btn" onclick="endAdminVideoCall()" title="Görüşmeyi Sonlandır" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(220,53,69,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-phone-slash" style="font-size: 14px; color: white;"></i>
                             </button>
                         </div>
-                        <div class="call-status" style="position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 15px; font-size: 12px;">
-                            <i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i>
-                            <span id="adminCallStatusText">Bağlantı aktif</span>
+                        
+                        <!-- Mobil Kontroller (Sol Taraf) -->
+                        <div class="admin-mobile-controls" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 15; display: none; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
+                            <button id="adminMobileToggleMuteBtn" class="btn admin-mobile-control" title="Mikrofonu Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>
+                            </button>
+                            <button id="adminMobileToggleVideoBtn" class="btn admin-mobile-control" title="Kamerayı Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-video" style="font-size: 14px; color: white;"></i>
+                            </button>
+                            <button id="adminMobileSwitchCameraBtn" class="btn admin-mobile-control" onclick="adminSwitchCameras()" title="Kamera Değiştir" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(23,162,184,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-sync-alt" style="font-size: 14px; color: white;"></i>
+                            </button>
+                            <button id="adminMobileEndCallBtn" class="btn admin-mobile-control" onclick="endAdminVideoCall()" title="Görüşmeyi Sonlandır" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(220,53,69,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-phone-slash" style="font-size: 14px; color: white;"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Kamera Değiştirme Bildirimi -->
+                        <div id="adminCameraSwitch" class="camera-switch-notification" style="position: absolute; top: 50px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 20px; color: white; font-size: 12px; font-weight: 500; display: none; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                            <i class="fas fa-sync-alt fa-spin me-2" style="color: #17a2b8;"></i>Kamera değiştiriliyor...
                         </div>
                     </div>
                     
@@ -369,14 +402,65 @@ h1, h2, h3, h4, h5, h6, p, span, div, small {
         height: 75px;
     }
     
-    .video-controls button {
-        width: 35px;
-        height: 35px;
+    /* Masaüstü kontrolleri gizle */
+    .admin-vertical-controls {
+        display: none !important;
     }
     
-    .video-call-buttons .btn-sm {
-        font-size: 0.75rem;
-        padding: 0.3rem 0.6rem;
+    /* Mobil kontrolleri göster - Sol tarafta */
+    .admin-mobile-controls {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 15px !important;
+        transform: translateY(-50%) !important;
+        z-index: 15 !important;
+        background: rgba(0,0,0,0.85) !important;
+        backdrop-filter: blur(15px) !important;
+        padding: 10px !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
+    }
+    
+    .admin-mobile-control {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 50% !important;
+        border: 2px solid rgba(255,255,255,0.8) !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+    
+    .admin-mobile-control i {
+        font-size: 14px !important;
+        color: white !important;
+    }
+    
+    .admin-mobile-control:hover {
+        transform: scale(1.05) !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .admin-mobile-control.muted {
+        background: rgba(220,53,69,0.9) !important;
+    }
+    
+    .admin-mobile-control.video-off {
+        background: rgba(220,53,69,0.9) !important;
+    }
+}
+
+/* Masaüstünde mobil kontrolleri gizle */
+@media (min-width: 769px) {
+    .admin-mobile-controls {
+        display: none !important;
+    }
+    
+    .admin-vertical-controls {
+        display: flex !important;
     }
 }
 </style>
@@ -394,6 +478,10 @@ let isAdminCallActive = false;
 let isAdminMuted = false;
 let isAdminVideoOff = false;
 let pendingVideoCallSession = null;
+let adminCurrentFacingMode = 'user';
+let adminIsMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+    ('ontouchstart' in window) || 
+    (navigator.maxTouchPoints > 0);
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
@@ -416,6 +504,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('adminToggleMuteBtn').addEventListener('click', adminToggleMute);
     document.getElementById('adminToggleVideoBtn').addEventListener('click', adminToggleVideo);
     
+    // Mobile video call event listeners
+    document.getElementById('adminMobileToggleMuteBtn').addEventListener('click', adminToggleMute);
+    document.getElementById('adminMobileToggleVideoBtn').addEventListener('click', adminToggleVideo);
+    
     // Admin video call başlatma
     document.getElementById('startVideoCallBtn').addEventListener('click', startAdminVideoCall);
     document.getElementById('endAdminCallBtn2').addEventListener('click', endAdminVideoCall);
@@ -435,6 +527,11 @@ function loadChat(sessionID, username) {
     // Show admin video call controls
     document.getElementById('adminVideoCallControls').style.display = 'block';
     document.getElementById('videoCallControls').style.display = 'none';
+    
+    // Show camera switch button for mobile devices
+    if (adminIsMobileDevice) {
+        document.getElementById('adminSwitchCameraBtn').style.display = 'inline-block';
+    }
     
     // Mark session as active
     document.querySelectorAll('.session-item').forEach(item => {
@@ -920,6 +1017,9 @@ async function endAdminVideoCall() {
         isAdminMuted = false;
         isAdminVideoOff = false;
         
+        // Reset admin call message flag
+        window.adminCallMessageShown = false;
+        
         // Stop signaling polling
         stopAdminSignalingPolling();
         
@@ -928,6 +1028,12 @@ async function endAdminVideoCall() {
         document.getElementById('adminToggleVideoBtn').classList.remove('video-off');
         document.getElementById('adminToggleMuteBtn').innerHTML = '<i class="fas fa-microphone"></i>';
         document.getElementById('adminToggleVideoBtn').innerHTML = '<i class="fas fa-video"></i>';
+        
+        // Reset mobile button states
+        document.getElementById('adminMobileToggleMuteBtn').classList.remove('muted');
+        document.getElementById('adminMobileToggleVideoBtn').classList.remove('video-off');
+        document.getElementById('adminMobileToggleMuteBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+        document.getElementById('adminMobileToggleVideoBtn').innerHTML = '<i class="fas fa-video"></i>';
         
         // Send end call notification
         await sendVideoCallResponse('end');
@@ -947,12 +1053,19 @@ function adminToggleMute() {
             audioTrack.enabled = !audioTrack.enabled;
             isAdminMuted = !audioTrack.enabled;
             
+            const desktopBtn = document.getElementById('adminToggleMuteBtn');
+            const mobileBtn = document.getElementById('adminMobileToggleMuteBtn');
+            
             if (isAdminMuted) {
-                document.getElementById('adminToggleMuteBtn').classList.add('muted');
-                document.getElementById('adminToggleMuteBtn').innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                desktopBtn.classList.add('muted');
+                desktopBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                mobileBtn.classList.add('muted');
+                mobileBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
             } else {
-                document.getElementById('adminToggleMuteBtn').classList.remove('muted');
-                document.getElementById('adminToggleMuteBtn').innerHTML = '<i class="fas fa-microphone"></i>';
+                desktopBtn.classList.remove('muted');
+                desktopBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                mobileBtn.classList.remove('muted');
+                mobileBtn.innerHTML = '<i class="fas fa-microphone"></i>';
             }
         }
     }
@@ -965,12 +1078,19 @@ function adminToggleVideo() {
             videoTrack.enabled = !videoTrack.enabled;
             isAdminVideoOff = !videoTrack.enabled;
             
+            const desktopBtn = document.getElementById('adminToggleVideoBtn');
+            const mobileBtn = document.getElementById('adminMobileToggleVideoBtn');
+            
             if (isAdminVideoOff) {
-                document.getElementById('adminToggleVideoBtn').classList.add('video-off');
-                document.getElementById('adminToggleVideoBtn').innerHTML = '<i class="fas fa-video-slash"></i>';
+                desktopBtn.classList.add('video-off');
+                desktopBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+                mobileBtn.classList.add('video-off');
+                mobileBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
             } else {
-                document.getElementById('adminToggleVideoBtn').classList.remove('video-off');
-                document.getElementById('adminToggleVideoBtn').innerHTML = '<i class="fas fa-video"></i>';
+                desktopBtn.classList.remove('video-off');
+                desktopBtn.innerHTML = '<i class="fas fa-video"></i>';
+                mobileBtn.classList.remove('video-off');
+                mobileBtn.innerHTML = '<i class="fas fa-video"></i>';
             }
         }
     }
@@ -994,12 +1114,49 @@ async function initializeAdminPeerConnection() {
             adminPeerConnection.addTrack(track, adminLocalStream);
         });
         
-        // Handle remote stream
+        // Handle remote stream - DÜZELTME
         adminPeerConnection.ontrack = (event) => {
-            console.log('Admin received remote stream');
-            adminRemoteStream = event.streams[0];
-            document.getElementById('adminRemoteVideo').srcObject = adminRemoteStream;
-            document.getElementById('adminCallStatusText').textContent = 'Müşteri bağlandı';
+            console.log('Admin received remote stream:', event);
+            if (event.streams && event.streams[0]) {
+                adminRemoteStream = event.streams[0];
+                const adminRemoteVideo = document.getElementById('adminRemoteVideo');
+                if (adminRemoteVideo) {
+                    console.log('Setting customer stream to admin video element');
+                    adminRemoteVideo.srcObject = adminRemoteStream;
+                    
+                    // Video metadata yüklendiğinde
+                    adminRemoteVideo.onloadedmetadata = () => {
+                        console.log('Admin remote video metadata loaded');
+                        console.log('Customer video dimensions:', adminRemoteVideo.videoWidth, 'x', adminRemoteVideo.videoHeight);
+                        
+                        // Video oynatmayı başlat
+                        adminRemoteVideo.play().then(() => {
+                            console.log('Customer video started playing in admin panel');
+                            document.getElementById('adminCallStatusText').textContent = 'Müşteri bağlandı - Video aktif';
+                        }).catch(error => {
+                            console.error('Error playing customer video:', error);
+                            // Kullanıcı etkileşimi gerekebilir
+                            adminRemoteVideo.muted = true;
+                            adminRemoteVideo.play();
+                        });
+                    };
+                    
+                    // Video oynatma olayları
+                    adminRemoteVideo.onplay = () => console.log('Customer video playing in admin');
+                    adminRemoteVideo.onpause = () => console.log('Customer video paused in admin');
+                    adminRemoteVideo.onerror = (error) => console.error('Customer video error in admin:', error);
+                    
+                    // Video yüklenme durumu
+                    adminRemoteVideo.oncanplay = () => {
+                        console.log('Customer video can play in admin');
+                        adminRemoteVideo.play();
+                    };
+                } else {
+                    console.error('Admin remote video element not found');
+                }
+            } else {
+                console.error('No remote stream in admin track event');
+            }
         };
         
         // Handle ICE candidates
@@ -1180,8 +1337,9 @@ function checkVideoCallRequests() {
                     }
                 } else {
                     // Admin arama başlattıysa butonları gösterme, sadece bilgi mesajı göster
-                    if (sessionId === currentSessionID && !isAdminCallActive) {
+                    if (sessionId === currentSessionID && !isAdminCallActive && !window.adminCallMessageShown) {
                         addAdminSystemMessage(`Video görüşme başlatıldı, müşteri yanıtını bekliyor...`);
+                        window.adminCallMessageShown = true; // Mesajın tekrar gösterilmesini engelle
                     }
                 }
             });
@@ -1297,7 +1455,99 @@ function loadAdminSessions() {
     loadSessions();
 }
 
-// Initialize admin support functionality
+// Admin kamera değiştirme fonksiyonu - DÜZELTİLMİŞ
+async function adminSwitchCameras() {
+    if (!adminIsMobileDevice || !adminLocalStream) return;
+    
+    const notification = document.getElementById('adminCameraSwitch');
+    if (notification) notification.style.display = 'block';
+    
+    try {
+        // Mevcut video track'i al
+        const videoTrack = adminLocalStream.getVideoTracks()[0];
+        if (!videoTrack) return;
+        
+        // Ön kamera (user) ile arka kamera (environment) arasında geçiş
+        const newFacingMode = adminCurrentFacingMode === 'user' ? 'environment' : 'user';
+        
+        const constraints = {
+            video: {
+                facingMode: { ideal: newFacingMode }, // ✅ İyi: ideal kullanılmış
+                width: { ideal: 640, min: 320 },
+                height: { ideal: 480, min: 240 },
+                frameRate: { ideal: 30 }
+            },
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+            }
+        };
+        
+        // Eski stream'i durdur
+        adminLocalStream.getTracks().forEach(track => track.stop());
+        
+        // Yeni stream al
+        adminLocalStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Yerel video elementini güncelle
+        const adminLocalVideo = document.getElementById('adminLocalVideo');
+        adminLocalVideo.srcObject = adminLocalStream;
+        
+        // WebRTC bağlantısında track'leri değiştir
+        if (adminPeerConnection) {
+            const videoSender = adminPeerConnection.getSenders().find(s => 
+                s.track && s.track.kind === 'video'
+            );
+            const audioSender = adminPeerConnection.getSenders().find(s => 
+                s.track && s.track.kind === 'audio'
+            );
+            
+            if (videoSender) {
+                await videoSender.replaceTrack(adminLocalStream.getVideoTracks()[0]);
+            }
+            if (audioSender) {
+                await audioSender.replaceTrack(adminLocalStream.getAudioTracks()[0]);
+            }
+            
+            console.log('Admin camera switched successfully');
+        }
+        
+        adminCurrentFacingMode = newFacingMode;
+        
+        if (notification) {
+            notification.innerHTML = '<i class="fas fa-check me-2"></i>Kamera değiştirildi!';
+            setTimeout(() => {
+                notification.style.display = 'none';
+                notification.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i>Kamera değiştiriliyor...';
+            }, 1500);
+        }
+        
+    } catch (error) {
+        console.error('Kamera değiştirilemedi:', error);
+        
+        // ✅ İyi: Fallback mekanizması var - Hata durumunda ön kameraya geri dön
+        try {
+            adminLocalStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user' },
+                audio: true
+            });
+            const adminLocalVideo = document.getElementById('adminLocalVideo');
+            adminLocalVideo.srcObject = adminLocalStream;
+            adminCurrentFacingMode = 'user';
+        } catch (fallbackError) {
+            console.error('Ön kameraya dönüş hatası:', fallbackError);
+        }
+        
+        if (notification) {
+            notification.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Kamera değiştirilemedi!';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     loadAdminSessions();
     setInterval(loadAdminSessions, 3000); // 3 saniye
