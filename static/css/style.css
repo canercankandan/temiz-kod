@@ -932,7 +932,7 @@ footer h5 {
     object-fit: cover;
 }
 
-/* Video kontrol butonlarını KESİNLİKLE SOL TARAFA ZORLA */
+/* Video kontrol butonlarını KESİNLİKLE SOL TARAFA ZORLA - EN GÜÇLÜ OVERRIDE */
 .video-controls,
 .control-buttons,
 .video-buttons,
@@ -948,7 +948,13 @@ div:has([class*="video"]),
 button,
 [class*="button"],
 [class*="control"],
-[class*="video"] {
+[class*="video"],
+/* TÜM OLASI BUTON GRUPLARINI YAKALA */
+.controls,
+.buttons,
+.video-controls,
+.control-buttons,
+.video-buttons {
     position: absolute !important;
     left: 20px !important; /* SOL TARAFA ZORLA */
     right: auto !important; /* SAĞ POZİSYONU KALDIR */
