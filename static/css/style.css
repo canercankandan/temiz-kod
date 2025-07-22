@@ -932,29 +932,30 @@ footer h5 {
     object-fit: cover;
 }
 
-/* Video kontrol butonlarını sol tarafa taşıma - GÜÇLÜ OVERRIDE */
-.video-controls {
+/* Video kontrol butonlarını SOL TARAFA ZORLA - GÖRÜNTÜDEKİ GİBİ */
+.video-controls,
+.control-buttons,
+.video-buttons,
+[class*="video-controls"],
+[class*="control-buttons"],
+[class*="video-buttons"],
+div[class*="controls"],
+div[class*="buttons"] {
     position: absolute !important;
-    left: 20px !important; /* Sol tarafa taşıma */
-    right: auto !important; /* Sağ pozisyonu kaldır */
+    left: 20px !important; /* SOL TARAFA ZORLA */
+    right: auto !important; /* SAĞ POZİSYONU KALDIR */
     top: 50% !important;
     transform: translateY(-50%) !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 15px !important;
-    z-index: 1000 !important;
+    z-index: 9999 !important;
 }
 
-/* Tüm video kontrol butonlarını sol tarafa zorla */
-[class*="video-controls"],
-[class*="control-buttons"],
-[class*="video-buttons"] {
-    left: 20px !important;
-    right: auto !important;
-}
-
-/* Buton stilleri */
-.control-button {
+/* Buton stilleri - GÖRÜNTÜDEKİ GİBİ */
+.control-button,
+.video-button,
+[class*="button"] {
     width: 50px !important;
     height: 50px !important;
     border-radius: 50% !important;
@@ -964,10 +965,12 @@ footer h5 {
     align-items: center !important;
     justify-content: center !important;
     transition: all 0.3s ease !important;
+    background-color: #333 !important; /* Koyu gri */
+    color: white !important;
 }
 
-/* Buton renkleri */
-.mic-button { background-color: white !important; }
-.video-button { background-color: white !important; }
-.switch-button { background-color: #00CED1 !important; }
+/* Buton renkleri - GÖRÜNTÜDEKİ GİBİ */
+.mic-button { background-color: #333 !important; }
+.video-button { background-color: #333 !important; }
+.switch-button { background-color: #333 !important; }
 .end-button { background-color: #FF4444 !important; }
