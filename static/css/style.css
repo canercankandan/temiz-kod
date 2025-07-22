@@ -886,6 +886,24 @@ footer h5 {
     }
 }
 
+.pip-container {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 20;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  transition: all 0.3s ease;
+  cursor: move;
+  width: 60px;
+  height: 45px;
+  min-width: 60px;
+  min-height: 45px;
+  max-width: 60px;
+  max-height: 45px;
+  background: #00000022;
+}
 @media (min-width: 769px) {
   .pip-container {
     width: 160px !important;
@@ -894,5 +912,7 @@ footer h5 {
     min-height: 120px !important;
     max-width: 160px !important;
     max-height: 120px !important;
+    top: 20px;
+    right: 20px;
   }
 }
