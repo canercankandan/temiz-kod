@@ -932,22 +932,39 @@ footer h5 {
     object-fit: cover;
 }
 
-/* Video kontrol butonlarını SOL TARAFA ZORLA - SADECE SOL TARAF */
+/* Video kontrol butonlarını KESİNLİKLE SOL TARAFA ZORLA */
 .video-controls,
 .control-buttons,
 .video-buttons,
 [class*="video-controls"],
 [class*="control-buttons"],
-[class*="video-buttons"] {
+[class*="video-buttons"],
+/* TÜM OLASI BUTON CONTAINER'LARINI YAKALA */
+div:has(button),
+div:has([class*="button"]),
+div:has([class*="control"]),
+div:has([class*="video"]),
+/* TÜM BUTONLARI YAKALA */
+button,
+[class*="button"],
+[class*="control"],
+[class*="video"] {
     position: absolute !important;
     left: 20px !important; /* SOL TARAFA ZORLA */
     right: auto !important; /* SAĞ POZİSYONU KALDIR */
     top: 50% !important;
     transform: translateY(-50%) !important;
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: column !important; /* YUKARIDAN AŞAĞI */
     gap: 15px !important;
     z-index: 99999 !important;
+}
+
+/* TÜM OLASI SAĞ POZİSYONLARI YOK ET */
+*[style*="right"],
+*[style*="right:"] {
+    right: auto !important;
+    left: 20px !important;
 }
 
 /* Buton stilleri - GÖRÜNTÜDEKİ GİBİ */

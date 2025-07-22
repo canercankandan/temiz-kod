@@ -13,10 +13,16 @@ document.addEventListener('DOMContentLoaded', function() {
         adminVideoPreview.style.height = '450px';
     }
 
-    // Video kontrol butonlarını sol tarafa taşıma
-    const videoControls = document.querySelector('.video-controls');
-    if (videoControls) {
-        videoControls.style.left = '20px';
-        videoControls.style.right = 'auto';
-    }
+    // Video kontrol butonlarını KESİNLİKLE SOL TARAFA ZORLA
+    const allButtons = document.querySelectorAll('button, [class*="button"], [class*="control"], [class*="video"]');
+    allButtons.forEach(button => {
+        button.style.left = '20px';
+        button.style.right = 'auto';
+        button.style.top = '50%';
+        button.style.transform = 'translateY(-50%)';
+        button.style.display = 'flex';
+        button.style.flexDirection = 'column';
+        button.style.gap = '15px';
+        button.style.zIndex = '99999';
+    });
 });
