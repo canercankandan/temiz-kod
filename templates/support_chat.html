@@ -471,6 +471,24 @@
 #remoteVideo::-webkit-media-controls-enclosure {
   display: none !important;
 }
+
+.vertical-controls {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  right: 15px !important;
+  top: 50% !important;
+  position: absolute !important;
+  z-index: 15 !important;
+}
+#switchCameraBtn {
+  display: block !important;
+  visibility: visible !important;
+}
+.vertical-controls button {
+  margin-bottom: 10px !important;
+}
 </style>
 
 <script>
