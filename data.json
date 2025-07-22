@@ -167,7 +167,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "offline",
-      "last_message_at": "2024-07-22T17:34:37.1106866+03:00",
+      "last_message_at": "2024-07-22T19:15:17.2126222+03:00",
       "created_at": "2025-07-13T17:14:34.7358992+03:00",
       "unread_count": 0
     },
@@ -2421,6 +2421,16 @@
       "status": "ended",
       "requested_at": "2025-07-22T17:33:27.7056805+03:00",
       "responded_at": "2025-07-22T17:34:26.5454137+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 204,
+      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-22T19:14:32.3036439+03:00",
+      "responded_at": "2025-07-22T19:15:20.3452987+03:00",
       "initiator": "admin"
     }
   ]
