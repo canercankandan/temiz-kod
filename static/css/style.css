@@ -885,3 +885,14 @@ footer h5 {
         box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25);
     }
 }
+
+@media (min-width: 769px) {
+  .pip-container {
+    width: 160px !important;
+    height: 120px !important;
+    min-width: 160px !important;
+    min-height: 120px !important;
+    max-width: 160px !important;
+    max-height: 120px !important;
+  }
+}
