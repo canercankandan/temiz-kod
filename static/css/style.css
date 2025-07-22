@@ -932,24 +932,13 @@ footer h5 {
     object-fit: cover;
 }
 
-/* Video kontrol butonlarını SOL TARAFA ZORLA - EN GÜÇLÜ OVERRIDE */
+/* Video kontrol butonlarını SOL TARAFA ZORLA - SADECE SOL TARAF */
 .video-controls,
 .control-buttons,
 .video-buttons,
 [class*="video-controls"],
 [class*="control-buttons"],
-[class*="video-buttons"],
-div[class*="controls"],
-div[class*="buttons"],
-div[class*="video"],
-button[class*="control"],
-button[class*="video"],
-[class*="button"],
-/* TÜM OLASI BUTON CONTAINER'LARINI YAKALA */
-div:has(button),
-div:has([class*="button"]),
-div:has([class*="control"]),
-div:has([class*="video"]) {
+[class*="video-buttons"] {
     position: absolute !important;
     left: 20px !important; /* SOL TARAFA ZORLA */
     right: auto !important; /* SAĞ POZİSYONU KALDIR */
@@ -959,13 +948,6 @@ div:has([class*="video"]) {
     flex-direction: column !important;
     gap: 15px !important;
     z-index: 99999 !important;
-}
-
-/* TÜM OLASI SAĞ POZİSYONLARI YOK ET */
-*[style*="right"],
-*[style*="right:"] {
-    right: auto !important;
-    left: 20px !important;
 }
 
 /* Buton stilleri - GÖRÜNTÜDEKİ GİBİ */
