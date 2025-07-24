@@ -821,30 +821,25 @@ function startPolling() {
 // Sayfa görünürlüğü değiştiğinde
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        // Sayfa gizlendiğinde TÜM interval'ları durdur
-        if (webrtcInterval) {
-            clearInterval(webrtcInterval);
-            webrtcInterval = null;
-        }
+        // Sayfa gizlendiğinde sadece ping ve poll interval'ları durdur
+        // Video stream'i devam ettir
         if (pingInterval) {
             clearInterval(pingInterval);
             pingInterval = null;
-        }
-        if (cartInterval) {
-            clearInterval(cartInterval);
-            cartInterval = null;
-        }
-        if (signalingPollInterval) {
-            clearInterval(signalingPollInterval);
-            signalingPollInterval = null;
         }
         if (pollInterval) {
             clearInterval(pollInterval);
             pollInterval = null;
         }
-        // Sunucuya kullanıcının ayrıldığını bildir
-        navigator.sendBeacon('/support/leave');
-        console.log('Sayfa gizlendi - Tüm interval\'lar durduruldu');
+        if (signalingPollInterval) {
+            clearInterval(signalingPollInterval);
+            signalingPollInterval = null;
+        }
+        // Video call aktifse stream'i durdurma
+        if (!isCallActive) {
+            navigator.sendBeacon('/support/leave');
+        }
+        console.log('Sayfa gizlendi - Ping ve poll durduruldu, video devam ediyor');
     } else {
         // Sayfa tekrar görünür olduğunda hem ping hem de poll interval'ını yeniden başlat
         if (!pingInterval) {
@@ -913,6 +908,18 @@ async function startVideoCall() {
         
         // Ziyaretçinin videosunu küçük pencereye yerleştir
         document.getElementById('localVideo').srcObject = localStream;
+        
+        // Video stream'i daha dayanıklı hale getir
+        localStream.getTracks().forEach(track => {
+            track.enabled = true;
+            // Mobile'da video devam etsin
+            if (track.kind === 'video') {
+                track.applyConstraints({
+                    width: { ideal: 320, max: 640 },
+                    height: { ideal: 240, max: 480 }
+                });
+            }
+        });
         
         // Video alanını göster
         document.getElementById('videoCallArea').style.display = 'block';
