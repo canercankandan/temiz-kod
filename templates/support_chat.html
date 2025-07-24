@@ -1098,29 +1098,36 @@ async function initializePeerConnection() {
                         // Video oynatmayı başlat
                         remoteVideo.play().then(() => {
                             console.log('Remote video started playing');
-                            callStatusText.textContent = 'Bağlantı kuruldu!';
+                            callStatusText.textContent = 'Bağlandı - Video aktif';
                         }).catch(error => {
-                            console.error('Remote video play error:', error);
+                            console.error('Error playing remote video:', error);
+                            // Kullanıcı etkileşimi gerekebilir
+                            remoteVideo.muted = true;
+                            remoteVideo.play();
                         });
                     };
+                    
+                    // Video oynatma olayları
+                    remoteVideo.onplay = () => console.log('Remote video playing');
+                    remoteVideo.onpause = () => console.log('Remote video paused');
+                    remoteVideo.onerror = (error) => console.error('Remote video error:', error);
+                    
+                    // Video yüklenme durumu
+                    remoteVideo.oncanplay = () => {
+                        console.log('Remote video can play');
+                        remoteVideo.play();
+                    };
+                } else {
+                    console.error('Remote video element not found');
                 }
+            } else {
+                console.error('No remote stream in track event');
             }
         };
         
-        // ICE connection state değişikliklerini izle
-        peerConnection.oniceconnectionstatechange = () => {
-            console.log('ICE connection state:', peerConnection.iceConnectionState);
-            if (peerConnection.iceConnectionState === 'connected') {
-                callStatusText.textContent = 'Bağlantı kuruldu!';
-            } else if (peerConnection.iceConnectionState === 'failed') {
-                callStatusText.textContent = 'Bağlantı başarısız!';
-            }
-        };
-        
-        // ICE candidate'ları gönder
+        // Handle ICE candidates
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-                console.log('Sending ICE candidate:', event.candidate);
                 sendSignalingMessage({
                     type: 'ice-candidate',
                     candidate: event.candidate
@@ -1158,8 +1165,6 @@ async function initializePeerConnection() {
 // Send signaling message to admin
 async function sendSignalingMessage(message) {
     try {
-        console.log('Sending signaling message:', message);
-        
         const response = await fetch('/support/webrtc-signal', {
             method: 'POST',
             headers: {
@@ -1174,8 +1179,6 @@ async function sendSignalingMessage(message) {
         const data = await response.json();
         if (!data.success) {
             console.error('Signaling message failed:', data.error);
-        } else {
-            console.log('Signaling message sent successfully');
         }
     } catch (error) {
         console.error('Error sending signaling message:', error);
