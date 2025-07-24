@@ -11,8 +11,8 @@
                 <video id="remoteVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 0; border: none; box-shadow: none; outline: none;"></video>
                 
                 <!-- Küçük Video (Ziyaretçi) - Sağ Üst Köşe -->
-                <div class="pip-container" style="position: absolute; top: 15px; right: 15px; z-index: 10; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.3s ease; cursor: move; width: 200px; height: 150px; min-width: 200px; min-height: 150px; max-width: 200px; max-height: 150px; pointer-events: auto; border: none; outline: none;" id="pipContainer">
-                    <video id="localVideo" autoplay style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: none; outline: none; transform: scaleX(-1);"></video>
+                <div class="pip-container" style="position: absolute; top: 15px; right: 15px; z-index: 20; border-radius: 0; overflow: hidden; box-shadow: none; transition: all 0.3s ease; cursor: move; border: none;" id="pipContainer">
+                    <video id="localVideo" autoplay style="width: 200px; height: 150px; object-fit: cover; border: none; border-radius: 0; transform: scaleX(-1);"></video>
                 </div>
                 
                 <!-- Tüm Kontroller (Sol Alt Taraf) -->
@@ -319,31 +319,13 @@
         transform: rotate(180deg) scale(0.95);
     }
     
-    /* Mobilde küçük ön izleme kamerası */
+    /* Mobilde admin gibi ön izleme kamerası */
     #localVideo {
-        width: 120px !important;
-        height: 90px !important;
-        top: 10px !important;
-        right: 10px !important;
-        border-radius: 10px !important;
-        max-width: 120px !important;
-        max-height: 90px !important;
-        min-width: 80px !important;
-        min-height: 60px !important;
-    }
-    
-    /* iPhone için özel CSS */
-    @supports (-webkit-touch-callout: none) {
-        #localVideo {
-            width: 100px !important;
-            height: 75px !important;
-            max-width: 100px !important;
-            max-height: 75px !important;
-            min-width: 60px !important;
-            min-height: 45px !important;
-            transform: scale(0.8) !important;
-            transform-origin: top right !important;
-        }
+        width: 200px !important;
+        height: 150px !important;
+        top: 15px !important;
+        right: 15px !important;
+        border-radius: 0 !important;
     }
     
     /* Ana video tam boyut */
