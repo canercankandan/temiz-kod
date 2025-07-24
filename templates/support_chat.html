@@ -884,11 +884,11 @@ async function startVideoCall() {
     try {
         console.log('Starting video call...');
         
-        // Kamera ve mikrofon izni al
-        localStream = await navigator.mediaDevices.getUserMedia({
+        // Kamera ve mikrofon izni al - Mobile uyumlu
+        const constraints = {
             video: {
-                width: { ideal: 1280, max: 1920 },
-                height: { ideal: 720, max: 1080 },
+                width: { ideal: 640, max: 1280 },
+                height: { ideal: 480, max: 720 },
                 facingMode: 'user'
             },
             audio: {
@@ -896,7 +896,18 @@ async function startVideoCall() {
                 noiseSuppression: true,
                 autoGainControl: true
             }
-        });
+        };
+        
+        // Mobile cihazlarda daha basit ayarlar
+        if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            constraints.video = {
+                width: { ideal: 320, max: 640 },
+                height: { ideal: 240, max: 480 },
+                facingMode: 'user'
+            };
+        }
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         console.log('Local stream obtained:', localStream);
         
@@ -926,7 +937,20 @@ async function startVideoCall() {
         
     } catch (error) {
         console.error('Video call start error:', error);
-        alert('Video görüşme başlatılamadı: ' + error.message);
+        
+        let errorMessage = 'Video görüşme başlatılamadı: ';
+        
+        if (error.name === 'NotAllowedError') {
+            errorMessage += 'Kamera ve mikrofon izni verilmedi. Lütfen tarayıcı ayarlarından izin verin.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage += 'Kamera bulunamadı. Lütfen kameranızın bağlı olduğundan emin olun.';
+        } else if (error.name === 'NotSupportedError') {
+            errorMessage += 'Bu tarayıcı video görüşmeyi desteklemiyor. Chrome veya Firefox deneyin.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
         
         // Cleanup
         if (localStream) {
