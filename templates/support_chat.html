@@ -326,6 +326,24 @@
         top: 10px !important;
         right: 10px !important;
         border-radius: 10px !important;
+        max-width: 120px !important;
+        max-height: 90px !important;
+        min-width: 80px !important;
+        min-height: 60px !important;
+    }
+    
+    /* iPhone için özel CSS */
+    @supports (-webkit-touch-callout: none) {
+        #localVideo {
+            width: 100px !important;
+            height: 75px !important;
+            max-width: 100px !important;
+            max-height: 75px !important;
+            min-width: 60px !important;
+            min-height: 45px !important;
+            transform: scale(0.8) !important;
+            transform-origin: top right !important;
+        }
     }
     
     /* Ana video tam boyut */
