@@ -38,37 +38,7 @@
     }
   ],
   "users": [],
-  "orders": [
-    {
-      "id": 1,
-      "user_id": 0,
-      "session_id": "a876aebd-3044-47b5-b313-8e87370e848a",
-      "order_number": "ORD-faf18bb4",
-      "customer_name": "Cenap Oktay",
-      "email": "irmaksuaritmam@gmail.com",
-      "phone": "05448113105",
-      "address": "g\r\ndükkan",
-      "items": [
-        {
-          "id": 0,
-          "cart_id": 0,
-          "product_id": 1,
-          "name": ".denemet",
-          "price": 555,
-          "image": "/static/uploads/a62890e9-94d5-497e-bbd3-a16ccec2ca27.png",
-          "quantity": 1,
-          "total_price": 555
-        }
-      ],
-      "total_price": 555,
-      "status": "pending",
-      "payment_method": "",
-      "notes": "",
-      "admin_notes": "",
-      "created_at": "2025-07-20T17:24:45.109615+03:00",
-      "updated_at": "2025-07-20T17:24:45.109615+03:00"
-    }
-  ],
+  "orders": [],
   "messages": [
     {
       "id": 1,
@@ -180,7 +150,7 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "active",
-      "last_message_at": "2025-07-24T11:33:18.7439112+03:00",
+      "last_message_at": "2025-07-24T17:15:14.7383084+03:00",
       "created_at": "2025-07-13T20:45:55.2308261+03:00",
       "unread_count": 0
     },
@@ -190,8 +160,8 @@
       "user_id": null,
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
-      "status": "active",
-      "last_message_at": "2025-07-23T21:21:01.5115447+03:00",
+      "status": "offline",
+      "last_message_at": "2024-07-24T17:12:44.1647484+03:00",
       "created_at": "2025-07-14T12:07:47.6037105+03:00",
       "unread_count": 0
     },
@@ -2715,6 +2685,136 @@
       "requested_at": "2025-07-24T09:38:05.1181708+03:00",
       "responded_at": "2025-07-24T09:39:23.0449473+03:00",
       "initiator": "admin"
+    },
+    {
+      "id": 232,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-24T11:40:28.1579625+03:00",
+      "responded_at": "2025-07-24T11:40:50.6696833+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 233,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Misafir-759010f5",
+      "status": "ended",
+      "requested_at": "2025-07-24T13:53:18.994151+03:00",
+      "responded_at": "2025-07-24T14:12:50.5565064+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 234,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-24T14:12:50.5572369+03:00",
+      "responded_at": "2025-07-24T16:20:11.1841667+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 235,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "status": "ended",
+      "requested_at": "2025-07-24T16:20:11.1869444+03:00",
+      "responded_at": "2025-07-24T16:20:31.3095776+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 236,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Misafir-759010f5",
+      "status": "ended",
+      "requested_at": "2025-07-24T16:20:41.7324363+03:00",
+      "responded_at": "2025-07-24T16:24:15.0313059+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 237,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Misafir-759010f5",
+      "status": "ended",
+      "requested_at": "2025-07-24T16:24:00.9147537+03:00",
+      "responded_at": "2025-07-24T17:13:29.7771637+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 238,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-24T16:25:25.5674001+03:00",
+      "responded_at": "2025-07-24T16:51:08.5481017+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 239,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-24T16:51:08.5509298+03:00",
+      "responded_at": "2025-07-24T16:51:44.509082+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 240,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-24T16:51:48.4837438+03:00",
+      "responded_at": "2025-07-24T16:52:35.6145208+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 241,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-24T17:00:42.5035659+03:00",
+      "responded_at": "2025-07-24T17:01:18.8895856+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 242,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Admin",
+      "status": "ended",
+      "requested_at": "2025-07-24T17:03:07.2364526+03:00",
+      "responded_at": "2025-07-24T17:03:52.9820112+03:00",
+      "initiator": "admin"
+    },
+    {
+      "id": 243,
+      "session_id": "2419a933-3bdc-42c9-84cf-1ac6fdacce82",
+      "user_id": null,
+      "username": "Misafir-2419a933",
+      "status": "ended",
+      "requested_at": "2025-07-24T17:11:51.2517206+03:00",
+      "responded_at": "2025-07-24T17:12:22.1073684+03:00",
+      "initiator": ""
+    },
+    {
+      "id": 244,
+      "session_id": "759010f5-e321-48c8-b8cf-70d794467ac4",
+      "user_id": null,
+      "username": "Misafir-759010f5",
+      "status": "accepted",
+      "requested_at": "2025-07-24T17:12:59.1092288+03:00",
+      "responded_at": "2025-07-24T17:13:04.8778877+03:00",
+      "initiator": ""
     }
   ],
   "carts": null,

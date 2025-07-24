@@ -129,11 +129,11 @@
                     <!-- Video Call Area - Düzeltilmiş Tasarım -->
                     <div id="adminVideoCallArea" class="video-call-area" style="display: none; height: 600px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; border-radius: 0; overflow: hidden; box-shadow: none; margin: 10px; border: none;">
                         <!-- Ana Video (Ziyaretçi/Müşteri) -->
-                        <video id="adminRemoteVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; border-radius: 0;"></video>
+                        <video id="adminRemoteVideo" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 0;"></video>
                         
                         <!-- Küçük Video (Admin) - Sağ Üst Köşe -->
                         <div class="admin-pip-container" style="position: absolute; top: 15px; right: 15px; z-index: 20; border-radius: 0; overflow: hidden; box-shadow: none; transition: all 0.3s ease; cursor: move; border: none;" id="adminPipContainer">
-                            <video id="adminLocalVideo" autoplay muted style="width: 200px; height: 150px; object-fit: cover; border: none; border-radius: 0; transform: scaleX(-1);"></video>
+                            <video id="adminLocalVideo" autoplay style="width: 200px; height: 150px; object-fit: cover; border: none; border-radius: 0; transform: scaleX(-1);"></video>
                         </div>
                         
                         <!-- Görüşme Durumu -->
@@ -145,6 +145,9 @@
                         <!-- Dikey Kontroller (Sol Taraf) -->
                         <div class="admin-vertical-controls" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 15; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
                             
+                            <button id="adminMicrophoneBtn" class="btn admin-control-btn" title="Mikrofon" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,193,7,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>
+                            </button>
                             <button id="adminToggleVideoBtn" class="btn admin-control-btn" title="Kamerayı Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                                 <i class="fas fa-video" style="font-size: 14px; color: white;"></i>
                             </button>
@@ -159,6 +162,9 @@
                         <!-- Mobil Kontroller (Sol Taraf) -->
                         <div class="admin-mobile-controls" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 15; display: none; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
                             
+                            <button id="adminMobileMicrophoneBtn" class="btn admin-mobile-control" title="Mikrofon" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,193,7,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                <i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>
+                            </button>
                             <button id="adminMobileToggleVideoBtn" class="btn admin-mobile-control" title="Kamerayı Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                                 <i class="fas fa-video" style="font-size: 14px; color: white;"></i>
                             </button>
@@ -472,6 +478,7 @@ let adminRemoteStream = null;
 let adminPeerConnection = null;
 let isAdminCallActive = false;
 let isAdminVideoOff = false;
+let isAdminMicrophoneOff = false;
 let pendingVideoCallSession = null;
 let adminCurrentFacingMode = 'user';
 let adminIsMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
@@ -497,9 +504,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('rejectVideoCallBtn').addEventListener('click', rejectVideoCall);
     document.getElementById('endAdminCallBtn').addEventListener('click', endAdminVideoCall);
     document.getElementById('adminToggleVideoBtn').addEventListener('click', adminToggleVideo);
+    document.getElementById('adminMicrophoneBtn').addEventListener('click', adminToggleMicrophone);
     
     // Mobile video call event listeners
     document.getElementById('adminMobileToggleVideoBtn').addEventListener('click', adminToggleVideo);
+    document.getElementById('adminMobileMicrophoneBtn').addEventListener('click', adminToggleMicrophone);
     
     // Admin video call başlatma
     document.getElementById('startVideoCallBtn').addEventListener('click', startAdminVideoCall);
@@ -1062,6 +1071,48 @@ function adminToggleVideo() {
                 mobileBtn.innerHTML = '<i class="fas fa-video"></i>';
             }
         }
+    }
+}
+
+function adminToggleMicrophone() {
+    console.log('adminToggleMicrophone called');
+    console.log('adminLocalStream:', adminLocalStream);
+    
+    if (adminLocalStream) {
+        const audioTracks = adminLocalStream.getAudioTracks();
+        console.log('Admin audio tracks:', audioTracks);
+        
+        if (audioTracks && audioTracks.length > 0) {
+            const audioTrack = audioTracks[0];
+            console.log('Admin audio track enabled before:', audioTrack.enabled);
+            
+            audioTrack.enabled = !audioTrack.enabled;
+            isAdminMicrophoneOff = !audioTrack.enabled;
+            
+            console.log('Admin audio track enabled after:', audioTrack.enabled);
+            console.log('isAdminMicrophoneOff:', isAdminMicrophoneOff);
+            
+            const desktopBtn = document.getElementById('adminMicrophoneBtn');
+            const mobileBtn = document.getElementById('adminMobileMicrophoneBtn');
+            
+            if (isAdminMicrophoneOff) {
+                desktopBtn.innerHTML = '<i class="fas fa-microphone-slash" style="font-size: 14px; color: white;"></i>';
+                desktopBtn.style.background = 'rgba(220,53,69,0.9)';
+                mobileBtn.innerHTML = '<i class="fas fa-microphone-slash" style="font-size: 14px; color: white;"></i>';
+                mobileBtn.style.background = 'rgba(220,53,69,0.9)';
+                console.log('Admin microphone button: OFF');
+            } else {
+                desktopBtn.innerHTML = '<i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>';
+                desktopBtn.style.background = 'rgba(255,193,7,0.9)';
+                mobileBtn.innerHTML = '<i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>';
+                mobileBtn.style.background = 'rgba(255,193,7,0.9)';
+                console.log('Admin microphone button: ON');
+            }
+        } else {
+            console.error('No audio tracks found in adminLocalStream');
+        }
+    } else {
+        console.error('adminLocalStream is null or undefined');
     }
 }
 
