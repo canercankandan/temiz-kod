@@ -144,9 +144,7 @@
                         
                         <!-- Dikey Kontroller (Sol Taraf) -->
                         <div class="admin-vertical-controls" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 15; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
-                            <button id="adminToggleMuteBtn" class="btn admin-control-btn" title="Mikrofonu Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                                <i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>
-                            </button>
+                            
                             <button id="adminToggleVideoBtn" class="btn admin-control-btn" title="Kamerayı Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                                 <i class="fas fa-video" style="font-size: 14px; color: white;"></i>
                             </button>
@@ -160,9 +158,7 @@
                         
                         <!-- Mobil Kontroller (Sol Taraf) -->
                         <div class="admin-mobile-controls" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 15; display: none; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); padding: 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 25px rgba(0,0,0,0.4);">
-                            <button id="adminMobileToggleMuteBtn" class="btn admin-mobile-control" title="Mikrofonu Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                                <i class="fas fa-microphone" style="font-size: 14px; color: white;"></i>
-                            </button>
+                            
                             <button id="adminMobileToggleVideoBtn" class="btn admin-mobile-control" title="Kamerayı Aç/Kapat" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(108,117,125,0.9); border: 2px solid rgba(255,255,255,0.8); transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                                 <i class="fas fa-video" style="font-size: 14px; color: white;"></i>
                             </button>
@@ -475,7 +471,6 @@ let adminLocalStream = null;
 let adminRemoteStream = null;
 let adminPeerConnection = null;
 let isAdminCallActive = false;
-let isAdminMuted = false;
 let isAdminVideoOff = false;
 let pendingVideoCallSession = null;
 let adminCurrentFacingMode = 'user';
@@ -501,11 +496,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('acceptVideoCallBtn').addEventListener('click', acceptVideoCall);
     document.getElementById('rejectVideoCallBtn').addEventListener('click', rejectVideoCall);
     document.getElementById('endAdminCallBtn').addEventListener('click', endAdminVideoCall);
-    document.getElementById('adminToggleMuteBtn').addEventListener('click', adminToggleMute);
     document.getElementById('adminToggleVideoBtn').addEventListener('click', adminToggleVideo);
     
     // Mobile video call event listeners
-    document.getElementById('adminMobileToggleMuteBtn').addEventListener('click', adminToggleMute);
     document.getElementById('adminMobileToggleVideoBtn').addEventListener('click', adminToggleVideo);
     
     // Admin video call başlatma
@@ -1014,7 +1007,6 @@ async function endAdminVideoCall() {
         
         // Reset states
         isAdminCallActive = false;
-        isAdminMuted = false;
         isAdminVideoOff = false;
         
         // Reset admin call message flag
@@ -1046,30 +1038,7 @@ async function endAdminVideoCall() {
     }
 }
 
-function adminToggleMute() {
-    if (adminLocalStream) {
-        const audioTrack = adminLocalStream.getAudioTracks()[0];
-        if (audioTrack) {
-            audioTrack.enabled = !audioTrack.enabled;
-            isAdminMuted = !audioTrack.enabled;
-            
-            const desktopBtn = document.getElementById('adminToggleMuteBtn');
-            const mobileBtn = document.getElementById('adminMobileToggleMuteBtn');
-            
-            if (isAdminMuted) {
-                desktopBtn.classList.add('muted');
-                desktopBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-                mobileBtn.classList.add('muted');
-                mobileBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-            } else {
-                desktopBtn.classList.remove('muted');
-                desktopBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-                mobileBtn.classList.remove('muted');
-                mobileBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-            }
-        }
-    }
-}
+
 
 function adminToggleVideo() {
     if (adminLocalStream) {
