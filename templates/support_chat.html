@@ -626,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Ping error (page visible):', error);
         });
-    }, 15000); // 15 saniye
+    }, 30000); // 30 saniye
     
 
     
@@ -866,7 +866,7 @@ document.addEventListener('visibilitychange', function() {
                 .catch(error => {
                     console.error('Ping error (page visible):', error);
                 });
-            }, 15000); // 15 saniye
+            }, 30000); // 30 saniye
         }
         if (!pollInterval) {
             pollInterval = setInterval(() => {
