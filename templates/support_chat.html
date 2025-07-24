@@ -916,6 +916,11 @@ async function startVideoCall() {
         // Start signaling polling
         startSignalingPolling();
         
+        // Sürükleyip küçültme özelliğini başlat
+        setTimeout(() => {
+            initPipDrag();
+        }, 1000);
+        
     } catch (error) {
         console.error('Video call start error:', error);
         alert('Video görüşme başlatılamadı: ' + error.message);
@@ -1908,6 +1913,148 @@ async function pollSignalingMessages() {
         // Polling hatası durumunda kısa bir süre bekle
         await new Promise(resolve => setTimeout(resolve, 2000));
     }
+}
+
+// Mobil ön izleme kamerası sürükleyip küçültme özelliği
+let isDragging = false;
+let startX, startY, startLeft, startTop;
+let isMinimized = false;
+
+function initPipDrag() {
+    const pipContainer = document.getElementById('pipContainer');
+    const localVideo = document.getElementById('localVideo');
+    
+    if (!pipContainer || !localVideo) return;
+    
+    // Mobil cihaz kontrolü
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // Dokunma olayları
+        pipContainer.addEventListener('touchstart', handleTouchStart);
+        pipContainer.addEventListener('touchmove', handleTouchMove);
+        pipContainer.addEventListener('touchend', handleTouchEnd);
+        
+        // Çift dokunma ile küçültme
+        pipContainer.addEventListener('touchend', handleDoubleTap);
+    } else {
+        // Masaüstü fare olayları
+        pipContainer.addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        
+        // Çift tıklama ile küçültme
+        pipContainer.addEventListener('dblclick', toggleMinimize);
+    }
+}
+
+function handleTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+    
+    const pipContainer = document.getElementById('pipContainer');
+    const rect = pipContainer.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop = rect.top;
+    
+    isDragging = true;
+}
+
+function handleTouchMove(e) {
+    if (!isDragging) return;
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+    
+    const pipContainer = document.getElementById('pipContainer');
+    pipContainer.style.left = (startLeft + deltaX) + 'px';
+    pipContainer.style.top = (startTop + deltaY) + 'px';
+}
+
+function handleTouchEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
+}
+
+let lastTap = 0;
+function handleDoubleTap(e) {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+    
+    if (tapLength < 500 && tapLength > 0) {
+        // Çift dokunma tespit edildi
+        toggleMinimize();
+        e.preventDefault();
+    }
+    lastTap = currentTime;
+}
+
+function handleMouseDown(e) {
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    const pipContainer = document.getElementById('pipContainer');
+    const rect = pipContainer.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop = rect.top;
+    
+    isDragging = true;
+}
+
+function handleMouseMove(e) {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+    
+    const pipContainer = document.getElementById('pipContainer');
+    pipContainer.style.left = (startLeft + deltaX) + 'px';
+    pipContainer.style.top = (startTop + deltaY) + 'px';
+}
+
+function handleMouseUp() {
+    isDragging = false;
+}
+
+function toggleMinimize() {
+    const pipContainer = document.getElementById('pipContainer');
+    const localVideo = document.getElementById('localVideo');
+    
+    if (!pipContainer || !localVideo) return;
+    
+    isMinimized = !isMinimized;
+    
+    if (isMinimized) {
+        // Küçült
+        pipContainer.style.width = '80px';
+        pipContainer.style.height = '60px';
+        localVideo.style.width = '80px';
+        localVideo.style.height = '60px';
+        pipContainer.style.borderRadius = '8px';
+        pipContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+    } else {
+        // Normal boyut
+        pipContainer.style.width = '200px';
+        pipContainer.style.height = '150px';
+        localVideo.style.width = '200px';
+        localVideo.style.height = '150px';
+        pipContainer.style.borderRadius = '0';
+        pipContainer.style.boxShadow = 'none';
+    }
+}
+
+// Video call başladığında sürükleyip küçültme özelliğini başlat
+function startVideoCall() {
+    // ... mevcut kod ...
+    
+    // Sürükleyip küçültme özelliğini başlat
+    setTimeout(() => {
+        initPipDrag();
+    }, 1000);
 }
 </script>
 {{end}}
