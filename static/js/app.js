@@ -215,3 +215,21 @@ function addToCart(productId, productName, productPrice) {
         showToast('error', 'Ürün sepete eklenirken hata oluştu.');
     });
 } 
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Video görüşme alanını ve mesajını gizle
+    const videoCallArea = document.getElementById('videoCallArea');
+    const callStatusText = document.getElementById('callStatusText');
+    
+    if (videoCallArea) {
+        videoCallArea.style.display = 'none';
+    }
+    
+    if (callStatusText) {
+        callStatusText.textContent = '';
+    }
+    
+    // Gerekirse localStorage veya sessionStorage temizle
+    localStorage.removeItem('videoCallActive');
+    sessionStorage.removeItem('videoCallActive');
+}); 

@@ -167,6 +167,9 @@ body {
     object-fit: cover !important;
     width: 100% !important;
     object-position: center !important;
+    border-radius: 16px !important; /* Köşeleri yuvarlat */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; /* Hafif gölge */
+    border: 3px solid #ffffff !important; /* Beyaz çerçeve */
 }
 
 .home-page .product-card .card-img-top {
@@ -174,6 +177,9 @@ body {
     object-fit: cover !important;
     width: 100% !important;
     object-position: center !important;
+    border-radius: 16px !important; /* Köşeleri yuvarlat */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; /* Hafif gölge */
+    border: 3px solid #ffffff !important; /* Beyaz çerçeve */
 }
 
 .product-card:hover .card-img-top {
@@ -371,8 +377,10 @@ footer h5 {
     width: 56px;
     height: 56px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 12px; /* Köşeleri daha yuvarlat */
     background: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Hafif gölge */
+    border: 2px solid #ffffff; /* Beyaz çerçeve */
 }
 #listView .fw-semibold {
     font-weight: 600;
@@ -405,8 +413,10 @@ footer h5 {
     width: 100%;
     height: 350px !important; /* Grid görünümü için maksimum büyük */
     object-fit: cover !important;
-    border-radius: 0 !important;
+    border-radius: 16px !important; /* Köşeleri yuvarlat */
     background: #f8f9fa !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; /* Hafif gölge */
+    border: 3px solid #ffffff !important; /* Beyaz çerçeve */
 }
 #gridView .card-body {
     padding: 20px 18px 16px 18px;
@@ -658,7 +668,9 @@ footer h5 {
     display: block;
     margin: 0 auto;
     background: #f3f3f3;   /* Arka plan rengi, istersen kaldır */
-    border-radius: 12px;   /* Köşeleri yuvarlat */
+    border-radius: 16px;   /* Köşeleri daha yuvarlat */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Hafif gölge */
+    border: 3px solid #ffffff; /* Beyaz çerçeve */
 }
 
 /* Kartın kendisi için de responsive ayar */
@@ -749,19 +761,21 @@ footer h5 {
         width: 60px;
         height: 60px;
         object-fit: cover;
-        border-radius: 8px;
-        border: 2px solid #e9ecef;
+        border-radius: 12px; /* Köşeleri daha yuvarlat */
+        border: 3px solid #ffffff; /* Beyaz çerçeve */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Hafif gölge */
     }
     
     .cart-mobile-card .product-image-placeholder {
         width: 60px;
         height: 60px;
         background-color: #f8f9fa;
-        border-radius: 8px;
+        border-radius: 12px; /* Köşeleri daha yuvarlat */
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 2px solid #e9ecef;
+        border: 3px solid #ffffff; /* Beyaz çerçeve */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Hafif gölge */
     }
 }
 
@@ -886,112 +900,11 @@ footer h5 {
     }
 }
 
-.pip-container {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  z-index: 20;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-  transition: all 0.3s ease;
-  cursor: move;
-  width: 60px;
-  height: 45px;
-  min-width: 60px;
-  min-height: 45px;
-  max-width: 60px;
-  max-height: 45px;
-  background: #00000022;
-}
-@media (min-width: 769px) {
-  .pip-container {
-    width: 160px !important;
-    height: 120px !important;
-    min-width: 160px !important;
-    min-height: 120px !important;
-    max-width: 160px !important;
-    max-height: 120px !important;
-    top: 20px;
-    right: 20px;
-  }
-}
-
-/* Video önizleme boyutları - BİLGİSAYAR İÇİN */
-.video-preview {
-    width: 1000px !important;  /* 600px'den 1000px'e */
-    height: 750px !important;  /* 450px'den 750px'e */
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-.admin-video-preview {
-    width: 1000px !important;
-    height: 750px !important;
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-/* Video kontrol butonlarını KESİNLİKLE SOL TARAFA ZORLA - EN GÜÇLÜ OVERRIDE */
-.video-controls,
-.control-buttons,
-.video-buttons,
-[class*="video-controls"],
-[class*="control-buttons"],
-[class*="video-buttons"],
-/* TÜM OLASI BUTON CONTAINER'LARINI YAKALA */
-div:has(button),
-div:has([class*="button"]),
-div:has([class*="control"]),
-div:has([class*="video"]),
-/* TÜM BUTONLARI YAKALA */
-button,
-[class*="button"],
-[class*="control"],
-[class*="video"],
-/* TÜM OLASI BUTON GRUPLARINI YAKALA */
-.controls,
-.buttons,
-.video-controls,
-.control-buttons,
-.video-buttons {
-    position: absolute !important;
-    left: 20px !important; /* SOL TARAFA ZORLA */
-    right: auto !important; /* SAĞ POZİSYONU KALDIR */
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    display: flex !important;
-    flex-direction: column !important; /* YUKARIDAN AŞAĞI */
-    gap: 15px !important;
-    z-index: 99999 !important;
-}
-
-/* TÜM OLASI SAĞ POZİSYONLARI YOK ET */
-*[style*="right"],
-*[style*="right:"] {
-    right: auto !important;
-    left: 20px !important;
-}
-
-/* Buton stilleri - GÖRÜNTÜDEKİ GİBİ */
-.control-button,
-.video-button,
-[class*="button"] {
-    width: 50px !important;
-    height: 50px !important;
-    border-radius: 50% !important;
-    border: none !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.3s ease !important;
-    background-color: #333 !important; /* Koyu gri */
-    color: white !important;
-}
-
-/* Buton renkleri - GÖRÜNTÜDEKİ GİBİ */
-.mic-button { background-color: #333 !important; }
-.video-button { background-color: #333 !important; }
-.switch-button { background-color: #333 !important; }
-.end-button { background-color: #FF4444 !important; }
+document.addEventListener('DOMContentLoaded', function() {
+    // Video görüşme alanını ve mesajını gizle
+    document.getElementById('videoCallArea').style.display = 'none';
+    document.getElementById('callStatusText').textContent = '';
+    // Gerekirse localStorage veya sessionStorage temizle
+    localStorage.removeItem('videoCallActive');
+    sessionStorage.removeItem('videoCallActive');
+});

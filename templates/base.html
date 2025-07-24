@@ -7,10 +7,17 @@
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="googlea746013bccc576e9.html" />
     
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    
     <!-- SEO Meta Tags -->
     <title>{{.title}} - Su Arıtma Uzmanı | Türkiye'nin En Güvenilir Su Arıtma Markası</title>
-    <meta name="description" content="Su arıtma cihazları, filtreler ve yedek parçalar. Ücretsiz kurulum, 5 yıl garanti, 24/7 teknik destek. Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazı fiyatları ve kurulum hizmeti.">
-    <meta name="keywords" content="su arıtma, su filtresi, su arıtma cihazı, temiz su, sağlıklı su, su arıtma cihazı fiyatları, su arıtma cihazı kurulum, su arıtma filtreleri, reverse osmosis, su arıtma sistemleri">
+    <meta name="description" content="IRMAK SU ARITMA - Su arıtma cihazları, filtreler ve yedek parçalar. Ücretsiz kurulum, 5 yıl garanti, 24/7 teknik destek. Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazı fiyatları ve kurulum hizmeti. İstanbul'da su arıtma cihazı satış ve servis.">
+    <meta name="keywords" content="IRMAK SU ARITMA, su arıtma, su filtresi, su arıtma cihazı, temiz su, sağlıklı su, su arıtma cihazı fiyatları, su arıtma cihazı kurulum, su arıtma filtreleri, reverse osmosis, su arıtma sistemleri, İstanbul su arıtma, Küçükçekmece su arıtma, su arıtma servisi">
     <meta name="author" content="Su Arıtma Uzmanı">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="language" content="Turkish">
@@ -29,7 +36,7 @@
     
     <!-- Open Graph Meta Tags (Facebook, WhatsApp) -->
     <meta property="og:title" content="{{.title}} - Su Arıtma Uzmanı">
-    <meta property="og:description" content="Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları, filtreler ve kurulum hizmeti.">
+    <meta property="og:description" content="IRMAK SU ARITMA - Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları, filtreler ve kurulum hizmeti. İstanbul'da profesyonel su arıtma çözümleri.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://xn--suartmauzman-44bi.com{{.current_url}}">
     <meta property="og:image" content="https://xn--suartmauzman-44bi.com/static/images/logo.png">
@@ -43,7 +50,7 @@
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{.title}} - Su Arıtma Uzmanı">
-    <meta name="twitter:description" content="Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları ve kurulum hizmeti.">
+    <meta name="twitter:description" content="IRMAK SU ARITMA - Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları ve kurulum hizmeti. İstanbul'da profesyonel su arıtma çözümleri.">
     <meta name="twitter:image" content="https://xn--suartmauzman-44bi.com/static/images/logo.png">
     <meta name="twitter:image:alt" content="Su Arıtma Uzmanı Logo">
     <meta name="twitter:site" content="@suaritmauzmani">
@@ -73,8 +80,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="/static/css/style.css" rel="stylesheet">
     
-    <!-- Google Analytics (Replace GA_MEASUREMENT_ID with your actual ID) -->
-    <!-- Mevcut GA kodu yerine -->
+    <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5RDJT65L0Y"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -87,7 +93,14 @@
                 gtag('config', 'G-5RDJT65L0Y', {
                     'anonymize_ip': true,
                     'allow_google_signals': false,
-                    'allow_ad_personalization_signals': false
+                    'allow_ad_personalization_signals': false,
+                    'page_title': document.title,
+                    'page_location': window.location.href
+                });
+                
+                // E-ticaret olayları
+                gtag('event', 'page_view', {
+                    'send_to': 'G-5RDJT65L0Y'
                 });
             } catch(e) {
                 console.log('Analytics yüklenemedi');
@@ -102,8 +115,8 @@
     {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
-        "name": "Su Arıtma Uzmanı",
-        "description": "Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları, filtreler ve kurulum hizmeti.",
+        "name": "IRMAK SU ARITMA",
+        "description": "Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları, filtreler ve kurulum hizmeti. İstanbul'da profesyonel su arıtma çözümleri.",
         "url": "https://xn--suartmauzman-44bi.com",
         "telephone": "+90-212-592-8591",
         "email": "irmaksuaritmam@gmail.com",
@@ -190,9 +203,9 @@
     {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "Su Arıtma Uzmanı",
+        "name": "IRMAK SU ARITMA",
         "url": "https://xn--suartmauzman-44bi.com",
-        "description": "Su arıtma sistemleri ve çözümleri",
+        "description": "Su arıtma sistemleri ve çözümleri. İstanbul'da profesyonel su arıtma hizmetleri.",
         "potentialAction": {
             "@type": "SearchAction",
             "target": "https://xn--suartmauzman-44bi.com/products?search={search_term_string}",
@@ -581,6 +594,10 @@
     </style>
 </head>
 <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNavbar">
         <div class="container">

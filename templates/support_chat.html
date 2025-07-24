@@ -5,28 +5,26 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <!-- Video Call Area - Admin Panelindeki Tüm Özellikler -->
-            <div id="videoCallArea" class="video-call-area mb-3" style="display: none; height: 350px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; border-radius: 0; overflow: hidden; box-shadow: none; margin: 10px;">
+            <div id="videoCallArea" class="video-call-area mb-3" style="display: none; height: 600px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); position: relative; border-radius: 0; overflow: hidden; box-shadow: none; margin: 0; padding: 0; border: none; outline: none; border: none !important; box-shadow: none !important;">
                 
                 <!-- Ana Video (Admin/Ziyaretçi) -->
-                <video id="remoteVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; border-radius: 0; border: none; box-shadow: none;"></video>
+                <video id="remoteVideo" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; border-radius: 0; border: none; box-shadow: none; outline: none;"></video>
                 
-                <!-- Küçük Video (Ziyaretçi) - Sağ Üst Köşe - Mobilde Gizli -->
-                <div class="pip-container" style="position: absolute; top: 15px; right: 15px; z-index: 10; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.3s ease; cursor: move; width: 240px; height: 180px; min-width: 240px; min-height: 180px; max-width: 240px; max-height: 180px; pointer-events: auto;" id="pipContainer">
-                    <video id="localVideo" autoplay muted style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"></video>
+                <!-- Küçük Video (Ziyaretçi) - Sağ Üst Köşe -->
+                <div class="pip-container" style="position: absolute; top: 15px; right: 15px; z-index: 10; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.3s ease; cursor: move; width: 200px; height: 150px; min-width: 200px; min-height: 150px; max-width: 200px; max-height: 150px; pointer-events: auto; border: none; outline: none;" id="pipContainer">
+                    <video id="localVideo" autoplay muted style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: none; outline: none; transform: scaleX(-1);"></video>
                 </div>
                 
-
-                
-                <!-- Tüm Kontroller (Sol Taraf) -->
-                <div class="left-controls" style="position: absolute; top: 50%; left: 15px; transform: translateY(-50%); z-index: 15;">
-                    <button id="toggleMuteBtn" class="btn btn-secondary btn-lg" title="Mikrofonu Aç/Kapat" style="border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; background: rgba(108, 117, 125, 0.9); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                <!-- Tüm Kontroller (Sol Alt Taraf) -->
+                <div class="left-controls" style="position: absolute; bottom: 15px; left: 15px; z-index: 15; display: flex; flex-direction: column; gap: 10px;">
+                    <button id="switchCameraBtn" class="btn btn-info btn-lg" title="Kamera Değiştir" style="border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(23, 162, 184, 0.95); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                        <i class="fas fa-sync-alt" style="font-size: 20px; color: white;"></i>
+                    </button>
+                    <button id="toggleMuteBtn" class="btn btn-secondary btn-lg" title="Mikrofonu Aç/Kapat" style="border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(108, 117, 125, 0.9); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                         <i class="fas fa-microphone" style="font-size: 20px; color: white;"></i>
                     </button>
-                    <button id="toggleVideoBtn" class="btn btn-secondary btn-lg" title="Kamerayı Aç/Kapat" style="border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; background: rgba(108, 117, 125, 0.9); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                    <button id="toggleVideoBtn" class="btn btn-secondary btn-lg" title="Kamerayı Aç/Kapat" style="border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(108, 117, 125, 0.9); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                         <i class="fas fa-video" style="font-size: 20px; color: white;"></i>
-                    </button>
-                    <button id="switchCameraBtn" class="btn btn-info btn-lg" title="Kamera Değiştir" style="border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; background: rgba(23, 162, 184, 0.95); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-                        <i class="fas fa-sync-alt" style="font-size: 20px; color: white;"></i>
                     </button>
                     <button id="endCallBtn" class="btn btn-danger btn-lg" title="Görüşmeyi Sonlandır" style="border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(220, 53, 69, 0.9); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                         <i class="fas fa-phone-slash" style="font-size: 20px; color: white;"></i>
@@ -194,8 +192,8 @@
 /* Video Call Styles */
 .video-call-area {
     border: none !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
-    border-radius: 8px !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
     overflow: visible !important; /* Butonların dışarı çıkmasına izin ver */
 }
 
@@ -274,14 +272,6 @@
         width: calc(100% + 30px) !important;
         height: 60vh !important; /* Ekranın %60'ı kadar yükseklik */
         min-height: 300px !important;
-    }
-    
-    /* Mobil cihazlarda ön izleme göster - iPhone'da da ön izleme olsun */
-    .pip-container {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
     }
     
     /* Mobil cihazlarda masaüstü kontrollerini gizle */

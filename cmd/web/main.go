@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -18,13 +17,13 @@ import (
 func main() {
 	// Production modunu aktif et
 	gin.SetMode(gin.ReleaseMode)
-	
+
 	// SMTP ayarlarını environment variable olarak ayarla
 	os.Setenv("SMTP_HOST", "smtp.gmail.com")
 	os.Setenv("SMTP_PORT", "587")
 	os.Setenv("SMTP_USER", "irmaksuaritmam@gmail.com")
 	os.Setenv("SMTP_PASS", "znpg ejga sekw bmsw")
-	
+
 	db, err := database.NewDatabase()
 	if err != nil {
 		log.Fatalf("Veritabanı başlatılamadı: %v", err)
@@ -34,43 +33,43 @@ func main() {
 
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
 	r := gin.New()
-	
+
 	// Middleware'leri manuel olarak ekle
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
-	
+
 	// Proxy güvenlik ayarları
 	r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 
 	// Her sayfa için ayrı template setleri oluştur
 	log.Printf("📄 Template'ler yükleniyor...")
 	templates := map[string]*template.Template{}
-	
+
 	templateFiles := map[string][]string{
-		"home.html":           {"templates/home.html", "templates/base.html"},
-		"products.html":       {"templates/products.html", "templates/base.html"},
-		"about.html":          {"templates/about.html", "templates/base.html"},
-		"contact.html":        {"templates/contact.html", "templates/base.html"},
-		"admin.html":          {"templates/admin.html", "templates/base.html"},
-		"admin_login.html":    {"templates/admin_login.html", "templates/base.html"},
-		"login.html":          {"templates/login.html", "templates/base.html"},
-		"register.html":       {"templates/register.html", "templates/base.html"},
-		"profile.html":        {"templates/profile.html", "templates/base.html"},
+		"home.html":            {"templates/home.html", "templates/base.html"},
+		"products.html":        {"templates/products.html", "templates/base.html"},
+		"about.html":           {"templates/about.html", "templates/base.html"},
+		"contact.html":         {"templates/contact.html", "templates/base.html"},
+		"admin.html":           {"templates/admin.html", "templates/base.html"},
+		"admin_login.html":     {"templates/admin_login.html", "templates/base.html"},
+		"login.html":           {"templates/login.html", "templates/base.html"},
+		"register.html":        {"templates/register.html", "templates/base.html"},
+		"profile.html":         {"templates/profile.html", "templates/base.html"},
 		"forgot_password.html": {"templates/forgot_password.html", "templates/base.html"},
 		"reset_password.html":  {"templates/reset_password.html", "templates/base.html"},
-		"cart.html":           {"templates/cart.html", "templates/base.html"},
-		"checkout.html":       {"templates/checkout.html", "templates/base.html"},
-		"order_success.html":  {"templates/order_success.html", "templates/base.html"},
-		"orders.html":         {"templates/orders.html", "templates/base.html"},
-		"order_tracking.html": {"templates/order_tracking.html", "templates/base.html"},
-		"support_chat.html":   {"templates/support_chat.html", "templates/base.html"},
-		"admin_support.html":  {"templates/admin_support.html", "templates/base.html"},
+		"cart.html":            {"templates/cart.html", "templates/base.html"},
+		"checkout.html":        {"templates/checkout.html", "templates/base.html"},
+		"order_success.html":   {"templates/order_success.html", "templates/base.html"},
+		"orders.html":          {"templates/orders.html", "templates/base.html"},
+		"order_tracking.html":  {"templates/order_tracking.html", "templates/base.html"},
+		"support_chat.html":    {"templates/support_chat.html", "templates/base.html"},
+		"admin_support.html":   {"templates/admin_support.html", "templates/base.html"},
 	}
-	
+
 	for name, files := range templateFiles {
 		log.Printf("📄 Template yükleniyor: %s", name)
 		log.Printf("📁 Dosyalar: %v", files)
-		
+
 		// Dosyaların varlığını kontrol et
 		for _, file := range files {
 			if _, err := os.Stat(file); os.IsNotExist(err) {
@@ -79,7 +78,7 @@ func main() {
 				log.Printf("✅ Template dosyası mevcut: %s", file)
 			}
 		}
-		
+
 		tmpl, err := template.New(name).Funcs(handlers.TemplateFuncs).ParseFiles(files...)
 		if err != nil {
 			log.Printf("❌ Template yüklenemedi %s: %v", name, err)
@@ -88,27 +87,27 @@ func main() {
 		templates[name] = tmpl
 		log.Printf("✅ Template yüklendi: %s", name)
 	}
-	
+
 	log.Printf("🎯 Toplam %d template yüklendi", len(templates))
-	
+
 	r.HTMLRender = &handlers.HTMLRenderer{
 		Templates: templates,
 	}
 
 	// Static dosyaları serve et
 	r.Static("/static", "./static")
-	
+
 	// SEO için özel route'lar
 	r.GET("/sitemap.xml", func(c *gin.Context) {
 		c.Header("Content-Type", "application/xml")
 		c.File("./templates/sitemap.xml")
 	})
-	
+
 	r.GET("/robots.txt", func(c *gin.Context) {
 		c.Header("Content-Type", "text/plain")
 		c.File("./static/robots.txt")
 	})
-	
+
 	// Favicon için route ekle - static dosya olarak serve et
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		c.File("./static/favicon.ico")
@@ -153,7 +152,7 @@ func main() {
 	r.GET("/cart", h.CartPage)
 	r.POST("/cart/add", h.AddToCart)
 	r.POST("/cart/update", h.UpdateCartItem)
-	r.POST("/cart/remove", h.RemoveFromCart)  // ✅ Doğru tanımlanmış
+	r.POST("/cart/remove", h.RemoveFromCart) // ✅ Doğru tanımlanmış
 	r.GET("/cart/count", h.GetCartCount)
 	r.GET("/checkout", h.CheckoutPage)
 	r.POST("/checkout", h.HandleCheckout)
@@ -190,11 +189,11 @@ func main() {
 		admin.GET("/orders/:id", h.AdminGetOrderDetail)
 		admin.PUT("/orders/:id", h.AdminUpdateOrder)
 		admin.DELETE("/orders/:id", h.AdminDeleteOrder)
-		
+
 		// Admin kullanıcı yönetimi
 		admin.GET("/users", h.AdminGetUsers)
 		admin.DELETE("/users/:id", h.AdminDeleteUser)
-		
+
 		// Admin support routes
 		admin.GET("/support", h.AdminSupportPage)
 		admin.GET("/support/sessions", h.AdminGetSupportSessions)
@@ -229,12 +228,12 @@ func main() {
 	certPath := os.Getenv("SSL_CERT_PATH")
 	keyPath := os.Getenv("SSL_KEY_PATH")
 	if certPath == "" {
-	    certPath = "localhost.crt"
+		certPath = "localhost.crt"
 	}
 	if keyPath == "" {
-	    keyPath = "localhost.key"
+		keyPath = "localhost.key"
 	}
-	
+
 	// Sertifika dosyalarının varlığını kontrol et
 	if _, err := os.Stat(certPath); os.IsNotExist(err) {
 		log.Printf("❌ Sertifika dosyası bulunamadı: %s", certPath)
@@ -249,7 +248,7 @@ func main() {
 			log.Printf("HTTPS devre dışı, sadece HTTP kullanılıyor")
 		} else {
 			log.Printf("✅ SSL Sertifikası başarıyla yüklendi")
-			
+
 			// TLS yapılandırması - Güvenlik ayarları iyileştirildi
 			tlsConfig := &tls.Config{
 				Certificates: []tls.Certificate{cert},
@@ -260,17 +259,17 @@ func main() {
 					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 				},
 			}
-			
+
 			// HTTPS sunucusu - Port 8443
 			httpsServer := &http.Server{
-				Addr:      "0.0.0.0:8443",
-				Handler:   r,
-				TLSConfig: tlsConfig,
+				Addr:         "0.0.0.0:8443",
+				Handler:      r,
+				TLSConfig:    tlsConfig,
 				ReadTimeout:  15 * time.Second,
 				WriteTimeout: 15 * time.Second,
 				IdleTimeout:  60 * time.Second,
 			}
-			
+
 			// HTTPS sunucusunu arka planda başlat
 			go func() {
 				log.Printf("🔒 HTTPS Server başlatılıyor (port: 8443)...")
@@ -280,7 +279,7 @@ func main() {
 					log.Printf("❌ HTTPS Server hatası: %v", err)
 				}
 			}()
-			
+
 			log.Printf("✅ HTTPS sunucusu başarıyla başlatıldı")
 		}
 	}
@@ -292,7 +291,7 @@ func main() {
 		log.Printf("🚀 Render.com ortamı tespit edildi")
 		log.Printf("🌐 HTTP Server başlatılıyor (port: %s)...", port)
 		log.Printf("📱 Erişim için: http://localhost:%s", port)
-		
+
 		if err := r.Run(":" + port); err != nil {
 			log.Fatalf("HTTP Server başlatılamadı: %v", err)
 		}
@@ -300,12 +299,12 @@ func main() {
 	}
 
 	// HTTP sunucusu çalıştır
-	httpPort := "3000"  // Port tanımlandı
+	httpPort := "8081" // Port tanımlandı
 
 	// HTTP server - r engine'ini kullan (httpEngine yerine)
 	httpServer := &http.Server{
 		Addr:    "0.0.0.0:" + httpPort,
-		Handler: r,  // httpEngine yerine r kullan
+		Handler: r, // httpEngine yerine r kullan
 	}
 
 	// HTTP Server'ı başlat
@@ -313,7 +312,7 @@ func main() {
 	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 	log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
 	log.Printf("✅ HTTP (3000) ve HTTPS (8443) sunucuları aktif")
-	
+
 	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
