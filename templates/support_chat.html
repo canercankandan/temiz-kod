@@ -268,14 +268,14 @@
 
 /* Responsive Video Kontrolleri */
 @media (max-width: 768px) {
-    /* Video call area mobilde daha küçük */
+    /* Video call area mobilde daha yüksek */
     .video-call-area {
         margin-left: -15px !important;
         margin-right: -15px !important;
         border-radius: 0 !important;
         width: calc(100% + 30px) !important;
-        height: 40vh !important; /* Ekranın %40'ı kadar yükseklik */
-        min-height: 250px !important;
+        height: 60vh !important; /* Ekranın %60'ı kadar yükseklik */
+        min-height: 300px !important;
     }
     
     /* Mobil cihazlarda masaüstü kontrollerini göster */
@@ -340,15 +340,7 @@
     }
     
     .chat-messages {
-        height: 300px !important;
-    }
-    
-    .chat-input {
-        position: sticky !important;
-        bottom: 0 !important;
-        background: white !important;
-        z-index: 1000 !important;
-        border-top: 1px solid #dee2e6 !important;
+        height: 200px !important;
     }
     
     .remote-video-responsive {
@@ -619,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Ping error (page visible):', error);
         });
-    }, 30000); // 30 saniye
+    }, 15000); // 15 saniye
     
 
     
@@ -821,25 +813,30 @@ function startPolling() {
 // Sayfa görünürlüğü değiştiğinde
 document.addEventListener('visibilitychange', function() {
     if (document.hidden) {
-        // Sayfa gizlendiğinde sadece ping ve poll interval'ları durdur
-        // Video stream'i devam ettir
+        // Sayfa gizlendiğinde TÜM interval'ları durdur
+        if (webrtcInterval) {
+            clearInterval(webrtcInterval);
+            webrtcInterval = null;
+        }
         if (pingInterval) {
             clearInterval(pingInterval);
             pingInterval = null;
         }
-        if (pollInterval) {
-            clearInterval(pollInterval);
-            pollInterval = null;
+        if (cartInterval) {
+            clearInterval(cartInterval);
+            cartInterval = null;
         }
         if (signalingPollInterval) {
             clearInterval(signalingPollInterval);
             signalingPollInterval = null;
         }
-        // Video call aktifse stream'i durdurma
-        if (!isCallActive) {
-            navigator.sendBeacon('/support/leave');
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
         }
-        console.log('Sayfa gizlendi - Ping ve poll durduruldu, video devam ediyor');
+        // Sunucuya kullanıcının ayrıldığını bildir
+        navigator.sendBeacon('/support/leave');
+        console.log('Sayfa gizlendi - Tüm interval\'lar durduruldu');
     } else {
         // Sayfa tekrar görünür olduğunda hem ping hem de poll interval'ını yeniden başlat
         if (!pingInterval) {
@@ -854,7 +851,7 @@ document.addEventListener('visibilitychange', function() {
                 .catch(error => {
                     console.error('Ping error (page visible):', error);
                 });
-            }, 30000); // 30 saniye
+            }, 15000); // 15 saniye
         }
         if (!pollInterval) {
             pollInterval = setInterval(() => {
@@ -879,11 +876,11 @@ async function startVideoCall() {
     try {
         console.log('Starting video call...');
         
-        // Kamera ve mikrofon izni al - Mobile uyumlu
-        const constraints = {
+        // Kamera ve mikrofon izni al
+        localStream = await navigator.mediaDevices.getUserMedia({
             video: {
-                width: { ideal: 640, max: 1280 },
-                height: { ideal: 480, max: 720 },
+                width: { ideal: 1280, max: 1920 },
+                height: { ideal: 720, max: 1080 },
                 facingMode: 'user'
             },
             audio: {
@@ -891,35 +888,12 @@ async function startVideoCall() {
                 noiseSuppression: true,
                 autoGainControl: true
             }
-        };
-        
-        // Mobile cihazlarda daha basit ayarlar
-        if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-            constraints.video = {
-                width: { ideal: 320, max: 640 },
-                height: { ideal: 240, max: 480 },
-                facingMode: 'user'
-            };
-        }
-        
-        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        });
         
         console.log('Local stream obtained:', localStream);
         
         // Ziyaretçinin videosunu küçük pencereye yerleştir
         document.getElementById('localVideo').srcObject = localStream;
-        
-        // Video stream'i daha dayanıklı hale getir
-        localStream.getTracks().forEach(track => {
-            track.enabled = true;
-            // Mobile'da video devam etsin
-            if (track.kind === 'video') {
-                track.applyConstraints({
-                    width: { ideal: 320, max: 640 },
-                    height: { ideal: 240, max: 480 }
-                });
-            }
-        });
         
         // Video alanını göster
         document.getElementById('videoCallArea').style.display = 'block';
@@ -944,20 +918,7 @@ async function startVideoCall() {
         
     } catch (error) {
         console.error('Video call start error:', error);
-        
-        let errorMessage = 'Video görüşme başlatılamadı: ';
-        
-        if (error.name === 'NotAllowedError') {
-            errorMessage += 'Kamera ve mikrofon izni verilmedi. Lütfen tarayıcı ayarlarından izin verin.';
-        } else if (error.name === 'NotFoundError') {
-            errorMessage += 'Kamera bulunamadı. Lütfen kameranızın bağlı olduğundan emin olun.';
-        } else if (error.name === 'NotSupportedError') {
-            errorMessage += 'Bu tarayıcı video görüşmeyi desteklemiyor. Chrome veya Firefox deneyin.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
+        alert('Video görüşme başlatılamadı: ' + error.message);
         
         // Cleanup
         if (localStream) {
