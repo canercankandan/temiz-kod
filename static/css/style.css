@@ -69,20 +69,20 @@ body {
 
 .form-control, .form-select {
     border-radius: 8px;
-    background-color: #3b82f6;
-    border: 1px solid #60a5fa;
-    color: #ffffff;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    color: #495057;
 }
 
 .form-control::placeholder {
-    color: #bfdbfe;
+    color: #6c757d;
 }
 
 .form-control:focus, .form-select:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
-    background-color: #3b82f6;
-    color: #ffffff;
+    background-color: #ffffff;
+    color: #495057;
 }
 
 .input-group-text {
@@ -900,11 +900,77 @@ footer h5 {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Video görüşme alanını ve mesajını gizle
-    document.getElementById('videoCallArea').style.display = 'none';
-    document.getElementById('callStatusText').textContent = '';
-    // Gerekirse localStorage veya sessionStorage temizle
-    localStorage.removeItem('videoCallActive');
-    sessionStorage.removeItem('videoCallActive');
-});
+/* Profil sayfası için özel stiller */
+.profile-page .card {
+    background-color: #ffffff;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.profile-page .card-header {
+    background-color: #3b82f6;
+    color: #ffffff;
+    border-bottom: 1px solid #3b82f6;
+}
+
+.profile-page .form-control,
+.profile-page .form-select {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.profile-page .form-control:focus,
+.profile-page .form-select:focus {
+    background-color: #ffffff;
+    color: #495057;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+.profile-page .form-control::placeholder {
+    color: #6c757d;
+}
+
+.profile-page .btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.profile-page .btn-success {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: #ffffff;
+}
+
+.profile-page .btn-warning {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
+    color: #ffffff;
+}
+
+.profile-page .btn-danger {
+    background-color: #ef4444;
+    border-color: #ef4444;
+    color: #ffffff;
+}
+
+.profile-page .alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.profile-page .alert-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.profile-page .alert-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.profile-page .alert-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+}

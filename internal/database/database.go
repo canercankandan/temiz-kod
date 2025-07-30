@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -25,6 +26,7 @@ type dbData struct {
 	VideoCallRequests []models.VideoCallRequest `json:"video_call_requests"`
 	Carts             []models.Cart             `json:"carts"`
 	CartItems         []models.CartItem         `json:"cart_items"`
+	Addresses         []models.Address          `json:"addresses"`
 }
 
 // JSONDatabase, veritabanı işlemlerini yönetir.
@@ -47,6 +49,7 @@ func NewDatabase() (*JSONDatabase, error) {
 			db.data.Messages = []models.Message{}
 			db.data.SupportSessions = []models.SupportSession{}
 			db.data.VideoCallRequests = []models.VideoCallRequest{}
+			db.data.Addresses = []models.Address{}
 			if saveErr := db.saveData(); saveErr != nil {
 				return nil, saveErr
 			}
@@ -67,6 +70,7 @@ func (db *JSONDatabase) loadData() error {
 		db.data.VideoCallRequests = []models.VideoCallRequest{}
 		db.data.Carts = []models.Cart{}
 		db.data.CartItems = []models.CartItem{}
+		db.data.Addresses = []models.Address{}
 		return db.saveData()
 	}
 
@@ -84,6 +88,7 @@ func (db *JSONDatabase) loadData() error {
 		db.data.VideoCallRequests = []models.VideoCallRequest{}
 		db.data.Carts = []models.Cart{}
 		db.data.CartItems = []models.CartItem{}
+		db.data.Addresses = []models.Address{}
 		return nil
 	}
 
@@ -180,12 +185,7 @@ func (db *JSONDatabase) CreateUser(user *models.User) error {
 		}
 	}
 
-	// Parolayı hashle
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.PasswordHash), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	user.PasswordHash = string(hashedPassword)
+	// user.PasswordHash zaten hash'lenmiş durumda, tekrar hash'lemeye gerek yok
 
 	// Yeni ID ata
 	maxID := 0
@@ -299,6 +299,18 @@ func (db *JSONDatabase) CreateOrder(order *models.Order) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 
+	// Stok kontrolü (sadece kontrol, düşürme yok)
+	for _, item := range order.Items {
+		product, err := db.GetProductByID(item.ProductID)
+		if err != nil {
+			return fmt.Errorf("ürün bulunamadı: %d", item.ProductID)
+		}
+
+		if product.Stock < item.Quantity {
+			return fmt.Errorf("yetersiz stok: %s (mevcut: %d, istenen: %d)", product.Name, product.Stock, item.Quantity)
+		}
+	}
+
 	// Sipariş numarası oluştur
 	order.OrderNumber = generateOrderNumber()
 	order.Status = "pending"
@@ -406,13 +418,74 @@ func (db *JSONDatabase) UpdateOrderStatus(orderID int, status string) error {
 
 	for i, order := range db.data.Orders {
 		if order.ID == orderID {
+			oldStatus := order.Status
 			db.data.Orders[i].Status = status
 			db.data.Orders[i].UpdatedAt = time.Now()
+
+			// Admin onayladığında stokları düşür
+			if oldStatus == "pending" && status == "confirmed" {
+				log.Printf("Admin onayı: Sipariş %d için stok düşürülüyor (eski: %s, yeni: %s)", orderID, oldStatus, status)
+				if err := db.deductStockFromOrder(&order); err != nil {
+					log.Printf("Stok düşürme hatası: %v", err)
+				} else {
+					log.Printf("Stok düşürme başarılı: Sipariş %d", orderID)
+				}
+			}
+
+			// Eğer sipariş iptal edildiyse stokları geri ekle
+			if oldStatus != "cancelled" && status == "cancelled" {
+				if err := db.restoreStockFromOrder(&order); err != nil {
+					log.Printf("Stok geri ekleme hatası: %v", err)
+				}
+			}
+
 			return db.saveData()
 		}
 	}
 
 	return fmt.Errorf("sipariş bulunamadı")
+}
+
+// deductStockFromOrder, onaylanan siparişin stoklarını düşürür
+func (db *JSONDatabase) deductStockFromOrder(order *models.Order) error {
+	log.Printf("deductStockFromOrder başladı - Sipariş ID: %d, Ürün sayısı: %d", order.ID, len(order.Items))
+
+	for _, item := range order.Items {
+		log.Printf("Ürün işleniyor - ProductID: %d, Quantity: %d", item.ProductID, item.Quantity)
+
+		// Ürünü bul ve stoku güncelle (lock kullanmadan)
+		for i, product := range db.data.Products {
+			if product.ID == item.ProductID {
+				log.Printf("Ürün bulundu - Name: %s, Mevcut stok: %d", product.Name, product.Stock)
+
+				// Stoku düşür
+				db.data.Products[i].Stock -= item.Quantity
+				log.Printf("Stok düşürüldü - Yeni stok: %d", db.data.Products[i].Stock)
+				log.Printf("Stok düşürüldü: %s (-%d)", product.Name, item.Quantity)
+				break
+			}
+		}
+	}
+
+	log.Printf("deductStockFromOrder tamamlandı")
+	return nil
+}
+
+// restoreStockFromOrder, iptal edilen siparişin stoklarını geri ekler
+func (db *JSONDatabase) restoreStockFromOrder(order *models.Order) error {
+	for _, item := range order.Items {
+		// Ürünü bul ve stoku güncelle (lock kullanmadan)
+		for i, product := range db.data.Products {
+			if product.ID == item.ProductID {
+				// Stoku geri ekle
+				db.data.Products[i].Stock += item.Quantity
+				log.Printf("Stok geri eklendi: %s (+%d)", product.Name, item.Quantity)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // generateOrderNumber, benzersiz sipariş numarası oluşturur.
@@ -465,9 +538,31 @@ func (db *JSONDatabase) UpdateOrderWithNotes(orderID int, status string, adminNo
 
 	for i, order := range db.data.Orders {
 		if order.ID == orderID {
+			oldStatus := order.Status
 			db.data.Orders[i].Status = status
 			db.data.Orders[i].AdminNotes = adminNotes
 			db.data.Orders[i].UpdatedAt = time.Now()
+
+			// Admin onayladığında stokları düşür
+			if oldStatus == "pending" && status == "confirmed" {
+				log.Printf("Admin onayı (notlar): Sipariş %d için stok düşürülüyor (eski: %s, yeni: %s)", orderID, oldStatus, status)
+				if err := db.deductStockFromOrder(&order); err != nil {
+					log.Printf("Stok düşürme hatası: %v", err)
+				} else {
+					log.Printf("Stok düşürme başarılı (notlar): Sipariş %d", orderID)
+				}
+			}
+
+			// Eğer sipariş iptal edildiyse veya beklemeye alındıysa stokları geri ekle
+			if oldStatus == "confirmed" && (status == "cancelled" || status == "pending") {
+				log.Printf("Admin durum değişikliği: Sipariş %d için stoklar geri ekleniyor (eski: %s, yeni: %s)", orderID, oldStatus, status)
+				if err := db.restoreStockFromOrder(&order); err != nil {
+					log.Printf("Stok geri ekleme hatası: %v", err)
+				} else {
+					log.Printf("Stoklar geri eklendi: Sipariş %d", orderID)
+				}
+			}
+
 			return db.saveData()
 		}
 	}
@@ -482,6 +577,16 @@ func (db *JSONDatabase) DeleteOrder(orderID int) error {
 
 	for i, order := range db.data.Orders {
 		if order.ID == orderID {
+			// Eğer sipariş onaylanmışsa stokları geri ekle
+			if order.Status == "confirmed" {
+				log.Printf("Admin sipariş silme: Sipariş %d onaylanmış, stoklar geri ekleniyor", orderID)
+				if err := db.restoreStockFromOrder(&order); err != nil {
+					log.Printf("Stok geri ekleme hatası (sipariş silme): %v", err)
+				} else {
+					log.Printf("Stoklar geri eklendi (sipariş silme): Sipariş %d", orderID)
+				}
+			}
+
 			// Siparişi listeden çıkar
 			db.data.Orders = append(db.data.Orders[:i], db.data.Orders[i+1:]...)
 			return db.saveData()
@@ -1074,6 +1179,157 @@ func (db *JSONDatabase) GetCartItemsByCartID(cartID int) ([]models.CartItem, err
 	return items, nil
 }
 
+// Address Management Methods
+
+// AddAddress, yeni bir adres ekler
+func (db *JSONDatabase) AddAddress(address *models.Address) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// En yüksek ID'yi bul
+	maxID := 0
+	for _, addr := range db.data.Addresses {
+		if addr.ID > maxID {
+			maxID = addr.ID
+		}
+	}
+	address.ID = maxID + 1
+	address.CreatedAt = time.Now()
+	address.UpdatedAt = time.Now()
+
+	// Eğer bu adres varsayılan olarak işaretlenmişse, diğer adresleri varsayılan olmaktan çıkar
+	if address.IsDefault {
+		for i := range db.data.Addresses {
+			if db.data.Addresses[i].UserID == address.UserID {
+				db.data.Addresses[i].IsDefault = false
+			}
+		}
+	}
+
+	db.data.Addresses = append(db.data.Addresses, *address)
+	return db.saveData()
+}
+
+// UpdateAddress, mevcut bir adresi günceller
+func (db *JSONDatabase) UpdateAddress(address *models.Address) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for i, addr := range db.data.Addresses {
+		if addr.ID == address.ID && addr.UserID == address.UserID {
+			address.UpdatedAt = time.Now()
+
+			// Eğer bu adres varsayılan olarak işaretlenmişse, diğer adresleri varsayılan olmaktan çıkar
+			if address.IsDefault {
+				for j := range db.data.Addresses {
+					if db.data.Addresses[j].UserID == address.UserID && db.data.Addresses[j].ID != address.ID {
+						db.data.Addresses[j].IsDefault = false
+					}
+				}
+			}
+
+			db.data.Addresses[i] = *address
+			return db.saveData()
+		}
+	}
+	return os.ErrNotExist
+}
+
+// DeleteAddress, belirli bir ID'ye sahip adresi siler
+func (db *JSONDatabase) DeleteAddress(addressID int, userID int) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for i, addr := range db.data.Addresses {
+		if addr.ID == addressID && addr.UserID == userID {
+			// Eğer silinen adres varsayılan adres ise, başka bir adresi varsayılan yap
+			if addr.IsDefault {
+				for j, otherAddr := range db.data.Addresses {
+					if otherAddr.UserID == userID && otherAddr.ID != addressID {
+						db.data.Addresses[j].IsDefault = true
+						break
+					}
+				}
+			}
+
+			db.data.Addresses = append(db.data.Addresses[:i], db.data.Addresses[i+1:]...)
+			return db.saveData()
+		}
+	}
+	return os.ErrNotExist
+}
+
+// MakeDefaultAddress, belirli bir adresi varsayılan yapar
+func (db *JSONDatabase) MakeDefaultAddress(addressID int, userID int) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	// Önce tüm adresleri varsayılan olmaktan çıkar
+	for i := range db.data.Addresses {
+		if db.data.Addresses[i].UserID == userID {
+			db.data.Addresses[i].IsDefault = false
+		}
+	}
+
+	// Sonra belirtilen adresi varsayılan yap
+	for i := range db.data.Addresses {
+		if db.data.Addresses[i].ID == addressID && db.data.Addresses[i].UserID == userID {
+			db.data.Addresses[i].IsDefault = true
+			db.data.Addresses[i].UpdatedAt = time.Now()
+			return db.saveData()
+		}
+	}
+	return os.ErrNotExist
+}
+
+// GetUserAddresses, kullanıcının tüm adreslerini döndürür
+func (db *JSONDatabase) GetUserAddresses(userID int) ([]models.Address, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	var addresses []models.Address
+
+	// Önce ayrı addresses array'inden kontrol et
+	for _, addr := range db.data.Addresses {
+		if addr.UserID == userID {
+			addresses = append(addresses, addr)
+		}
+	}
+
+	// Eğer ayrı addresses array'inde bulunamazsa, users içindeki addresses'den al
+	if len(addresses) == 0 {
+		for _, user := range db.data.Users {
+			if user.ID == userID && len(user.Addresses) > 0 {
+				addresses = append(addresses, user.Addresses...)
+			}
+		}
+	}
+
+	return addresses, nil
+}
+
+// FixOldOrderAddresses, eski siparişlerdeki bozuk adres bilgilerini düzeltir
+func (db *JSONDatabase) FixOldOrderAddresses() error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for i := range db.data.Orders {
+		order := &db.data.Orders[i]
+
+		// Eğer adres bilgisi \n karakterleri içeriyorsa düzelt
+		if order.Address != "" {
+			// \n karakterlerini virgül ile değiştir
+			order.Address = strings.ReplaceAll(order.Address, "\n", ", ")
+
+			// Fazla virgülleri temizle
+			order.Address = strings.ReplaceAll(order.Address, ", , ", ", ")
+			order.Address = strings.Trim(order.Address, ", ")
+		}
+	}
+
+	return db.saveData()
+}
+
 // DBInterface, veritabanı işlemlerini tanımlar.
 type DBInterface interface {
 	GetAllProducts() ([]models.Product, error)
@@ -1125,4 +1381,12 @@ type DBInterface interface {
 	UpdateCartItem(item *models.CartItem) error
 	DeleteCartItem(itemID int) error
 	GetCartItemsByCartID(cartID int) ([]models.CartItem, error)
+	// Address methods
+	AddAddress(address *models.Address) error
+	UpdateAddress(address *models.Address) error
+	DeleteAddress(addressID int, userID int) error
+	MakeDefaultAddress(addressID int, userID int) error
+	GetUserAddresses(userID int) ([]models.Address, error)
+	// Utility methods
+	FixOldOrderAddresses() error
 }

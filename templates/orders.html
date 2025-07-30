@@ -205,9 +205,19 @@
                                         <i class="fas fa-eye me-2"></i>Detaylı Görüntüle
                                     </button>
                                     {{if eq .Status "pending"}}
-                                    <button class="btn btn-outline-danger w-100" onclick="cancelOrder({{.ID}})">
-                                        <i class="fas fa-times me-2"></i>Siparişi İptal Et
+                                    <button class="btn btn-outline-danger w-100" onclick="cancelOrder({{.ID}})" title="Admin onaylamadığı için siparişi silebilirsiniz">
+                                        <i class="fas fa-trash me-2"></i>Siparişi Sil
                                     </button>
+                                    {{else if eq .Status "cancelled"}}
+                                    <button class="btn btn-outline-danger w-100" onclick="cancelOrder({{.ID}})" title="İptal edilmiş siparişi tamamen silebilirsiniz">
+                                        <i class="fas fa-trash me-2"></i>Siparişi Sil
+                                    </button>
+                                    {{else if eq .Status "confirmed"}}
+                                    <!-- Admin onayladığı için silme butonu gösterilmez -->
+                                    {{else if eq .Status "shipped"}}
+                                    <!-- Kargoya verildiği için silme butonu gösterilmez -->
+                                    {{else if eq .Status "delivered"}}
+                                    <!-- Teslim edildiği için silme butonu gösterilmez -->
                                     {{end}}
                                 </div>
                             </div>
@@ -626,11 +636,11 @@ function getStatusBadge(status) {
 }
 
 function cancelOrder(orderId) {
-    if (confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?\n\nİptal edilen siparişler geri alınamaz!')) {
+    if (confirm('Bu siparişi silmek istediğinizden emin misiniz?\n\n⚠️ Beklemede veya iptal edilmiş siparişler silinebilir.\n\n❌ Silinen siparişler geri alınamaz!')) {
         // Loading state göster
         const button = event.target;
         const originalText = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İptal Ediliyor...';
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Siliniyor...';
         button.disabled = true;
         
         fetch(`/orders/${orderId}`, {
@@ -648,7 +658,7 @@ function cancelOrder(orderId) {
                 location.reload();
             } else {
                 // Hata mesajı göster
-                alert('❌ ' + (data.error || 'Sipariş iptal edilemedi'));
+                alert('❌ ' + (data.error || 'Sipariş silinemedi'));
                 // Button'u eski haline getir
                 button.innerHTML = originalText;
                 button.disabled = false;

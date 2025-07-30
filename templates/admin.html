@@ -896,7 +896,7 @@ class AdminPanel {
                         <select class="form-select order-status-select" data-order-id="${order.id}">
                             <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Beklemede</option>
                             <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Onaylandı</option>
-                            <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Kargoda</option>
+                            <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Kargoya Verildi</option>
                             <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Teslim Edildi</option>
                             <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>İptal Edildi</option>
                         </select>
@@ -1085,6 +1085,8 @@ class AdminPanel {
                             <th>ID</th>
                             <th>Kullanıcı Bilgileri</th>
                             <th>E-posta</th>
+                            <th>Şifre Hash / Gerçek Şifre</th>
+                            <th>Adresler</th>
                             <th>Kayıt Tarihi</th>
                             <th>İşlemler</th>
                         </tr>
@@ -1093,6 +1095,27 @@ class AdminPanel {
         `;
 
         users.forEach(user => {
+            // Adres bilgilerini hazırla
+            let addressesHtml = '';
+            if (user.addresses && user.addresses.length > 0) {
+                user.addresses.forEach((address, index) => {
+                    const isDefault = address.is_default ? '<span class="badge bg-success ms-1">Varsayılan</span>' : '';
+                    addressesHtml += `
+                        <div class="mb-2 p-2 border rounded" style="background: #f8f9fa;">
+                            <strong>${address.title}</strong> ${isDefault}<br>
+                            <small class="text-muted">
+                                <strong>Alıcı:</strong> ${address.recipient_name}<br>
+                                <strong>Telefon:</strong> ${address.phone_number}<br>
+                                <strong>Adres:</strong> ${address.full_address}<br>
+                                <strong>İl/İlçe:</strong> ${address.province}/${address.district}
+                            </small>
+                        </div>
+                    `;
+                });
+            } else {
+                addressesHtml = '<small class="text-muted">Adres bulunamadı</small>';
+            }
+
             html += `
                 <tr>
                     <td><strong>#${user.id}</strong></td>
@@ -1103,6 +1126,20 @@ class AdminPanel {
                         </div>
                     </td>
                     <td>${user.email}</td>
+                    <td>
+                        <div>
+                            <small class="text-muted" style="font-family: monospace; font-size: 10px; word-break: break-all;">
+                                <strong>Hash:</strong> ${user.password_hash || 'Hash yok'}
+                            </small>
+                            <br>
+                            <small class="text-success" style="font-family: monospace; font-size: 10px;">
+                                <strong>Şifre:</strong> ${user.plain_password || '123456'}
+                            </small>
+                        </div>
+                    </td>
+                    <td style="max-width: 300px;">
+                        ${addressesHtml}
+                    </td>
                     <td>
                         <small class="text-muted">${user.created_at ? new Date(user.created_at).toLocaleDateString('tr-TR') : 'Bilinmiyor'}</small>
                     </td>

@@ -7,22 +7,22 @@
       "price": 555,
       "image": "/static/uploads/a62890e9-94d5-497e-bbd3-a16ccec2ca27.png",
       "category": "Yedek Parça",
-      "stock": 55,
+      "stock": 56,
       "features": "",
       "created_at": "2025-07-20T17:20:58.7916166+03:00",
-      "updated_at": "2025-07-20T17:20:58.7916166+03:00"
+      "updated_at": "2025-07-29T15:35:48.3948754+03:00"
     },
     {
       "id": 2,
       "name": "Rolife Premium",
       "description": "ttt",
-      "price": 55,
+      "price": 550,
       "image": "/static/uploads/28d35107-cec1-458a-a633-dcaf688d45c0.jpg",
       "category": "Su Arıtma Ürünleri",
-      "stock": 55,
+      "stock": 57,
       "features": "",
       "created_at": "2025-07-20T17:21:28.1294886+03:00",
-      "updated_at": "2025-07-20T17:21:28.1294886+03:00"
+      "updated_at": "2025-07-29T15:35:53.7220052+03:00"
     },
     {
       "id": 3,
@@ -34,11 +34,128 @@
       "stock": 55,
       "features": "",
       "created_at": "2025-07-20T17:24:08.0228957+03:00",
-      "updated_at": "2025-07-20T17:24:08.0228957+03:00"
+      "updated_at": "2025-07-29T15:35:58.4236666+03:00"
     }
   ],
-  "users": [],
-  "orders": [],
+  "users": [
+    {
+      "id": 1,
+      "full_name": "Cenap Oktay",
+      "username": "wbcenapoktay@gmail.com",
+      "email": "wbcenapoktay@gmail.com",
+      "password_hash": "$2a$10$6gfOz/FgFmYI.p2t51wJVOKjGv60lJv2dPng9ROmkjo6ZfaduuGMK",
+      "plain_password": "123456",
+      "reset_expiry": "0001-01-01T00:00:00Z",
+      "addresses": [
+        {
+          "id": 1,
+          "user_id": 1,
+          "recipient_name": "cenap",
+          "phone_number": "123456",
+          "title": "ev",
+          "full_address": "cenap",
+          "province": "cenap",
+          "district": "cenap",
+          "neighborhood": "cenap",
+          "postal_code": "444",
+          "is_default": false,
+          "created_at": "2025-07-27T17:52:29.4107482+03:00",
+          "updated_at": "2025-07-27T19:34:28.6826212+03:00"
+        },
+        {
+          "id": 2,
+          "user_id": 1,
+          "recipient_name": "mert",
+          "phone_number": "456789",
+          "title": "iş",
+          "full_address": "mert",
+          "province": "mert",
+          "district": "mert",
+          "neighborhood": "mert",
+          "postal_code": "34142",
+          "is_default": true,
+          "created_at": "2025-07-27T17:53:12.4912688+03:00",
+          "updated_at": "2025-07-27T19:37:30.1681071+03:00"
+        }
+      ],
+      "created_at": "2025-07-27T20:41:30.178387+03:00",
+      "updated_at": "2025-07-27T20:41:30.178387+03:00"
+    },
+    {
+      "id": 2,
+      "full_name": "mert",
+      "username": "sen1979ben@gmail.com",
+      "email": "sen1979ben@gmail.com",
+      "password_hash": "$2a$10$OHvANvwh8rZH9Q3lsbyxm.bLQDEkUrBcOF9GFt7s5QeA8ES6uGaLG",
+      "plain_password": "123456",
+      "reset_expiry": "0001-01-01T00:00:00Z",
+      "addresses": [
+        {
+          "id": 3,
+          "user_id": 2,
+          "recipient_name": "cenap",
+          "phone_number": "05448113105",
+          "title": "ev",
+          "full_address": "g\r\ndükkan",
+          "province": "İstanbul",
+          "district": "istanbu",
+          "neighborhood": "ddd",
+          "postal_code": "34142",
+          "is_default": false,
+          "created_at": "2025-07-29T02:36:22.8141345+03:00",
+          "updated_at": "2025-07-29T12:00:17.6537302+03:00"
+        },
+        {
+          "id": 4,
+          "user_id": 2,
+          "recipient_name": "FTIH",
+          "phone_number": "0544212222",
+          "title": "BASKA",
+          "full_address": "VAPAOAOK",
+          "province": "NERSE",
+          "district": "VAN",
+          "neighborhood": "SEFAKÖT",
+          "postal_code": "444",
+          "is_default": true,
+          "created_at": "2025-07-29T12:33:53.1972068+03:00",
+          "updated_at": "2025-07-29T15:43:39.2514342+03:00"
+        }
+      ],
+      "created_at": "2025-07-27T22:17:36.2552053+03:00",
+      "updated_at": "2025-07-27T22:17:36.2552053+03:00"
+    }
+  ],
+  "orders": [
+    {
+      "id": 1,
+      "user_id": 0,
+      "session_id": "be91a20c-df38-45e0-8fc4-8e7542d96f15",
+      "order_number": "ORD-bb9096e4",
+      "customer_name": "cenap Oktay",
+      "email": "wbcenapoktay@gmail.com",
+      "phone": "05448113105",
+      "address": "sr\u003c w\u003cr",
+      "items": [
+        {
+          "id": 0,
+          "cart_id": 0,
+          "product_id": 1,
+          "name": ".denemet",
+          "price": 555,
+          "image": "/static/uploads/a62890e9-94d5-497e-bbd3-a16ccec2ca27.png",
+          "quantity": 1,
+          "total_price": 555
+        }
+      ],
+      "total_price": 555,
+      "status": "pending",
+      "payment_method": "",
+      "notes": "",
+      "admin_notes": "",
+      "created_at": "2025-07-31T00:59:37.6412091+03:00",
+      "updated_at": "2025-07-31T00:59:37.6412091+03:00"
+    }
+  ],
   "messages": [
     {
       "id": 1,
@@ -372,6 +489,314 @@
       "status": "offline",
       "last_message_at": "2024-07-23T00:10:07.8429181+03:00",
       "created_at": "2025-07-23T00:05:28.0660149+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 23,
+      "session_id": "52835232-e364-499b-9f87-1947131f6f9b",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T14:59:09.0418399+03:00",
+      "created_at": "2025-07-27T14:59:09.0396421+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 24,
+      "session_id": "3339dd10-c94f-44d7-89c7-203bf8f24def",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T15:58:09.2467751+03:00",
+      "created_at": "2025-07-27T15:18:00.0935298+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 25,
+      "session_id": "41200346-0698-47cd-bb49-ee937f433a03",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T16:30:19.6378394+03:00",
+      "created_at": "2025-07-27T16:29:19.5677867+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 26,
+      "session_id": "e6bd7578-98b2-4d22-93ba-06ffd62b756c",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T16:50:37.0848351+03:00",
+      "created_at": "2025-07-27T16:50:37.0848351+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 27,
+      "session_id": "20ae080d-aed2-4c41-9036-865800ecf76c",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T17:16:39.9421248+03:00",
+      "created_at": "2025-07-27T17:03:38.0166995+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 28,
+      "session_id": "1c3966fa-a4b8-432a-aa68-7a1e8325eafe",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T17:22:48.642872+03:00",
+      "created_at": "2025-07-27T17:22:48.642872+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 29,
+      "session_id": "7011b643-7356-41b6-87e2-3033ff99629d",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T17:24:31.5838058+03:00",
+      "created_at": "2025-07-27T17:24:31.5838058+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 30,
+      "session_id": "8e2af472-c937-49c6-8467-3f21ff6d94e4",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T17:30:36.9626088+03:00",
+      "created_at": "2025-07-27T17:25:18.317871+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 31,
+      "session_id": "8357abf8-7228-4821-afee-487576f6ea5b",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T17:32:46.6219211+03:00",
+      "created_at": "2025-07-27T17:32:46.6219211+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 32,
+      "session_id": "03c5640d-fad0-4bb1-a313-0f613ecc6edb",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T18:18:19.2995685+03:00",
+      "created_at": "2025-07-27T17:57:41.8961073+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 33,
+      "session_id": "3318fbfa-67f2-4324-9d2d-eb48a77eb8e9",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T19:08:20.8738898+03:00",
+      "created_at": "2025-07-27T18:23:05.71975+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 34,
+      "session_id": "f79e4de0-9c03-4407-8ebb-1648ed04abeb",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T19:11:47.8069182+03:00",
+      "created_at": "2025-07-27T19:11:47.8069182+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 35,
+      "session_id": "d307ab56-f0b7-4e60-a7cf-b21b97c708df",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T20:21:45.0187511+03:00",
+      "created_at": "2025-07-27T19:25:45.3618045+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 36,
+      "session_id": "e690a9af-0a1d-45d1-8a92-30ccc6fc2d86",
+      "user_id": 2,
+      "username": "wbcenapoktay@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T20:28:38.7846036+03:00",
+      "created_at": "2025-07-27T20:28:38.7803164+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 37,
+      "session_id": "548e84bd-c3ef-45d5-ba4a-b2e318f96d82",
+      "user_id": 2,
+      "username": "wbcenapoktay@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T20:40:54.9197282+03:00",
+      "created_at": "2025-07-27T20:39:27.3269184+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 38,
+      "session_id": "d3ac9bd7-ed6b-4dc3-bbb8-e7535f3c9d54",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-27T23:17:30.4568687+03:00",
+      "created_at": "2025-07-27T23:13:29.4624751+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 39,
+      "session_id": "159d233e-0276-4f4c-8e96-78aa57792d44",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-28T00:08:34.5923817+03:00",
+      "created_at": "2025-07-28T00:02:30.0960936+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 40,
+      "session_id": "68e67beb-eb76-4c6b-a736-9a36d5a77840",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-29T03:07:57.6962373+03:00",
+      "created_at": "2025-07-29T02:35:40.9953722+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 41,
+      "session_id": "5ecde4b1-3482-4de4-96cc-43a8875c8642",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-29T03:37:36.4288295+03:00",
+      "created_at": "2025-07-29T03:31:15.5788002+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 42,
+      "session_id": "79debc74-7642-4773-99c0-2edd00dbbbe0",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-29T11:14:17.578757+03:00",
+      "created_at": "2025-07-29T11:14:17.5733044+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 43,
+      "session_id": "ff3cfbff-0403-4fb5-8142-8066bd774420",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-29T11:47:53.3295195+03:00",
+      "created_at": "2025-07-29T11:14:49.945124+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 44,
+      "session_id": "647cd4ca-da90-4a55-bc6a-af6a21e2e31a",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-29T12:56:09.3022541+03:00",
+      "created_at": "2025-07-29T11:56:56.3207063+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 45,
+      "session_id": "bbe6dac3-beac-44fc-96e4-63638f8a0023",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-29T13:00:44.5138995+03:00",
+      "created_at": "2025-07-29T13:00:44.5117685+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 46,
+      "session_id": "2b9ecd05-37bc-4929-bbad-28181eb2828e",
+      "user_id": 2,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-29T15:42:13.272846+03:00",
+      "created_at": "2025-07-29T15:42:13.2649901+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 47,
+      "session_id": "d9f1a0ea-c089-47c3-8381-9503ebe8dd55",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-31T00:44:55.4221129+03:00",
+      "created_at": "2025-07-31T00:44:40.4210171+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 48,
+      "session_id": "4ab9e58d-2413-4d24-aed0-51c68f6019a9",
+      "user_id": 1,
+      "username": "wbcenapoktay@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-31T00:45:10.2801615+03:00",
+      "created_at": "2025-07-31T00:45:01.2110247+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 49,
+      "session_id": "be91a20c-df38-45e0-8fc4-8e7542d96f15",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-31T02:24:22.4005506+03:00",
+      "created_at": "2025-07-31T00:45:31.9067564+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 50,
+      "session_id": "e4ad5648-fbc1-48a6-8c2e-eabbc67f36f6",
+      "user_id": 1,
+      "username": "wbcenapoktay@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-07-31T02:24:28.2512518+03:00",
+      "created_at": "2025-07-31T02:24:28.2512518+03:00",
       "unread_count": 0
     }
   ],
@@ -2845,8 +3270,80 @@
       "requested_at": "2025-07-24T19:33:32.7658057+03:00",
       "responded_at": null,
       "initiator": "admin"
+    },
+    {
+      "id": 248,
+      "session_id": "d307ab56-f0b7-4e60-a7cf-b21b97c708df",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "status": "ended",
+      "requested_at": "2025-07-27T19:56:50.7476582+03:00",
+      "responded_at": "2025-07-27T19:57:01.7990713+03:00",
+      "initiator": ""
     }
   ],
-  "carts": null,
-  "cart_items": null
+  "carts": [],
+  "cart_items": [],
+  "addresses": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "recipient_name": "cenap",
+      "phone_number": "123456",
+      "title": "ev",
+      "full_address": "cenap",
+      "province": "cenap",
+      "district": "cenap",
+      "neighborhood": "cenap",
+      "postal_code": "444",
+      "is_default": false,
+      "created_at": "2025-07-27T17:52:29.4107482+03:00",
+      "updated_at": "2025-07-27T19:34:28.6826212+03:00"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "recipient_name": "mert",
+      "phone_number": "456789",
+      "title": "iş",
+      "full_address": "mert",
+      "province": "mert",
+      "district": "mert",
+      "neighborhood": "mert",
+      "postal_code": "34142",
+      "is_default": true,
+      "created_at": "2025-07-27T17:53:12.4912688+03:00",
+      "updated_at": "2025-07-27T19:37:30.1681071+03:00"
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "recipient_name": "cenap",
+      "phone_number": "05448113105",
+      "title": "ev",
+      "full_address": "g\r\ndükkan",
+      "province": "İstanbul",
+      "district": "istanbu",
+      "neighborhood": "ddd",
+      "postal_code": "34142",
+      "is_default": false,
+      "created_at": "2025-07-29T02:36:22.8141345+03:00",
+      "updated_at": "2025-07-29T12:00:17.6537302+03:00"
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "recipient_name": "FTIH",
+      "phone_number": "0544212222",
+      "title": "BASKA",
+      "full_address": "VAPAOAOK",
+      "province": "NERSE",
+      "district": "VAN",
+      "neighborhood": "SEFAKÖT",
+      "postal_code": "444",
+      "is_default": true,
+      "created_at": "2025-07-29T12:33:53.1972068+03:00",
+      "updated_at": "2025-07-29T15:43:39.2514342+03:00"
+    }
+  ]
 }

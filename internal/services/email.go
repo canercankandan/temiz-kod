@@ -6,8 +6,9 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/gomail.v2"
 	"cenap/internal/models"
+
+	"gopkg.in/gomail.v2"
 )
 
 // EmailService, e-posta gönderimi için kullanılır
@@ -290,4 +291,201 @@ func (es *EmailService) SendAdminOrderNotification(adminEmail string, order *mod
 	m.SetBody("text/html", body)
 
 	return es.dialer.DialAndSend(m)
-} 
+}
+
+// SendCustomerOrderConfirmation, müşteriye sipariş onay e-postası gönderir
+func (es *EmailService) SendCustomerOrderConfirmation(customerEmail string, order *models.Order) error {
+	if es.dialer == nil {
+		log.Printf("E-posta gönderimi devre dışı. Müşteri sipariş onayı: %s", order.OrderNumber)
+		return nil
+	}
+
+	// Sipariş ürünlerini formatla
+	var itemsHTML string
+	for _, item := range order.Items {
+		itemsHTML += fmt.Sprintf(`
+			<tr>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%s</td>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%.2f TL</td>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%d</td>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%.2f TL</td>
+			</tr>
+		`, item.Name, item.Price, item.Quantity, item.Price*float64(item.Quantity))
+	}
+
+	subject := "Sipariş Onayı - Cenap Su Arıtma"
+	body := fmt.Sprintf(`
+		<h2>✅ Siparişiniz Alındı!</h2>
+		<p>Merhaba <strong>%s</strong>,</p>
+		<p>Siparişiniz başarıyla alındı ve işleme alındı. Sipariş detaylarınız aşağıdadır:</p>
+		<br>
+		<p><strong>Sipariş Bilgileri:</strong></p>
+		<ul>
+			<li><strong>Sipariş Numarası:</strong> %s</li>
+			<li><strong>Sipariş Tarihi:</strong> %s</li>
+			<li><strong>Toplam Tutar:</strong> %.2f TL</li>
+			<li><strong>Ödeme Yöntemi:</strong> %s</li>
+		</ul>
+		<br>
+		<p><strong>Teslimat Bilgileri:</strong></p>
+		<ul>
+			<li><strong>Ad Soyad:</strong> %s</li>
+			<li><strong>Telefon:</strong> %s</li>
+			<li><strong>Adres:</strong> %s</li>
+		</ul>
+		<br>
+		<p><strong>Sipariş Ürünleri:</strong></p>
+		<table style="width: 100%%; border-collapse: collapse; margin: 20px 0;">
+			<thead>
+				<tr style="background-color: #f8f9fa;">
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Ürün</th>
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Fiyat</th>
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Adet</th>
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Toplam</th>
+				</tr>
+			</thead>
+			<tbody>
+				%s
+			</tbody>
+		</table>
+		<br>
+		<p><strong>Sipariş Notlarınız:</strong></p>
+		<p style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff;">%s</p>
+		<br>
+		<p><strong>Sipariş Takibi:</strong></p>
+		<p>Siparişinizin durumunu takip etmek için aşağıdaki linki kullanabilirsiniz:</p>
+		<div style="text-align: center; margin: 20px 0;">
+			<a href="https://xn--suartmauzman-44bi.com/order-tracking?order_number=%s&email=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">📦 Siparişimi Takip Et</a>
+		</div>
+		<br>
+		<p><strong>Önemli Bilgiler:</strong></p>
+		<ul>
+			<li>✅ Siparişiniz 24 saat içinde işleme alınacak</li>
+			<li>✅ Kargo bilgileri email ile bildirilecek</li>
+			<li>✅ 7/24 canlı destek hizmetimiz mevcuttur</li>
+			<li>✅ 2 yıl garanti kapsamındadır</li>
+			<li>✅ 1 yıl parça garantisi</li>
+		</ul>
+		<br>
+		<p><strong>İletişim:</strong></p>
+		<p>Herhangi bir sorunuz olursa:</p>
+		<ul>
+			<li>📞 <a href="tel:+905448113105">0544 811 31 05</a></li>
+			<li>💬 <a href="https://xn--suartmauzman-44bi.com/support">Canlı Destek</a></li>
+			<li>📧 <a href="mailto:irmaksuaritmam.com">irmaksuaritmam.com</a></li>
+		</ul>
+		<br>
+		<p>Teşekkür ederiz,<br><strong>Cenap Su Arıtma</strong></p>
+	`, order.CustomerName, order.OrderNumber, order.CreatedAt.Format("02.01.2006 15:04:05"), order.TotalPrice, order.PaymentMethod, order.CustomerName, order.Phone, order.Address, itemsHTML, order.Notes, order.OrderNumber, order.Email)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", es.from)
+	m.SetHeader("To", customerEmail)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	return es.dialer.DialAndSend(m)
+}
+
+// SendAdminOrderConfirmationEmail, admin siparişi onayladığında müşteriye gönderilen email
+func (es *EmailService) SendAdminOrderConfirmationEmail(customerEmail string, order *models.Order) error {
+	if es.dialer == nil {
+		log.Printf("E-posta gönderimi devre dışı. Admin sipariş onayı: %s", order.OrderNumber)
+		return nil
+	}
+
+	// Sipariş ürünlerini formatla
+	var itemsHTML string
+	for _, item := range order.Items {
+		itemsHTML += fmt.Sprintf(`
+			<tr>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%s</td>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%.2f TL</td>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%d</td>
+				<td style="padding: 10px; border-bottom: 1px solid #eee;">%.2f TL</td>
+			</tr>
+		`, item.Name, item.Price, item.Quantity, item.Price*float64(item.Quantity))
+	}
+
+	subject := "Siparişiniz Onaylandı - Cenap Su Arıtma"
+	body := fmt.Sprintf(`
+		<h2>✅ Siparişiniz Onaylandı!</h2>
+		<p>Merhaba <strong>%s</strong>,</p>
+		<p>Siparişiniz yöneticimiz tarafından onaylandı ve kargoya verilmek üzere hazırlanıyor.</p>
+		<br>
+		<p><strong>Sipariş Bilgileri:</strong></p>
+		<ul>
+			<li><strong>Sipariş Numarası:</strong> %s</li>
+			<li><strong>Sipariş Tarihi:</strong> %s</li>
+			<li><strong>Onay Tarihi:</strong> %s</li>
+			<li><strong>Toplam Tutar:</strong> %.2f TL</li>
+			<li><strong>Ödeme Yöntemi:</strong> %s</li>
+		</ul>
+		<br>
+		<p><strong>Teslimat Bilgileri:</strong></p>
+		<ul>
+			<li><strong>Ad Soyad:</strong> %s</li>
+			<li><strong>Telefon:</strong> %s</li>
+			<li><strong>Adres:</strong> %s</li>
+		</ul>
+		<br>
+		<p><strong>Sipariş Ürünleri:</strong></p>
+		<table style="width: 100%%; border-collapse: collapse; margin: 20px 0;">
+			<thead>
+				<tr style="background-color: #f8f9fa;">
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Ürün</th>
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Fiyat</th>
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Adet</th>
+					<th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Toplam</th>
+				</tr>
+			</thead>
+			<tbody>
+				%s
+			</tbody>
+		</table>
+		<br>
+		<p><strong>Sipariş Notlarınız:</strong></p>
+		<p style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff;">%s</p>
+		<br>
+		<p><strong>Sonraki Adımlar:</strong></p>
+		<ul>
+			<li>✅ Siparişiniz kargoya verilecek</li>
+			<li>✅ Kargo takip numarası email ile bildirilecek</li>
+			<li>✅ Teslimat 1-3 iş günü içinde yapılacak</li>
+			<li>✅ Kurulum ekibimiz sizinle iletişime geçecek</li>
+		</ul>
+		<br>
+		<p><strong>Sipariş Takibi:</strong></p>
+		<p>Siparişinizin durumunu takip etmek için aşağıdaki linki kullanabilirsiniz:</p>
+		<div style="text-align: center; margin: 20px 0;">
+			<a href="https://xn--suartmauzman-44bi.com/order-tracking?order_number=%s&email=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">📦 Siparişimi Takip Et</a>
+		</div>
+		<br>
+		<p><strong>Önemli Bilgiler:</strong></p>
+		<ul>
+			<li>✅ 2 yıl garanti kapsamındadır</li>
+			<li>✅ 1 yıl parça garantisi</li>
+			<li>✅ Ücretsiz kurulum hizmeti</li>
+			<li>✅ 7/24 canlı destek hizmetimiz mevcuttur</li>
+			<li>✅ Teknik servis desteği</li>
+		</ul>
+		<br>
+		<p><strong>İletişim:</strong></p>
+		<p>Herhangi bir sorunuz olursa:</p>
+		<ul>
+			<li>📞 <a href="tel:+905448113105">0544 811 31 05</a></li>
+			<li>💬 <a href="https://xn--suartmauzman-44bi.com/support">Canlı Destek</a></li>
+			<li>📧 <a href="mailto:irmaksuaritmam.com">irmaksuaritmam.com</a></li>
+		</ul>
+		<br>
+		<p>Teşekkür ederiz,<br><strong>Cenap Su Arıtma</strong></p>
+	`, order.CustomerName, order.OrderNumber, order.CreatedAt.Format("02.01.2006 15:04:05"), time.Now().Format("02.01.2006 15:04:05"), order.TotalPrice, order.PaymentMethod, order.CustomerName, order.Phone, order.Address, itemsHTML, order.Notes, order.OrderNumber, order.Email)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", es.from)
+	m.SetHeader("To", customerEmail)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	return es.dialer.DialAndSend(m)
+}

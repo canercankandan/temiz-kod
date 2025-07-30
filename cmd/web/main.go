@@ -213,6 +213,12 @@ func main() {
 	{
 		user.GET("", h.ProfilePage)
 		user.POST("/change-password", h.HandleChangePassword)
+
+		// Address management routes
+		user.POST("/address/add", h.AddAddress)
+		user.POST("/address/update", h.UpdateAddress)
+		user.POST("/address/:id/delete", h.DeleteAddress)
+		user.POST("/address/:id/default", h.MakeDefaultAddress)
 	}
 
 	// Sipariş geçmişi (protected)
@@ -222,6 +228,7 @@ func main() {
 		orders.GET("", h.OrdersPage)
 		orders.GET("/:id", h.GetOrderDetail)
 		orders.DELETE("/:id", h.UserCancelOrder)
+		orders.PUT("/:id/status", h.UserUpdateOrderStatus)
 	}
 
 	// Certificate yükle ve HTTPS'i aktif et
@@ -260,9 +267,9 @@ func main() {
 				},
 			}
 
-			// HTTPS sunucusu - Port 8443
+			// HTTPS sunucusu - Port 8444 (yerel geliştirme portu)
 			httpsServer := &http.Server{
-				Addr:         "0.0.0.0:8443",
+				Addr:         "0.0.0.0:8444",
 				Handler:      r,
 				TLSConfig:    tlsConfig,
 				ReadTimeout:  15 * time.Second,
@@ -272,9 +279,9 @@ func main() {
 
 			// HTTPS sunucusunu arka planda başlat
 			go func() {
-				log.Printf("🔒 HTTPS Server başlatılıyor (port: 8443)...")
-				log.Printf("🔐 Yerel HTTPS erişim: https://localhost:8443")
-				log.Printf("🌐 HTTPS erişim için: https://xn--suartmauzman-44bi.com:8443")
+				log.Printf("🔒 HTTPS Server başlatılıyor (port: 8444)...")
+				log.Printf("🔐 Yerel HTTPS erişim: https://localhost:8444")
+				log.Printf("🌐 HTTPS erişim için: https://xn--suartmauzman-44bi.com:8444")
 				if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
 					log.Printf("❌ HTTPS Server hatası: %v", err)
 				}
@@ -299,7 +306,7 @@ func main() {
 	}
 
 	// HTTP sunucusu çalıştır
-	httpPort := "8081" // Port tanımlandı
+	httpPort := "8082" // Yerel geliştirme portu
 
 	// HTTP server - r engine'ini kullan (httpEngine yerine)
 	httpServer := &http.Server{
@@ -311,7 +318,7 @@ func main() {
 	log.Printf("🌐 HTTP Server başlatılıyor...")
 	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 	log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
-	log.Printf("✅ HTTP (3000) ve HTTPS (8443) sunucuları aktif")
+	log.Printf("✅ HTTP (8082) ve HTTPS (8444) sunucuları aktif")
 
 	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("HTTP Server başlatılamadı: %v", err)

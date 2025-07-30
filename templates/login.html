@@ -6,34 +6,128 @@
         <div class="col-md-6">
             <div class="card shadow-lg">
                 <div class="card-header bg-primary text-white text-center">
-                    <h3 class="mb-0">Kullanıcı Girişi</h3>
+                    <h3 class="mb-0">Giriş Yap</h3>
                 </div>
                 <div class="card-body">
                     {{if .error}}
                     <div class="alert alert-danger" role="alert">
-                        {{.error}}
+                        <i class="fas fa-exclamation-triangle"></i> {{.error}}
                     </div>
                     {{end}}
-                    <form action="/login" method="POST">
+                    {{if .success}}
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle"></i> {{.success}}
+                    </div>
+                    {{end}}
+                    <form action="/login" method="POST" id="loginForm">
                         <div class="mb-3">
-                            <label for="username" class="form-label">Kullanıcı Adı</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i> Kullanıcı Adı veya E-posta <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="Kullanıcı adınız veya e-posta adresiniz" required>
+                            <div class="form-text">Kullanıcı adınızı veya e-posta adresinizi girin</div>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Parola</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i> Şifre <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="Şifrenizi girin" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Hesabınızı oluştururken belirlediğiniz şifre</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">
+                                    Beni hatırla
+                                </label>
+                            </div>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Giriş Yap</button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                            </button>
                         </div>
                     </form>
-                     <div class="text-center mt-3">
-                        <p>Hesabınız yok mu? <a href="/register">Kayıt Olun</a></p>
-                        <p><a href="/forgot-password">Şifremi Unuttum</a></p>
+                    <div class="text-center mt-4">
+                        <p class="mb-2">
+                            Hesabınız yok mu? 
+                            <a href="/register" class="text-decoration-none">
+                                <i class="fas fa-user-plus"></i> Hesap Oluşturun
+                            </a>
+                        </p>
+                        <p class="mb-0">
+                            <a href="/forgot-password" class="text-decoration-none">
+                                <i class="fas fa-key"></i> Şifremi Unuttum
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Şifre göster/gizle butonu
+function togglePassword() {
+    const passwordField = document.getElementById('password');
+    const icon = document.querySelector('#togglePassword i');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        passwordField.type = 'password';
+        icon.className = 'fas fa-eye';
+    }
+}
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', function() {
+    // Şifre göster butonuna tıklama olayı
+    const toggleBtn = document.getElementById('togglePassword');
+    if (toggleBtn) {
+        toggleBtn.onclick = togglePassword;
+    }
+    
+    // Form validasyonu
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (username === '') {
+                alert('Kullanıcı adı veya e-posta adresi girin!');
+                e.preventDefault();
+                return false;
+            }
+            
+            if (password === '') {
+                alert('Şifre girin!');
+                e.preventDefault();
+                return false;
+            }
+            
+            // Form gönderiliyor
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Giriş yapılıyor...';
+            submitBtn.disabled = true;
+        });
+    }
+    
+    // Kullanıcı adı alanına odaklan
+    const usernameField = document.getElementById('username');
+    if (usernameField) {
+        usernameField.focus();
+    }
+});
+</script>
 {{end}} 
