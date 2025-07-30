@@ -317,6 +317,8 @@ func (h *Handler) UserLogout(c *gin.Context) {
 // ProfilePage, kullanıcı profil sayfasını oluşturur.
 func (h *Handler) ProfilePage(c *gin.Context) {
 	username, _ := c.Cookie("username")
+	isLoggedIn := username != ""
+	
 	user, err := h.db.GetUserByUsername(username)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/login")
@@ -334,11 +336,12 @@ func (h *Handler) ProfilePage(c *gin.Context) {
 	error := c.Query("error")
 
 	c.HTML(http.StatusOK, "profile.html", gin.H{
-		"title":     "Profilim",
-		"username":  username,
-		"addresses": addresses,
-		"success":   success,
-		"error":     error,
+		"title":      "Profilim",
+		"username":   username,
+		"isLoggedIn": isLoggedIn,
+		"addresses":  addresses,
+		"success":    success,
+		"error":      error,
 	})
 }
 
