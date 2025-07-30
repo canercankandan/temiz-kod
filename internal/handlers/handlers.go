@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"cenap/internal/database"
 	"cenap/internal/models"
 	"cenap/internal/services"
 
@@ -72,6 +72,14 @@ type DBInterface interface {
 	UpdateCartItem(item *models.CartItem) error
 	DeleteCartItem(itemID int) error
 	GetCartItemsByCartID(cartID int) ([]models.CartItem, error)
+	// Address methods
+	AddAddress(address *models.Address) error
+	UpdateAddress(address *models.Address) error
+	DeleteAddress(addressID int, userID int) error
+	MakeDefaultAddress(addressID int, userID int) error
+	GetUserAddresses(userID int) ([]models.Address, error)
+	// Utility methods
+	FixOldOrderAddresses() error
 }
 
 // Handler, HTTP isteklerini yönetir.
@@ -86,14 +94,14 @@ func NewHandler(db DBInterface) *Handler {
 	return &Handler{
 		db:          db,
 		email:       services.NewEmailService(),
-		cartService: services.NewCartService(),
+		cartService: services.NewCartService(db),
 	}
 }
 
 // Admin credentials (in production, these should be stored securely)
 const (
-	ADMIN_USERNAME = "admin"
-	ADMIN_PASSWORD = "admin123"
+	ADMIN_USERNAME = "cenap"
+	ADMIN_PASSWORD = "cenap1980"
 )
 
 // AuthMiddleware checks if user is authenticated for admin routes
@@ -185,7 +193,7 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 		return
 	}
 
-	if !database.CheckPasswordHash(password, user.PasswordHash) {
+	if !CheckPasswordHash(password, user.PasswordHash) {
 		log.Printf("Incorrect password for user %s", username)
 		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
 			"title": "Giriş Yap",
@@ -231,13 +239,12 @@ func (h *Handler) RegisterPage(c *gin.Context) {
 // HandleRegister, kullanıcı kayıt işlemini yönetir.
 func (h *Handler) HandleRegister(c *gin.Context) {
 	fullName := c.PostForm("fullName")
-	username := c.PostForm("username")
 	email := c.PostForm("email")
 	password := c.PostForm("password")
 	confirmPassword := c.PostForm("confirmPassword")
 
 	// Validasyon
-	if fullName == "" || username == "" || email == "" || password == "" {
+	if fullName == "" || email == "" || password == "" {
 		c.HTML(http.StatusBadRequest, "register.html", gin.H{
 			"title": "Kayıt Ol",
 			"error": "Tüm alanları doldurun.",
@@ -253,6 +260,16 @@ func (h *Handler) HandleRegister(c *gin.Context) {
 		return
 	}
 
+	// E-posta format kontrolü
+	emailRegex := regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+	if !emailRegex.MatchString(email) {
+		c.HTML(http.StatusBadRequest, "register.html", gin.H{
+			"title": "Kayıt Ol",
+			"error": "Geçerli bir e-posta adresi girin.",
+		})
+		return
+	}
+
 	// Şifreyi hashle
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -264,10 +281,10 @@ func (h *Handler) HandleRegister(c *gin.Context) {
 		return
 	}
 
-	// Kullanıcıyı oluştur
+	// Kullanıcıyı oluştur (e-posta adresini kullanıcı adı olarak kullan)
 	user := &models.User{
 		FullName:     fullName,
-		Username:     username,
+		Username:     email, // E-posta adresini kullanıcı adı olarak kullan
 		Email:        email,
 		PasswordHash: string(hashedPassword),
 	}
@@ -276,13 +293,13 @@ func (h *Handler) HandleRegister(c *gin.Context) {
 		log.Printf("Error creating user: %v", err)
 		c.HTML(http.StatusInternalServerError, "register.html", gin.H{
 			"title": "Kayıt Ol",
-			"error": "Kullanıcı adı veya e-posta adresi zaten kullanımda.",
+			"error": "Bu e-posta adresi zaten kullanımda.",
 		})
 		return
 	}
 
 	// Hoş geldin e-postası gönder
-	if err := h.email.SendWelcomeEmail(email, username); err != nil {
+	if err := h.email.SendWelcomeEmail(email, fullName); err != nil {
 		log.Printf("Error sending welcome email: %v", err)
 		// E-posta gönderilemese bile kayıt işlemi devam eder
 	}
@@ -300,9 +317,28 @@ func (h *Handler) UserLogout(c *gin.Context) {
 // ProfilePage, kullanıcı profil sayfasını oluşturur.
 func (h *Handler) ProfilePage(c *gin.Context) {
 	username, _ := c.Cookie("username")
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	addresses, err := h.db.GetUserAddresses(user.ID)
+	if err != nil {
+		log.Printf("ProfilePage - Error getting addresses: %v", err)
+		addresses = []models.Address{}
+	}
+
+	// URL parametrelerini al
+	success := c.Query("success")
+	error := c.Query("error")
+
 	c.HTML(http.StatusOK, "profile.html", gin.H{
-		"title":    "Profilim",
-		"username": username,
+		"title":     "Profilim",
+		"username":  username,
+		"addresses": addresses,
+		"success":   success,
+		"error":     error,
 	})
 }
 
@@ -387,7 +423,7 @@ func (h *Handler) AdminPage(c *gin.Context) {
 	c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
 	c.Header("Pragma", "no-cache")
 	c.Header("Expires", "0")
-	
+
 	products, err := h.db.GetAllProducts()
 	if err != nil {
 		log.Printf("Error getting products: %v", err)
@@ -415,7 +451,7 @@ func (h *Handler) AddProduct(c *gin.Context) {
 		for _, existing := range existingProducts {
 			if existing.Name == form.Name {
 				c.HTML(http.StatusBadRequest, "admin.html", gin.H{
-					"error": "Bu isimde bir ürün zaten mevcut",
+					"error":    "Bu isimde bir ürün zaten mevcut",
 					"products": existingProducts,
 				})
 				return
@@ -494,7 +530,7 @@ func (h *Handler) AddProduct(c *gin.Context) {
 		log.Printf("Error creating product: %v", err)
 		products, _ := h.db.GetAllProducts()
 		c.HTML(http.StatusInternalServerError, "admin.html", gin.H{
-			"error": "Ürün eklenirken hata oluştu",
+			"error":    "Ürün eklenirken hata oluştu",
 			"products": products,
 		})
 		return
@@ -768,6 +804,78 @@ func (h *Handler) HandleResetPassword(c *gin.Context) {
 	})
 }
 
+// UserUpdateOrderStatus, kullanıcının kendi siparişinin durumunu güncellemesini sağlar
+func (h *Handler) UserUpdateOrderStatus(c *gin.Context) {
+	orderIDStr := c.Param("id")
+	orderID, err := strconv.Atoi(orderIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz sipariş ID"})
+		return
+	}
+
+	// Kullanıcı ID'sini al
+	username, _ := c.Cookie("username")
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "error": "Oturum geçersiz"})
+		return
+	}
+
+	// Siparişin var olup olmadığını kontrol et
+	order, err := h.db.GetOrderByID(orderID)
+	if err != nil {
+		log.Printf("UserUpdateOrderStatus - Order not found: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"success": false, "error": "Sipariş bulunamadı"})
+		return
+	}
+
+	// Session tabanlı siparişler için kontrol
+	sessionID, _ := c.Cookie("user_session")
+	if order.UserID != user.ID && order.SessionID != sessionID {
+		log.Printf("UserUpdateOrderStatus - User %s not authorized to update order %d", username, orderID)
+		c.JSON(http.StatusForbidden, gin.H{"success": false, "error": "Bu siparişi güncelleme yetkiniz yok"})
+		return
+	}
+
+	// Yeni durumu al
+	var request struct {
+		Status string `json:"status" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz istek"})
+		return
+	}
+
+	// Geçerli durumları kontrol et
+	validStatuses := []string{"pending", "confirmed", "shipped", "delivered", "cancelled"}
+	isValidStatus := false
+	for _, status := range validStatuses {
+		if request.Status == status {
+			isValidStatus = true
+			break
+		}
+	}
+
+	if !isValidStatus {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz sipariş durumu"})
+		return
+	}
+
+	// Sipariş durumunu güncelle
+	err = h.db.UpdateOrderStatus(orderID, request.Status)
+	if err != nil {
+		log.Printf("UserUpdateOrderStatus - Error updating order status: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Sipariş durumu güncellenemedi"})
+		return
+	}
+
+	log.Printf("UserUpdateOrderStatus - Order %d status updated to %s by user %s", orderID, request.Status, username)
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Sipariş durumu başarıyla güncellendi",
+	})
+}
+
 // UserCancelOrder, kullanıcının kendi siparişini iptal etmesini sağlar (sadece pending durumunda)
 func (h *Handler) UserCancelOrder(c *gin.Context) {
 	orderIDStr := c.Param("id")
@@ -803,40 +911,48 @@ func (h *Handler) UserCancelOrder(c *gin.Context) {
 		return
 	}
 
-	// Sadece "pending" durumundaki siparişler iptal edilebilir
-	if order.Status != "pending" {
-		log.Printf("UserCancelOrder - Cannot cancel order %d with status %s", orderID, order.Status)
+	// "pending" ve "cancelled" durumundaki siparişler silinebilir
+	if order.Status != "pending" && order.Status != "cancelled" {
+		log.Printf("UserCancelOrder - Cannot delete order %d with status %s", orderID, order.Status)
 
 		var errorMessage string
 		switch order.Status {
 		case "confirmed":
-			errorMessage = "Sipariş onaylandığı için artık iptal edilemez"
+			errorMessage = "Sipariş onaylandığı için artık silinemez"
 		case "shipped":
-			errorMessage = "Siparişiniz kargoya verildi. Artık iptal edilemez"
+			errorMessage = "Siparişiniz kargoya verildi. Artık silinemez"
 		case "delivered":
-			errorMessage = "Sipariş teslim edildiği için iptal edilemez"
-		case "cancelled":
-			errorMessage = "Sipariş zaten iptal edilmiş"
+			errorMessage = "Sipariş teslim edildiği için silinemez"
 		default:
-			errorMessage = "Bu sipariş durumunda iptal işlemi yapılamaz"
+			errorMessage = "Bu sipariş durumunda silme işlemi yapılamaz"
 		}
 
 		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": errorMessage})
 		return
 	}
 
-	// Siparişi iptal et (status'u "cancelled" yap)
-	err = h.db.UpdateOrderStatus(orderID, "cancelled")
+	// Eğer sipariş "pending" ise önce "cancelled" yap, sonra sil
+	if order.Status == "pending" {
+		err = h.db.UpdateOrderStatus(orderID, "cancelled")
+		if err != nil {
+			log.Printf("UserCancelOrder - Error updating order status: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Sipariş iptal edilemedi"})
+			return
+		}
+	}
+
+	// Siparişi tamamen sil
+	err = h.db.DeleteOrder(orderID)
 	if err != nil {
-		log.Printf("UserCancelOrder - Error updating order status: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Sipariş iptal edilemedi"})
+		log.Printf("UserCancelOrder - Error deleting order: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Sipariş silinemedi"})
 		return
 	}
 
-	log.Printf("UserCancelOrder - Order %d successfully cancelled by user %s", orderID, username)
+	log.Printf("UserCancelOrder - Order %d successfully deleted by user %s", orderID, username)
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"message": "Sipariş başarıyla iptal edildi",
+		"message": "Sipariş başarıyla silindi",
 	})
 }
 
@@ -1067,10 +1183,53 @@ func (h *Handler) CheckoutPage(c *gin.Context) {
 		return
 	}
 
+	// Kullanıcının adreslerini al
+	var addresses []models.Address
+	var defaultAddress string
+	var userEmail string
+	var userName string
+	var isLoggedIn bool
+	username, _ := c.Cookie("username")
+	if username != "" {
+		isLoggedIn = true
+		user, err := h.db.GetUserByUsername(username)
+		if err == nil {
+			userEmail = user.Email   // Kullanıcının email'ini al
+			userName = user.Username // Kullanıcının username'ini al
+			addresses, err = h.db.GetUserAddresses(user.ID)
+			if err != nil {
+				log.Printf("Adresler alınırken hata: %v", err)
+				addresses = []models.Address{}
+			}
+
+			// Varsayılan adresi bul
+			for _, addr := range addresses {
+				if addr.IsDefault {
+					defaultAddress = fmt.Sprintf("%s\n%s\n%s, %s\n%s",
+						addr.RecipientName,
+						addr.PhoneNumber,
+						addr.FullAddress,
+						addr.Province,
+						addr.District)
+					break
+				}
+			}
+		}
+	} else {
+		isLoggedIn = false
+		// Kayıt olmadan sipariş veren kullanıcılar için boş değerler
+		userEmail = ""
+		userName = ""
+	}
+
 	c.HTML(http.StatusOK, "checkout.html", gin.H{
-		"title":      "Sipariş Ver",
-		"cart":       cart,
-		"isLoggedIn": true,
+		"title":          "Sipariş Ver",
+		"cart":           cart,
+		"isLoggedIn":     isLoggedIn,
+		"addresses":      addresses,
+		"defaultAddress": defaultAddress,
+		"userEmail":      userEmail, // Email'i template'e geçir
+		"userName":       userName,  // Username'i template'e geçir
 	})
 }
 
@@ -1098,21 +1257,72 @@ func (h *Handler) HandleCheckout(c *gin.Context) {
 
 	userID := 0
 	username, _ := c.Cookie("username")
+	var selectedAddress *models.Address
+
 	if username != "" {
 		user, err := h.db.GetUserByUsername(username)
 		if err == nil {
 			userID = user.ID
+
+			// Seçilen adres ID'sini al
+			selectedAddressIDStr := c.PostForm("selected_address_id")
+			if selectedAddressIDStr != "" {
+				selectedAddressID, err := strconv.Atoi(selectedAddressIDStr)
+				if err == nil {
+					// Seçilen adresi bul
+					addresses, err := h.db.GetUserAddresses(userID)
+					if err == nil {
+						for _, addr := range addresses {
+							if addr.ID == selectedAddressID {
+								selectedAddress = &addr
+								break
+							}
+						}
+					}
+				}
+			}
+
+			// Eğer adres seçilmemişse varsayılan adresi kullan
+			if selectedAddress == nil {
+				addresses, err := h.db.GetUserAddresses(userID)
+				if err == nil && len(addresses) > 0 {
+					for _, addr := range addresses {
+						if addr.IsDefault {
+							selectedAddress = &addr
+							break
+						}
+					}
+				}
+			}
 		}
+	}
+
+	// Adres bilgilerini hazırla
+	var orderAddress, customerName, phone string
+	if selectedAddress != nil {
+		orderAddress = fmt.Sprintf("%s, %s, %s, %s, %s",
+			selectedAddress.RecipientName,
+			selectedAddress.PhoneNumber,
+			selectedAddress.FullAddress,
+			selectedAddress.Province,
+			selectedAddress.District)
+		customerName = selectedAddress.RecipientName
+		phone = selectedAddress.PhoneNumber
+	} else {
+		// Eğer hiç adres yoksa form'dan gelen bilgileri kullan
+		orderAddress = form.Address
+		customerName = form.CustomerName
+		phone = form.Phone
 	}
 
 	order := models.Order{
 		UserID:        userID,
 		SessionID:     sessionID,
 		OrderNumber:   generateOrderNumber(),
-		CustomerName:  form.CustomerName,
+		CustomerName:  customerName,
 		Email:         form.Email,
-		Phone:         form.Phone,
-		Address:       form.Address,
+		Phone:         phone,
+		Address:       orderAddress,
 		Items:         cart.Items,
 		TotalPrice:    cart.TotalPrice,
 		Status:        "pending",
@@ -1138,6 +1348,24 @@ func (h *Handler) HandleCheckout(c *gin.Context) {
 			log.Printf("HandleCheckout - Admin email notification error: %v", err)
 		} else {
 			log.Printf("HandleCheckout - Admin email notification sent successfully for order: %s", order.OrderNumber)
+		}
+	}()
+
+	// Eski siparişlerdeki adres bilgilerini düzelt
+	go func() {
+		if err := h.db.FixOldOrderAddresses(); err != nil {
+			log.Printf("HandleCheckout - Fix old order addresses error: %v", err)
+		} else {
+			log.Printf("HandleCheckout - Old order addresses fixed successfully")
+		}
+	}()
+
+	// Müşteriye sipariş onay e-postası gönder (asenkron)
+	go func() {
+		if err := h.email.SendCustomerOrderConfirmation(order.Email, &order); err != nil {
+			log.Printf("HandleCheckout - Customer email notification error: %v", err)
+		} else {
+			log.Printf("HandleCheckout - Customer email notification sent successfully for order: %s", order.OrderNumber)
 		}
 	}()
 
@@ -1238,11 +1466,30 @@ func (h *Handler) AdminUpdateOrder(c *gin.Context) {
 
 	log.Printf("AdminUpdateOrder - Updating order %d with status: %s, notes: %s", orderID, req.Status, req.AdminNotes)
 
+	// Siparişi güncellemeden önce mevcut durumu al
+	existingOrder, err := h.db.GetOrderByID(orderID)
+	if err != nil {
+		log.Printf("AdminUpdateOrder - Error getting existing order: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Sipariş bulunamadı"})
+		return
+	}
+
 	// Admin notları ile birlikte sipariş durumunu güncelle
 	if err := h.db.UpdateOrderWithNotes(orderID, req.Status, req.AdminNotes); err != nil {
 		log.Printf("AdminUpdateOrder - Error updating order: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Sipariş güncellenemedi"})
 		return
+	}
+
+	// Eğer sipariş durumu "confirmed" olarak değiştirildiyse müşteriye email gönder
+	if req.Status == "confirmed" && existingOrder.Status != "confirmed" {
+		go func() {
+			if err := h.email.SendAdminOrderConfirmationEmail(existingOrder.Email, existingOrder); err != nil {
+				log.Printf("AdminUpdateOrder - Error sending customer confirmation email: %v", err)
+			} else {
+				log.Printf("AdminUpdateOrder - Customer confirmation email sent successfully for order: %s", existingOrder.OrderNumber)
+			}
+		}()
 	}
 
 	log.Printf("AdminUpdateOrder - Order %d updated successfully", orderID)
@@ -1270,6 +1517,21 @@ func (h *Handler) AdminGetUsers(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Kullanıcılar getirilemedi"})
 		return
+	}
+
+	// Her kullanıcı için şifreyi ve adresleri ekle
+	for i := range users {
+		// Varsayılan olarak 123456 şifresini göster
+		users[i].PlainPassword = "123456"
+
+		// Kullanıcının adreslerini al
+		addresses, err := h.db.GetUserAddresses(users[i].ID)
+		if err != nil {
+			log.Printf("Kullanıcı %d için adresler alınırken hata: %v", users[i].ID, err)
+			users[i].Addresses = []models.Address{}
+		} else {
+			users[i].Addresses = addresses
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -2133,7 +2395,7 @@ func (h *Handler) SupportPing(c *gin.Context) {
 	if userAgent == "" {
 		userAgent = "Unknown"
 	}
-	
+
 	// Session'ı oluştur veya güncelle
 	_, err := h.db.GetOrCreateSupportSession(sessionID, displayName, userID, userAgent)
 	if err != nil {
@@ -2154,23 +2416,299 @@ func (h *Handler) SupportPing(c *gin.Context) {
 
 // Kullanıcı destek sayfasından ayrıldı
 func (h *Handler) SupportLeave(c *gin.Context) {
-	sessionID, _ := c.Cookie("user_session")
-
+	// Session ID'yi cookie'den al
+	sessionID, _ := c.Cookie("session_id")
 	if sessionID == "" {
-		log.Printf("SupportLeave - No session ID found in cookie")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Session ID bulunamadı"})
-		return
+		// Eğer cookie'de yoksa, form data'dan al
+		sessionID = c.PostForm("session_id")
 	}
 
-	log.Printf("SupportLeave called for sessionID: %s", sessionID)
+	if sessionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Session ID gerekli"})
+		return
+	}
 
 	// Session'ı offline olarak işaretle
 	err := h.db.MarkSupportSessionOffline(sessionID)
 	if err != nil {
-		log.Printf("SupportLeave - Error marking session offline: %v", err)
-	} else {
-		log.Printf("SupportLeave - Session %s marked as offline successfully", sessionID)
+		log.Printf("Session offline işaretlenirken hata: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Session offline işaretlenemedi"})
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": true})
+	c.JSON(http.StatusOK, gin.H{"message": "Session başarıyla offline işaretlendi"})
+}
+
+// Address Management Handlers
+
+// AddAddress, yeni adres ekleme
+func (h *Handler) AddAddress(c *gin.Context) {
+	username, _ := c.Cookie("username")
+	if username == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Giriş yapmanız gerekiyor"})
+		return
+	}
+
+	// Kullanıcı ID'sini al
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcı bulunamadı"})
+		return
+	}
+
+	// Form verilerini al
+	recipientName := c.PostForm("recipientName")
+	phoneNumber := c.PostForm("phoneNumber")
+	title := c.PostForm("title")
+	fullAddress := c.PostForm("fullAddress")
+	province := c.PostForm("province")
+	district := c.PostForm("district")
+	neighborhood := c.PostForm("neighborhood")
+	postalCode := c.PostForm("postalCode")
+	isDefaultStr := c.PostForm("isDefault")
+
+	// Validasyon
+	if recipientName == "" || phoneNumber == "" || title == "" || fullAddress == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Tüm alanlar doldurulmalıdır"})
+		return
+	}
+
+	// Varsayılan adres kontrolü
+	isDefault := isDefaultStr == "true"
+
+	// Yeni adres oluştur
+	address := &models.Address{
+		UserID:        user.ID,
+		RecipientName: recipientName,
+		PhoneNumber:   phoneNumber,
+		Title:         title,
+		FullAddress:   fullAddress,
+		Province:      province,
+		District:      district,
+		Neighborhood:  neighborhood,
+		PostalCode:    postalCode,
+		IsDefault:     isDefault,
+	}
+
+	// Adresi veritabanına ekle
+	err = h.db.AddAddress(address)
+	if err != nil {
+		log.Printf("Adres eklenirken hata: %v", err)
+		c.Redirect(http.StatusSeeOther, "/profile?error=Adres eklenemedi")
+		return
+	}
+
+	// Başarılı olduğunda profile sayfasına yönlendir
+	c.Redirect(http.StatusSeeOther, "/profile?success=Adres başarıyla eklendi")
+}
+
+// UpdateAddress, adres güncelleme
+func (h *Handler) UpdateAddress(c *gin.Context) {
+	username, _ := c.Cookie("username")
+	if username == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Giriş yapmanız gerekiyor"})
+		return
+	}
+
+	// Kullanıcı ID'sini al
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcı bulunamadı"})
+		return
+	}
+
+	// Form verilerini al
+	addressIDStr := c.PostForm("addressId")
+	recipientName := c.PostForm("recipientName")
+	phoneNumber := c.PostForm("phoneNumber")
+	title := c.PostForm("title")
+	fullAddress := c.PostForm("fullAddress")
+	province := c.PostForm("province")
+	district := c.PostForm("district")
+	neighborhood := c.PostForm("neighborhood")
+	postalCode := c.PostForm("postalCode")
+	isDefaultStr := c.PostForm("isDefault")
+
+	// Address ID'yi dönüştür
+	addressID, err := strconv.Atoi(addressIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz adres ID"})
+		return
+	}
+
+	// Validasyon
+	if recipientName == "" || phoneNumber == "" || title == "" || fullAddress == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Tüm alanlar doldurulmalıdır"})
+		return
+	}
+
+	// Varsayılan adres kontrolü
+	isDefault := isDefaultStr == "true"
+
+	// Adresi güncelle
+	address := &models.Address{
+		ID:            addressID,
+		UserID:        user.ID,
+		RecipientName: recipientName,
+		PhoneNumber:   phoneNumber,
+		Title:         title,
+		FullAddress:   fullAddress,
+		Province:      province,
+		District:      district,
+		Neighborhood:  neighborhood,
+		PostalCode:    postalCode,
+		IsDefault:     isDefault,
+	}
+
+	err = h.db.UpdateAddress(address)
+	if err != nil {
+		log.Printf("Adres güncellenirken hata: %v", err)
+		c.Redirect(http.StatusSeeOther, "/profile?error=Adres güncellenemedi")
+		return
+	}
+
+	// Eğer bu adres varsayılan ise, bekleyen siparişleri güncelle
+	if isDefault {
+		// Bekleyen siparişleri güncelle
+		orders, err := h.db.GetOrdersByUserID(user.ID)
+		if err == nil {
+			newAddress := fmt.Sprintf("%s\n%s\n%s, %s\n%s",
+				recipientName,
+				phoneNumber,
+				fullAddress,
+				province,
+				district)
+
+			for _, order := range orders {
+				// Sadece bekleyen siparişleri güncelle
+				if order.Status == "pending" {
+					order.Address = newAddress
+					order.CustomerName = recipientName
+					order.Phone = phoneNumber
+
+					err := h.db.SaveOrder(&order)
+					if err != nil {
+						log.Printf("Sipariş %d güncellenirken hata: %v", order.ID, err)
+					} else {
+						log.Printf("Sipariş %d adres bilgileri güncellendi", order.ID)
+					}
+				}
+			}
+		}
+	}
+
+	c.Redirect(http.StatusSeeOther, "/profile?success=Adres başarıyla güncellendi")
+}
+
+// DeleteAddress, adres silme
+func (h *Handler) DeleteAddress(c *gin.Context) {
+	username, _ := c.Cookie("username")
+	if username == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Giriş yapmanız gerekiyor"})
+		return
+	}
+
+	// Kullanıcı ID'sini al
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcı bulunamadı"})
+		return
+	}
+
+	// Address ID'yi al
+	addressIDStr := c.Param("id")
+	addressID, err := strconv.Atoi(addressIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz adres ID"})
+		return
+	}
+
+	// Adresi sil
+	err = h.db.DeleteAddress(addressID, user.ID)
+	if err != nil {
+		log.Printf("Adres silinirken hata: %v", err)
+		c.Redirect(http.StatusSeeOther, "/profile?error=Adres silinemedi")
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, "/profile?success=Adres başarıyla silindi")
+}
+
+// MakeDefaultAddress, adresi varsayılan yapma
+func (h *Handler) MakeDefaultAddress(c *gin.Context) {
+	username, _ := c.Cookie("username")
+	if username == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Giriş yapmanız gerekiyor"})
+		return
+	}
+
+	// Kullanıcı ID'sini al
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcı bulunamadı"})
+		return
+	}
+
+	// Address ID'yi al
+	addressIDStr := c.Param("id")
+	addressID, err := strconv.Atoi(addressIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz adres ID"})
+		return
+	}
+
+	// Adresi varsayılan yap
+	err = h.db.MakeDefaultAddress(addressID, user.ID)
+	if err != nil {
+		log.Printf("Adres varsayılan yapılırken hata: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Adres varsayılan yapılamadı"})
+		return
+	}
+
+	// Yeni varsayılan adresi al
+	addresses, err := h.db.GetUserAddresses(user.ID)
+	if err != nil {
+		log.Printf("Varsayılan adres alınırken hata: %v", err)
+		c.JSON(http.StatusOK, gin.H{"message": "Adres başarıyla varsayılan yapıldı"})
+		return
+	}
+
+	var defaultAddress *models.Address
+	for _, addr := range addresses {
+		if addr.IsDefault {
+			defaultAddress = &addr
+			break
+		}
+	}
+
+	if defaultAddress != nil {
+		// Bekleyen siparişleri güncelle
+		orders, err := h.db.GetOrdersByUserID(user.ID)
+		if err == nil {
+			for _, order := range orders {
+				// Sadece bekleyen siparişleri güncelle
+				if order.Status == "pending" {
+					newAddress := fmt.Sprintf("%s\n%s\n%s, %s\n%s",
+						defaultAddress.RecipientName,
+						defaultAddress.PhoneNumber,
+						defaultAddress.FullAddress,
+						defaultAddress.Province,
+						defaultAddress.District)
+
+					order.Address = newAddress
+					order.CustomerName = defaultAddress.RecipientName
+					order.Phone = defaultAddress.PhoneNumber
+
+					err := h.db.SaveOrder(&order)
+					if err != nil {
+						log.Printf("Sipariş %d güncellenirken hata: %v", order.ID, err)
+					} else {
+						log.Printf("Sipariş %d adres bilgileri güncellendi", order.ID)
+					}
+				}
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Adres başarıyla varsayılan yapıldı ve bekleyen siparişler güncellendi"})
 }

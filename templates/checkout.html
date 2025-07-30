@@ -1,141 +1,598 @@
 {{template "base.html" .}}
 
 {{define "content"}}
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="mb-4">
-                <i class="fas fa-credit-card me-2"></i>Ödeme
-            </h1>
-        </div>
-    </div>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <!-- Page Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary mb-2">
+                    <i class="fas fa-credit-card me-2"></i>Ödeme Sayfası
+                </h2>
+                <p class="text-muted">Siparişinizi tamamlamak için aşağıdaki adımları takip edin</p>
+            </div>
 
-    {{if .cart.Items}}
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Müşteri Bilgileri</h5>
-                </div>
-                <div class="card-body">
-                    {{if .error}}
-                    <div class="alert alert-danger" role="alert">
-                        {{.error}}
-                    </div>
-                    {{end}}
-                    
-                    <form action="/checkout" method="POST">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="customerName" class="form-label">Ad Soyad *</label>
-                                <input type="text" class="form-control" id="customerName" name="customerName" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="email" class="form-label">E-posta *</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
+            {{if .cart.Items}}
+            <div class="row g-3">
+                <!-- Sol Taraf - Sipariş Detayları -->
+                <div class="col-lg-6">
+                    <!-- Sipariş Özeti -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-gradient-primary text-white py-2">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-shopping-bag me-2"></i>Sipariş Özeti
+                            </h6>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="phone" class="form-label">Telefon *</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="address" class="form-label">Adres *</label>
-                                <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="card mt-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">Sipariş Detayları</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>Ürün</th>
-                                                <th>Adet</th>
-                                                <th>Fiyat</th>
-                                                <th>Toplam</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {{range .cart.Items}}
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        {{if .Image}}
-                                                        <img src="{{.Image}}" alt="{{.Name}}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" class="me-2">
-                                                        {{end}}
-                                                        <span style="color: #1e3a8a;">{{.Name}}</span>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="border-0 ps-3">Ürün</th>
+                                            <th class="border-0 text-center">Adet</th>
+                                            <th class="border-0 text-end">Fiyat</th>
+                                            <th class="border-0 text-center">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .cart.Items}}
+                                        <tr>
+                                            <td class="ps-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="position-relative me-2">
+                                                        <img src="{{.Image}}" alt="{{.Name}}" 
+                                                             class="rounded-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                                                            {{.Quantity}}
+                                                        </span>
                                                     </div>
-                                                </td>
-                                                <td>{{.Quantity}}</td>
-                                                <td>{{.Price}} ₺</td>
-                                                <td>{{.TotalPrice}} ₺</td>
-                                            </tr>
+                                                    <div>
+                                                        <h6 class="mb-1 fw-semibold fs-6">{{.Name}}</h6>
+                                                        <small class="text-muted">#{{.ProductID}}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-light text-dark">{{.Quantity}}</span>
+                                            </td>
+                                            <td class="text-end">
+                                                <span class="fw-bold text-primary">{{.TotalPrice}} ₺</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFromCart({{.ProductID}})">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teslimat Bilgileri -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-gradient-success text-white py-2">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-truck me-2"></i>Teslimat Bilgileri
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="/checkout" id="checkoutForm">
+                                <div class="row g-2">
+                                    {{if .addresses}}
+                                    <div class="col-12">
+                                        <label for="selected_address_id" class="form-label fw-semibold small">
+                                            <i class="fas fa-map-marker-alt me-1 text-success"></i>Kayıtlı Adresler
+                                        </label>
+                                        <select class="form-select form-select-sm" id="selected_address_id" name="selected_address_id" onchange="fillAddressFields()">
+                                            <option value="">Yeni adres girin...</option>
+                                            {{range .addresses}}
+                                            <option value="{{.ID}}" {{if .IsDefault}}selected{{end}}>
+                                                {{.RecipientName}} - {{.FullAddress}}
+                                            </option>
                                             {{end}}
-                                        </tbody>
-                                    </table>
+                                        </select>
+                                    </div>
+                                    {{end}}
+                                    
+                                    <div class="col-md-6">
+                                        <label for="customerName" class="form-label fw-semibold small">
+                                            <i class="fas fa-user me-1 text-primary"></i>Alıcı Adı
+                                        </label>
+                                        <input type="text" class="form-control form-control-sm" id="customerName" name="customerName" value="{{.userName}}" required>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <label for="phone" class="form-label fw-semibold small">
+                                            <i class="fas fa-phone me-1 text-primary"></i>Telefon
+                                        </label>
+                                        <input type="tel" class="form-control form-control-sm" id="phone" name="phone" required>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label for="email" class="form-label fw-semibold small">
+                                            <i class="fas fa-envelope me-1 text-primary"></i>E-posta
+                                        </label>
+                                        <input type="email" class="form-control form-control-sm" id="email" name="email" value="{{.userEmail}}" required>
+                                    </div>
+                                    
+                                    <div class="col-12">
+                                        <label for="address" class="form-label fw-semibold small">
+                                            <i class="fas fa-home me-1 text-primary"></i>Detaylı Adres
+                                        </label>
+                                        <textarea class="form-control" id="address" name="address" rows="3" placeholder="Sokak, Mahalle, İlçe, İl bilgilerini yazın..." required></textarea>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ Taraf - Ödeme ve İletişim -->
+                <div class="col-lg-6">
+                    <!-- Toplam Özeti -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-gradient-primary text-white py-2">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-calculator me-2"></i>Toplam Özeti
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Ara Toplam:</span>
+                                <span class="fw-semibold">{{.cart.TotalPrice}} ₺</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-muted small">Kargo:</span>
+                                <span class="text-success fw-semibold small">
+                                    <i class="fas fa-check-circle me-1"></i>Ücretsiz
+                                </span>
+                            </div>
+                            <hr class="my-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">Genel Toplam:</span>
+                                <span class="fs-5 fw-bold text-primary">{{.cart.TotalPrice}} ₺</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banka Bilgileri -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-gradient-danger text-white py-2">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-university me-2"></i>Banka Bilgileri
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center p-2 bg-light rounded">
+                                        <i class="fas fa-building text-danger me-2"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Firma Adı</small>
+                                            <strong class="text-danger">SU ARITMA UZMANI</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center p-2 bg-light rounded">
+                                        <i class="fas fa-user text-danger me-2"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Alıcı</small>
+                                            <strong class="text-danger">Cenap Oktay</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center p-2 bg-light rounded">
+                                        <i class="fas fa-university text-danger me-2"></i>
+                                        <div>
+                                            <small class="text-muted d-block">Banka</small>
+                                            <strong class="text-danger">Garanti Bankası</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="p-2 bg-light rounded">
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="fas fa-credit-card text-danger me-2"></i>
+                                            <div>
+                                                <small class="text-muted d-block">IBAN</small>
+                                                <strong class="text-danger small">TR91 0006 2000 4070 0006 6502 78</strong>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger btn-sm w-100" onclick="copyToClipboard('TR91 0006 2000 4070 0006 6502 78', event)">
+                                            <i class="fas fa-copy me-1"></i>IBAN'ı Kopyala
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="/cart" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Sepete Dön
-                            </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-check me-2"></i>Siparişi Tamamla
+                    </div>
+
+                    <!-- Ödeme Adımları -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-gradient-warning text-dark py-2">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-list-check me-2"></i>Ödeme Adımları
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 25px; height: 25px; min-width: 25px;">
+                                            <span class="fw-bold small">1</span>
+                                        </div>
+                                        <div>
+                                            <strong class="small">Ödeme Yapın</strong>
+                                            <p class="text-muted mb-0 small">Yukarıdaki IBAN'a ödeme yapın</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 25px; height: 25px; min-width: 25px;">
+                                            <span class="fw-bold small">2</span>
+                                        </div>
+                                        <div>
+                                            <strong class="small">Dekont Alın</strong>
+                                            <p class="text-muted mb-0 small">Ödeme dekontunu kaydedin</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 25px; height: 25px; min-width: 25px;">
+                                            <span class="fw-bold small">3</span>
+                                        </div>
+                                        <div>
+                                            <strong class="small">WhatsApp'tan Paylaşın</strong>
+                                            <p class="text-muted mb-0 small">Dekontu WhatsApp'tan gönderin</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 25px; height: 25px; min-width: 25px;">
+                                            <span class="fw-bold small">4</span>
+                                        </div>
+                                        <div>
+                                            <strong class="small">Sipariş Onaylanır</strong>
+                                            <p class="text-muted mb-0 small">Siparişiniz hazırlanmaya başlar</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sipariş Onay Butonu -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-gradient-success text-white py-2">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-check-circle me-2"></i>Sipariş Onayı
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info border-0 py-2 mb-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-2 text-info"></i>
+                                    <div>
+                                        <h6 class="alert-heading mb-1 small">Sipariş Onaylama</h6>
+                                        <p class="mb-0 small">Adres bilgilerinizi kontrol edin ve siparişi onaylayın.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" form="checkoutForm" class="btn btn-success btn-lg w-100">
+                                <i class="fas fa-check-circle me-2"></i>Siparişi Onayla ve Ödeme Bilgilerini Al
                             </button>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- İletişim Bilgileri -->
+                    <div class="card shadow-sm border-0 mb-3">
+                        <div class="card-header bg-gradient-info text-white py-2">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-headset me-2"></i>İletişim
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <a href="tel:+905448113105" class="btn btn-outline-primary btn-sm w-100 text-start">
+                                        <i class="fas fa-phone me-2"></i>
+                                        <div>
+                                            <strong class="small">0544 811 31 05</strong>
+                                            <small class="d-block text-muted">Telefon</small>
+                                        </div>
+                                    </a>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <a href="https://wa.me/905448113105" target="_blank" class="btn btn-outline-success btn-sm w-100 text-start">
+                                        <i class="fab fa-whatsapp me-2"></i>
+                                        <div>
+                                            <strong class="small">WhatsApp</strong>
+                                            <small class="d-block text-muted">Hızlı İletişim</small>
+                                        </div>
+                                    </a>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <a href="mailto:info@suaritmauzman.com" class="btn btn-outline-info btn-sm w-100 text-start">
+                                        <i class="fas fa-envelope me-2"></i>
+                                        <div>
+                                            <strong class="small">E-posta</strong>
+                                            <small class="d-block text-muted">info@suaritmauzman.com</small>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sipariş Onay Butonu -->
+                    {{if .addresses}}
+                    <button type="submit" form="checkoutForm" class="btn btn-primary w-100 py-2 shadow">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Siparişi Onayla</strong>
+                    </button>
+                    {{end}}
                 </div>
             </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Sipariş Özeti</h5>
+            {{else}}
+            <!-- Boş Sepet -->
+            <div class="text-center py-4">
+                <div class="mb-3">
+                    <i class="fas fa-shopping-cart fa-4x text-muted"></i>
                 </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Toplam Ürün:</span>
-                        <span>{{.cart.TotalItems}} adet</span>
-                    </div>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="fw-bold fs-5">Toplam Tutar:</span>
-                        <span class="fw-bold fs-4 text-success">{{.cart.TotalPrice}} ₺</span>
-                    </div>
-                    <div class="alert alert-info">
-                        <small>
-                            <i class="fas fa-info-circle me-1"></i>
-                            Siparişiniz alındıktan sonra size e-posta ile bilgi verilecektir.
-                        </small>
-                    </div>
-                </div>
+                <h4 class="fw-bold text-muted mb-2">Sepetiniz Boş</h4>
+                <p class="text-muted mb-3">Sipariş vermek için önce sepetinize ürün ekleyin.</p>
+                <a href="/products" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Ürünlere Dön
+                </a>
             </div>
+            {{end}}
         </div>
     </div>
-    {{else}}
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-shopping-cart text-muted mb-3" style="font-size: 4rem;"></i>
-                    <h3 class="text-muted">Sepetiniz Boş</h3>
-                    <p class="text-muted">Ödeme yapabilmek için sepetinizde ürün bulunmalıdır.</p>
-                    <a href="/products" class="btn btn-primary">
-                        <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    {{end}}
 </div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #48cae4 0%, #023e8a 100%);
+}
+
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-1px);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .table td, .table th {
+        padding: 0.5rem;
+    }
+}
+</style>
+
+<script>
+// Adres verilerini JavaScript'e aktar
+const addresses = [
+    {{range .addresses}}
+    {
+        id: {{.ID}},
+        recipientName: "{{.RecipientName}}",
+        phoneNumber: "{{.PhoneNumber}}",
+        fullAddress: "{{.FullAddress}}",
+        province: "{{.Province}}",
+        district: "{{.District}}",
+        neighborhood: "{{.Neighborhood}}",
+        postalCode: "{{.PostalCode}}",
+        isDefault: {{if .IsDefault}}true{{else}}false{{end}}
+    },
+    {{end}}
+];
+
+// Adres seçildiğinde form alanlarını doldur
+function fillAddressFields() {
+    const selectedAddressId = document.getElementById('selected_address_id').value;
+    
+    if (!selectedAddressId) {
+        // Adres seçilmemişse alanları temizle
+        document.getElementById('customerName').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('address').value = '';
+        return;
+    }
+    
+    // Seçilen adresi bul
+    const selectedAddress = addresses.find(addr => addr.id == selectedAddressId);
+    
+    if (selectedAddress) {
+        // Form alanlarını doldur
+        document.getElementById('customerName').value = selectedAddress.recipientName;
+        document.getElementById('phone').value = selectedAddress.phoneNumber;
+        document.getElementById('address').value = selectedAddress.fullAddress;
+        
+        // Email alanını da doldur (kullanıcının email'i)
+        document.getElementById('email').value = '{{.userEmail}}';
+    }
+}
+
+// Sayfa yüklendiğinde varsayılan adres varsa doldur
+document.addEventListener('DOMContentLoaded', function() {
+    const defaultAddress = addresses.find(addr => addr.isDefault);
+    if (defaultAddress) {
+        fillAddressFields();
+    }
+});
+
+// Sepetten ürün silme fonksiyonu
+function removeFromCart(productId) {
+    if (!confirm('Bu ürünü sepetten çıkarmak istediğinizden emin misiniz?')) {
+        return;
+    }
+    
+    fetch('/cart/remove', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Sayfayı yenile
+            location.reload();
+        } else {
+            alert('Hata: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+// IBAN Kopyalama Fonksiyonu
+window.copyToClipboard = function(text, event) {
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(function() {
+            button.innerHTML = '<i class="fas fa-check me-1"></i>Kopyalandı!';
+            button.classList.remove('btn-outline-danger');
+            button.classList.add('btn-success');
+            
+            setTimeout(function() {
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-danger');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Kopyalama başarısız:', err);
+            fallbackCopyTextToClipboard(text, button, originalText);
+        });
+    } else {
+        fallbackCopyTextToClipboard(text, button, originalText);
+    }
+};
+
+function fallbackCopyTextToClipboard(text, button, originalText) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            button.innerHTML = '<i class="fas fa-check me-1"></i>Kopyalandı!';
+            button.classList.remove('btn-outline-danger');
+            button.classList.add('btn-success');
+            
+            setTimeout(function() {
+                button.innerHTML = originalText;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-danger');
+            }, 2000);
+        } else {
+            alert('IBAN: ' + text + '\n\nIBAN kopyalanamadı. Lütfen manuel olarak kopyalayın.');
+        }
+    } catch (err) {
+        alert('IBAN: ' + text + '\n\nIBAN kopyalanamadı. Lütfen manuel olarak kopyalayın.');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('checkoutForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert('Lütfen tüm gerekli alanları doldurun.');
+            }
+        });
+    }
+});
+</script>
 {{end}} 
