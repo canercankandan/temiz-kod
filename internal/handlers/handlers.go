@@ -318,7 +318,7 @@ func (h *Handler) UserLogout(c *gin.Context) {
 func (h *Handler) ProfilePage(c *gin.Context) {
 	username, _ := c.Cookie("username")
 	isLoggedIn := username != ""
-	
+
 	user, err := h.db.GetUserByUsername(username)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/login")
