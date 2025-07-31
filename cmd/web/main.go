@@ -267,9 +267,9 @@ func main() {
 				},
 			}
 
-			// HTTPS sunucusu - Port 8444 (yerel geliştirme portu)
+			// HTTPS sunucusu - Port 443 (production portu)
 			httpsServer := &http.Server{
-				Addr:         "0.0.0.0:8444",
+				Addr:         "0.0.0.0:443",
 				Handler:      r,
 				TLSConfig:    tlsConfig,
 				ReadTimeout:  15 * time.Second,
@@ -279,9 +279,9 @@ func main() {
 
 			// HTTPS sunucusunu arka planda başlat
 			go func() {
-				log.Printf("🔒 HTTPS Server başlatılıyor (port: 8444)...")
-				log.Printf("🔐 Yerel HTTPS erişim: https://localhost:8444")
-				log.Printf("🌐 HTTPS erişim için: https://xn--suartmauzman-44bi.com:8444")
+				log.Printf("🔒 HTTPS Server başlatılıyor (port: 443)...")
+				log.Printf("🔐 Yerel HTTPS erişim: https://localhost")
+				log.Printf("🌐 HTTPS erişim için: https://xn--suartmauzman-44bi.com")
 				if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
 					log.Printf("❌ HTTPS Server hatası: %v", err)
 				}
@@ -318,7 +318,7 @@ func main() {
 	log.Printf("🌐 HTTP Server başlatılıyor...")
 	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 	log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
-	log.Printf("✅ HTTP (8082) ve HTTPS (8444) sunucuları aktif")
+	log.Printf("✅ HTTP (80) ve HTTPS (443) sunucuları aktif")
 
 	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("HTTP Server başlatılamadı: %v", err)
