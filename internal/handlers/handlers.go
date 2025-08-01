@@ -193,6 +193,9 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 		return
 	}
 
+	log.Printf("DEBUG: User found - Username: %s, PasswordHash: %s", username, user.PasswordHash)
+	log.Printf("DEBUG: Attempting login with password: %s", password)
+
 	if !CheckPasswordHash(password, user.PasswordHash) {
 		log.Printf("Incorrect password for user %s", username)
 		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
@@ -786,6 +789,7 @@ func (h *Handler) HandleResetPassword(c *gin.Context) {
 
 	// Kullanıcının şifresini güncelle
 	user.PasswordHash = string(hashedPassword)
+	user.PlainPassword = password // Yeni şifreyi plain password alanına da kaydet
 	if err := h.db.UpdateUser(user); err != nil {
 		log.Printf("Error updating user password: %v", err)
 		c.HTML(http.StatusInternalServerError, "reset_password.html", gin.H{
@@ -1596,6 +1600,7 @@ func (h *Handler) HandleChangePassword(c *gin.Context) {
 	}
 
 	user.PasswordHash = string(hashedPassword)
+	user.PlainPassword = req.NewPassword // Yeni şifreyi plain password alanına da kaydet
 	if err := h.db.UpdateUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Parola güncellenemedi"})
 		return

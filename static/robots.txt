@@ -2,33 +2,26 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://xn--suartmauzman-44bi.com/sitemap.xml
+Sitemap: https://suarıtmauzmanı.com/sitemap.xml
 
 # Disallow admin and private areas
 Disallow: /admin/
-Disallow: /admin_login
-Disallow: /cart/
+Disallow: /api/
+Disallow: /internal/
 Disallow: /checkout/
-Disallow: /orders/
+Disallow: /cart/
+Disallow: /login/
+Disallow: /register/
 Disallow: /profile/
-Disallow: /support/leave
-Disallow: /support/ping
-Disallow: /static/uploads/
-Disallow: /static/js/
-Disallow: /static/css/
+Disallow: /forgot-password/
+Disallow: /reset-password/
 
 # Allow important pages
 Allow: /products
 Allow: /about
 Allow: /contact
 Allow: /support
-Allow: /login
-Allow: /register
-Allow: /static/images/
-Allow: /static/favicon.ico
+Allow: /track
 
 # Crawl delay (optional)
-Crawl-delay: 1
-
-# Host
-Host: https://xn--suartmauzman-44bi.com 
+Crawl-delay: 1 
