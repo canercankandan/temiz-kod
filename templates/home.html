@@ -129,6 +129,29 @@
 </script>
 
 <div class="container">
+    <!-- Yanıp Sönen Banner -->
+    <div class="flashing-banner mb-0" style="margin: 0 -15px;">
+        <div class="banner-content">
+            <div class="banner-left">
+                <a href="/support" class="banner-link">
+                    <i class="fas fa-headset me-2"></i>
+                    <span>CANLI DESTEK</span>
+                </a>
+            </div>
+            <div class="banner-center">
+                <i class="fas fa-tools me-2"></i>
+                <span class="banner-text">HER MARKA ARITMA CİHAZI FİLTRELERİ DEĞİŞİR!</span>
+                <i class="fas fa-tools ms-2"></i>
+            </div>
+            <div class="banner-right">
+                <a href="tel:+90-212-592-8591" class="banner-link">
+                    <i class="fas fa-phone me-2"></i>
+                    <span>0212 592 85 91</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero-section text-center py-5 mb-5 hero-bg">
         <div class="container d-flex align-items-center justify-content-center" style="min-height: 520px;">
@@ -142,6 +165,15 @@
             </div>
         </div>
     </section>
+
+    <!-- İkinci Yanıp Sönen Banner -->
+    <div class="flashing-banner mb-4" style="margin: 0 -15px;">
+        <div class="banner-content">
+            <i class="fas fa-star me-2"></i>
+            <span class="banner-text">KALİTELİ SU ARITMA ÇÖZÜMLERİ!</span>
+            <i class="fas fa-star ms-2"></i>
+        </div>
+    </div>
 
     <!-- Stats Section -->
     <section class="stats-section py-5 mb-5">
@@ -633,6 +665,130 @@ document.addEventListener('visibilitychange', function() {
 </script>
 
 <style>
+/* Yanıp Sönen Banner Stilleri */
+.flashing-banner {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
+    background-size: 400% 400%;
+    animation: gradientShift 3s ease infinite, flash 2s ease-in-out infinite;
+    border-radius: 15px;
+    padding: 25px 15px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.flashing-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 2;
+}
+
+.banner-left, .banner-right {
+    flex: 1;
+}
+
+.banner-center {
+    flex: 2;
+    text-align: center;
+}
+
+.banner-link {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 15px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.banner-link:hover {
+    color: white;
+    background: rgba(255,255,255,0.2);
+    transform: scale(1.05);
+    text-decoration: none;
+}
+
+.banner-text {
+    animation: pulse 1.5s ease-in-out infinite;
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes flash {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Responsive Banner */
+@media (max-width: 768px) {
+    .flashing-banner {
+        padding: 12px;
+        margin: 0 10px;
+    }
+    
+    .banner-content {
+        font-size: 1rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .banner-left, .banner-right, .banner-center {
+        flex: none;
+        width: 100%;
+    }
+    
+    .banner-text {
+        font-size: 1.1rem;
+        margin: 5px 0;
+    }
+    
+    .banner-link {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+}
+
 .hero-section {
     padding: 4rem 0;
 }
