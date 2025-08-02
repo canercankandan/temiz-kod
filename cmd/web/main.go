@@ -229,6 +229,7 @@ func main() {
 		orders.GET("/:id", h.GetOrderDetail)
 		orders.DELETE("/:id", h.UserCancelOrder)
 		orders.PUT("/:id/status", h.UserUpdateOrderStatus)
+		orders.DELETE("/:id/delete", h.DeleteOrderByUser)
 	}
 
 	// Certificate yükle ve HTTPS'i aktif et

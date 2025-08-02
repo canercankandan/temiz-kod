@@ -7,7 +7,7 @@
       "price": 555,
       "image": "/static/uploads/a62890e9-94d5-497e-bbd3-a16ccec2ca27.png",
       "category": "Yedek Parça",
-      "stock": 56,
+      "stock": 58,
       "features": "",
       "created_at": "2025-07-20T17:20:58.7916166+03:00",
       "updated_at": "2025-07-29T15:35:48.3948754+03:00"
@@ -129,41 +129,12 @@
     {
       "id": 1,
       "user_id": 0,
-      "session_id": "be91a20c-df38-45e0-8fc4-8e7542d96f15",
-      "order_number": "ORD-bb9096e4",
-      "customer_name": "cenap Oktay",
-      "email": "wbcenapoktay@gmail.com",
-      "phone": "05448113105",
-      "address": "sr\u003c w\u003cr",
-      "items": [
-        {
-          "id": 0,
-          "cart_id": 0,
-          "product_id": 1,
-          "name": ".denemet",
-          "price": 555,
-          "image": "/static/uploads/a62890e9-94d5-497e-bbd3-a16ccec2ca27.png",
-          "quantity": 1,
-          "total_price": 555
-        }
-      ],
-      "total_price": 555,
-      "status": "pending",
-      "payment_method": "",
-      "notes": "",
-      "admin_notes": "",
-      "created_at": "2025-07-31T00:59:37.6412091+03:00",
-      "updated_at": "2025-07-31T00:59:37.6412091+03:00"
-    },
-    {
-      "id": 2,
-      "user_id": 0,
-      "session_id": "ddef20f0-205e-4283-9363-520c06d0c3a6",
-      "order_number": "ORD-e151c4ae",
+      "session_id": "01b63671-cde1-4409-93c3-fb197c8498ee",
+      "order_number": "ORD-8aaf3607",
       "customer_name": "Cenap Oktay",
-      "email": "test@test.com",
-      "phone": "05448113105",
-      "address": "g\r, dükkan",
+      "email": "cahitbeyan@hotmail.com",
+      "phone": "0544212222",
+      "address": "gjjj\r, dükkan",
       "items": [
         {
           "id": 0,
@@ -181,8 +152,8 @@
       "payment_method": "",
       "notes": "",
       "admin_notes": "",
-      "created_at": "2025-07-31T16:33:15.399477+03:00",
-      "updated_at": "2025-07-31T16:33:15.399477+03:00"
+      "created_at": "2025-08-03T00:19:45.4508391+03:00",
+      "updated_at": "2025-08-03T00:19:45.4508391+03:00"
     }
   ],
   "messages": [
@@ -870,6 +841,17 @@
       "status": "active",
       "last_message_at": "2025-07-31T16:34:38.2470052+03:00",
       "created_at": "2025-07-31T16:33:38.2439898+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 55,
+      "session_id": "01b63671-cde1-4409-93c3-fb197c8498ee",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-03T00:16:26.2974821+03:00",
+      "created_at": "2025-08-02T21:48:48.3820138+03:00",
       "unread_count": 0
     }
   ],

@@ -302,10 +302,6 @@
                                     <label class="form-label">Sipariş Numarası</label>
                                     <input type="text" class="form-control" id="orderNumber" placeholder="Örn: ORD-20250622" required>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">E-posta Adresi</label>
-                                    <input type="email" class="form-control" id="orderEmail" placeholder="siparisverdiginiz@email.com" required>
-                                </div>
                                 <button type="submit" class="btn-track">
                                     <i class="fas fa-search me-2"></i>Siparişi Takip Et
                                 </button>
@@ -387,11 +383,10 @@ function switchTab(tabName) {
 
 async function trackByNumber() {
     const orderNumber = document.getElementById('orderNumber').value.trim();
-    const email = document.getElementById('orderEmail').value.trim();
     const resultDiv = document.getElementById('guestResult');
 
-    if (!orderNumber || !email) {
-        resultDiv.innerHTML = '<div class="alert alert-danger">Lütfen sipariş numarası ve e-posta adresini girin.</div>';
+    if (!orderNumber) {
+        resultDiv.innerHTML = '<div class="alert alert-danger">Lütfen sipariş numarasını girin.</div>';
         return;
     }
 
@@ -400,7 +395,6 @@ async function trackByNumber() {
     try {
         const formData = new FormData();
         formData.append('order_number', orderNumber);
-        formData.append('email', email);
 
         const response = await fetch('/track-order', {
             method: 'POST',

@@ -643,6 +643,20 @@ func (db *JSONDatabase) GetOrderByNumberAndEmail(orderNumber, email string) (*mo
 	return nil, errors.New("sipariş bulunamadı")
 }
 
+// GetOrderByNumber, sadece sipariş numarası ile sipariş getirir
+func (db *JSONDatabase) GetOrderByNumber(orderNumber string) (*models.Order, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	for _, order := range db.data.Orders {
+		if order.OrderNumber == orderNumber {
+			return &order, nil
+		}
+	}
+
+	return nil, errors.New("sipariş bulunamadı")
+}
+
 // GetOrdersBySessionID, session ID'ye göre siparişleri getirir (kayıt olmayan kullanıcılar için)
 func (db *JSONDatabase) GetOrdersBySessionID(sessionID string) ([]models.Order, error) {
 	db.mu.RLock()
@@ -1356,6 +1370,7 @@ type DBInterface interface {
 	UpdateOrderWithNotes(orderID int, status string, adminNotes string) error
 	DeleteOrder(orderID int) error
 	GetOrderByNumberAndEmail(orderNumber, email string) (*models.Order, error)
+	GetOrderByNumber(orderNumber string) (*models.Order, error)
 	GetOrdersBySessionID(sessionID string) ([]models.Order, error)
 	GetOrCreateSupportSession(sessionID, displayName string, userID *int, userAgent string) (*models.SupportSession, error)
 	SaveMessage(message *models.Message) error

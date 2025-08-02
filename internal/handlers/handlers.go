@@ -47,6 +47,7 @@ type DBInterface interface {
 	UpdateOrderWithNotes(orderID int, status string, adminNotes string) error
 	DeleteOrder(orderID int) error
 	GetOrderByNumberAndEmail(orderNumber, email string) (*models.Order, error)
+	GetOrderByNumber(orderNumber string) (*models.Order, error)
 	GetOrdersBySessionID(sessionID string) ([]models.Order, error)
 	GetOrCreateSupportSession(sessionID, displayName string, userID *int, userAgent string) (*models.SupportSession, error)
 	SaveMessage(message *models.Message) error
@@ -1632,23 +1633,22 @@ func (h *Handler) OrderTrackingPage(c *gin.Context) {
 // TrackOrderByNumber - Sipariş numarası ile takip
 func (h *Handler) TrackOrderByNumber(c *gin.Context) {
 	orderNumber := c.PostForm("order_number")
-	email := c.PostForm("email")
 
-	if orderNumber == "" || email == "" {
+	if orderNumber == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
-			"error":   "Sipariş numarası ve e-posta adresi gerekli",
+			"error":   "Sipariş numarası gerekli",
 		})
 		return
 	}
 
-	// Sipariş numarası ve e-posta ile sipariş bul
-	order, err := h.db.GetOrderByNumberAndEmail(orderNumber, email)
+	// Sadece sipariş numarası ile sipariş bul
+	order, err := h.db.GetOrderByNumber(orderNumber)
 	if err != nil {
 		log.Printf("TrackOrderByNumber - Order not found: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
-			"error":   "Sipariş bulunamadı. Sipariş numarası ve e-posta adresini kontrol edin.",
+			"error":   "Sipariş bulunamadı. Sipariş numarasını kontrol edin.",
 		})
 		return
 	}
@@ -2719,4 +2719,57 @@ func (h *Handler) MakeDefaultAddress(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Adres başarıyla varsayılan yapıldı ve bekleyen siparişler güncellendi"})
+}
+
+// DeleteOrderByUser, kullanıcının kendi siparişini silmesi
+func (h *Handler) DeleteOrderByUser(c *gin.Context) {
+	username, _ := c.Cookie("username")
+	if username == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Giriş yapmanız gerekiyor"})
+		return
+	}
+
+	// Kullanıcı ID'sini al
+	user, err := h.db.GetUserByUsername(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Kullanıcı bulunamadı"})
+		return
+	}
+
+	// Sipariş ID'sini al
+	orderIDStr := c.Param("id")
+	orderID, err := strconv.Atoi(orderIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Geçersiz sipariş ID"})
+		return
+	}
+
+	// Siparişi getir ve kullanıcıya ait olduğunu kontrol et
+	order, err := h.db.GetOrderByID(orderID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Sipariş bulunamadı"})
+		return
+	}
+
+	// Siparişin bu kullanıcıya ait olduğunu kontrol et
+	if order.UserID != user.ID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Bu siparişi silme yetkiniz yok"})
+		return
+	}
+
+	// Sadece bekleyen veya iptal edilmiş siparişler silinebilir
+	if order.Status != "pending" && order.Status != "cancelled" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Sadece bekleyen veya iptal edilmiş siparişler silinebilir"})
+		return
+	}
+
+	// Siparişi sil
+	err = h.db.DeleteOrder(orderID)
+	if err != nil {
+		log.Printf("Sipariş silinirken hata: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Sipariş silinemedi"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Sipariş başarıyla silindi"})
 }

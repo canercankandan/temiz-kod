@@ -643,7 +643,7 @@ function cancelOrder(orderId) {
         button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Siliniyor...';
         button.disabled = true;
         
-        fetch(`/orders/${orderId}`, {
+        fetch(`/orders/${orderId}/delete`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -651,7 +651,7 @@ function cancelOrder(orderId) {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
+            if (data.message) {
                 // Başarılı mesajı göster
                 alert('✅ ' + data.message);
                 // Sayfayı yenile
