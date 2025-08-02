@@ -6,9 +6,9 @@
 {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  "name": "Su Aritma Cihazlari",
-  "description": "Ailenizin sagligi icin en kaliteli su aritma cozumleri",
-  "url": "https://xn--suartmauzman-44bi.com/products",
+  "name": "Su Arıtma Cihazları",
+  "description": "Ailenizin sağlığı için en kaliteli su arıtma çözümleri",
+  "url": "https://suarıtmauzmanı.com/products",
   "numberOfItems": {{if .products}}{{len .products}}{{else}}0{{end}},
   "itemListElement": [
     {{if .products}}
@@ -23,7 +23,7 @@
         "category": "{{$product.Category}}",
         "brand": {
           "@type": "Brand",
-          "name": "Su Aritma Uzmani"
+          "name": "Su Arıtma Uzmanı"
         },
         "offers": {
         "aggregateRating": {
@@ -36,16 +36,16 @@
           "priceCurrency": "TRY",
           "availability": "{{if gt $product.Stock 0}}https://schema.org/InStock{{else}}https://schema.org/OutOfStock{{end}}",
           "seller": {
-            "@type": "Organization",
-            "name": "Su Aritma Uzmani",
-            "url": "https://xn--suartmauzman-44bi.com"
+            "@type": "LocalBusiness",
+            "name": "Su Arıtma Uzmanı",
+            "url": "https://suarıtmauzmanı.com"
           },
-          "url": "https://xn--suartmauzman-44bi.com/products"
+          "url": "https://suarıtmauzmanı.com/products"
         },
         {{if $product.Image}}
         "image": "{{$product.Image}}",
         {{end}}
-        "url": "https://xn--suartmauzman-44bi.com/products",
+        "url": "https://suarıtmauzmanı.com/products",
         "sku": "{{$product.ID}}",
         "mpn": "{{$product.ID}}"
       }
@@ -66,13 +66,13 @@
       "@type": "ListItem",
       "position": 1,
       "name": "Ana Sayfa",
-      "item": "https://xn--suartmauzman-44bi.com"
+      "item": "https://suarıtmauzmanı.com"
     },
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "Urunler",
-      "item": "https://xn--suartmauzman-44bi.com/products"
+      "name": "Ürünler",
+      "item": "https://suarıtmauzmanı.com/products"
     }
   ]
 }
