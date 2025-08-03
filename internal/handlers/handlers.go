@@ -90,6 +90,7 @@ type Handler struct {
 	cartService  *services.CartService
 	securityLog  *services.SecurityLogger
 	spamDetector *services.SpamDetector
+	rateLimit    map[string]time.Time // Rate limiting için
 }
 
 // NewHandler, yeni bir Handler örneği oluşturur.
@@ -100,6 +101,7 @@ func NewHandler(db DBInterface) *Handler {
 		cartService:  services.NewCartService(db),
 		securityLog:  services.NewSecurityLogger(),
 		spamDetector: services.NewSpamDetector(),
+		rateLimit:    make(map[string]time.Time),
 	}
 }
 
@@ -2949,4 +2951,104 @@ func (h *Handler) SecurityMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// Register - Kullanıcı kaydı
+func (h *Handler) Register(c *gin.Context) {
+	if c.Request.Method == "GET" {
+		c.HTML(http.StatusOK, "register.html", gin.H{
+			"title": "Kayıt Ol - Su Arıtma Uzmanı",
+		})
+		return
+	}
+
+	var request struct {
+		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required,min=6"`
+		Captcha  string `json:"captcha" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Geçersiz veri formatı"})
+		return
+	}
+
+	// Spam kontrolü - email ve username'de şüpheli kelimeler
+	if h.spamDetector.IsSpam(request.Email) || h.spamDetector.IsSpam(request.Username) {
+		clientIP := c.ClientIP()
+		h.securityLog.LogSecurityEvent("SPAM_REGISTRATION", fmt.Sprintf("Spam registration attempt: %s", request.Email), clientIP)
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Kayıt bilgileriniz spam kontrolünden geçemedi"})
+		return
+	}
+
+	// Captcha kontrolü (basit kontrol)
+	if request.Captcha != "1234" { // Gerçek captcha sistemi eklenebilir
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Captcha doğrulaması başarısız"})
+		return
+	}
+
+	// Email format kontrolü - şüpheli domain'ler
+	suspiciousDomains := []string{"omggreatfoods.com", "aol.com", "gmail.com", "yahoo.com"}
+	emailDomain := strings.Split(request.Email, "@")[1]
+	for _, domain := range suspiciousDomains {
+		if strings.Contains(emailDomain, domain) {
+			clientIP := c.ClientIP()
+			h.securityLog.LogSecurityEvent("SUSPICIOUS_DOMAIN", fmt.Sprintf("Suspicious email domain: %s", emailDomain), clientIP)
+			c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Bu email domain'i kabul edilmiyor"})
+			return
+		}
+	}
+
+	// Rate limiting kontrolü
+	clientIP := c.ClientIP()
+	if h.isRateLimited(clientIP, "register", 5, time.Minute) {
+		h.securityLog.LogSecurityEvent("RATE_LIMIT", "Registration rate limit exceeded", clientIP)
+		c.JSON(http.StatusTooManyRequests, gin.H{"success": false, "message": "Çok fazla kayıt denemesi. Lütfen bekleyin."})
+		return
+	}
+
+	// Şifre hash'leme
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Şifre hash'lenirken hata oluştu"})
+		return
+	}
+
+	// Kullanıcı oluşturma
+	user := models.User{
+		Username:     request.Username,
+		Email:        request.Email,
+		PasswordHash: string(hashedPassword),
+		CreatedAt:    time.Now(),
+	}
+
+	if err := h.db.CreateUser(&user); err != nil {
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Bu kullanıcı adı veya email zaten kullanılıyor"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Kullanıcı oluşturulurken hata oluştu"})
+		}
+		return
+	}
+
+	// Başarılı kayıt log'u
+	h.securityLog.LogSecurityEvent("SUCCESSFUL_REGISTRATION", fmt.Sprintf("New user registered: %s", request.Email), clientIP)
+
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Kayıt başarılı! Giriş yapabilirsiniz."})
+}
+
+// isRateLimited, rate limiting kontrolü yapar
+func (h *Handler) isRateLimited(ip, action string, maxAttempts int, window time.Duration) bool {
+	key := fmt.Sprintf("%s:%s", ip, action)
+	now := time.Now()
+
+	if lastAttempt, exists := h.rateLimit[key]; exists {
+		if now.Sub(lastAttempt) < window {
+			return true
+		}
+	}
+
+	h.rateLimit[key] = now
+	return false
 }

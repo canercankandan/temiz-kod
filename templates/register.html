@@ -53,6 +53,14 @@
                             <div class="form-text">Şifrenizi doğrulamak için tekrar girin</div>
                         </div>
                         <div class="mb-3">
+                            <label for="captcha" class="form-label">
+                                <i class="fas fa-shield-alt"></i> Güvenlik Kodu <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="captcha" name="captcha" 
+                                   placeholder="1234" required>
+                            <div class="form-text">Güvenlik kodu: 1234</div>
+                        </div>
+                        <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="terms" required>
                                 <label class="form-check-label" for="terms">
@@ -84,10 +92,13 @@
 $(document).ready(function() {
     // Form validasyonu
     $('#registerForm').on('submit', function(e) {
+        e.preventDefault();
+        
         var password = $('#password').val();
         var confirmPassword = $('#confirmPassword').val();
         var email = $('#email').val();
         var fullName = $('#fullName').val();
+        var captcha = $('#captcha').val();
         
         // Ad soyad kontrolü
         if (fullName.trim().length < 2) {
@@ -110,17 +121,54 @@ $(document).ready(function() {
             return false;
         }
         
+        // Captcha kontrolü
+        if (captcha !== '1234') {
+            alert('Güvenlik kodu hatalı!');
+            return false;
+        }
+        
         // E-posta format kontrolü
         var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             alert('Geçerli bir e-posta adresi girin!');
-            e.preventDefault();
             return false;
         }
+        
+        // Form verilerini hazırla
+        var formData = {
+            username: fullName,
+            email: email,
+            password: password,
+            captcha: captcha
+        };
         
         // Form gönderiliyor
         $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...');
         $(this).find('button[type="submit"]').prop('disabled', true);
+        
+        // AJAX ile gönder
+        $.ajax({
+            url: '/register',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(response) {
+                if (response.success) {
+                    alert('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.');
+                    window.location.href = '/login';
+                } else {
+                    alert('Hata: ' + response.message);
+                    $('#registerForm').find('button[type="submit"]').html('<i class="fas fa-user-plus"></i> Hesap Oluştur');
+                    $('#registerForm').find('button[type="submit"]').prop('disabled', false);
+                }
+            },
+            error: function(xhr) {
+                var response = JSON.parse(xhr.responseText);
+                alert('Hata: ' + response.message);
+                $('#registerForm').find('button[type="submit"]').html('<i class="fas fa-user-plus"></i> Hesap Oluştur');
+                $('#registerForm').find('button[type="submit"]').prop('disabled', false);
+            }
+        });
     });
     
     // Gerçek zamanlı şifre kontrolü
