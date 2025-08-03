@@ -1326,7 +1326,6 @@ func (h *Handler) HandleCheckout(c *gin.Context) {
 	order := models.Order{
 		UserID:        userID,
 		SessionID:     sessionID,
-		OrderNumber:   generateOrderNumber(),
 		CustomerName:  customerName,
 		Email:         form.Email,
 		Phone:         phone,
@@ -1391,11 +1390,16 @@ func (h *Handler) OrderSuccessPage(c *gin.Context) {
 		return
 	}
 
+	// Kullanıcının giriş durumunu kontrol et - username cookie'sine bak
+	username, _ := c.Cookie("username")
+	isLoggedIn := username != ""
+	log.Printf("OrderSuccessPage - username: %s, isLoggedIn: %t", username, isLoggedIn)
+
 	c.HTML(http.StatusOK, "order_success.html", gin.H{
 		"title":        "Sipariş Başarılı",
 		"order_id":     orderID,
 		"order_number": orderNumber,
-		"isLoggedIn":   true,
+		"isLoggedIn":   isLoggedIn,
 	})
 }
 
@@ -1445,10 +1449,6 @@ func (h *Handler) AdminGetOrderDetail(c *gin.Context) {
 // Helper functions
 func generateSessionID() string {
 	return uuid.New().String()
-}
-
-func generateOrderNumber() string {
-	return "ORD-" + uuid.New().String()[:8]
 }
 
 // Admin handlers for missing routes
@@ -1634,7 +1634,12 @@ func (h *Handler) OrderTrackingPage(c *gin.Context) {
 func (h *Handler) TrackOrderByNumber(c *gin.Context) {
 	orderNumber := c.PostForm("order_number")
 
+	log.Printf("TrackOrderByNumber - Gelen sipariş numarası: '%s'", orderNumber)
+	log.Printf("TrackOrderByNumber - Content-Type: %s", c.GetHeader("Content-Type"))
+	log.Printf("TrackOrderByNumber - User-Agent: %s", c.GetHeader("User-Agent"))
+
 	if orderNumber == "" {
+		log.Printf("TrackOrderByNumber - Sipariş numarası boş")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"error":   "Sipariş numarası gerekli",
@@ -1642,16 +1647,22 @@ func (h *Handler) TrackOrderByNumber(c *gin.Context) {
 		return
 	}
 
+	// Sipariş numarasını temizle (boşlukları kaldır)
+	orderNumber = strings.TrimSpace(orderNumber)
+	log.Printf("TrackOrderByNumber - Temizlenmiş sipariş numarası: '%s'", orderNumber)
+
 	// Sadece sipariş numarası ile sipariş bul
 	order, err := h.db.GetOrderByNumber(orderNumber)
 	if err != nil {
-		log.Printf("TrackOrderByNumber - Order not found: %v", err)
+		log.Printf("TrackOrderByNumber - Sipariş bulunamadı: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{
 			"success": false,
 			"error":   "Sipariş bulunamadı. Sipariş numarasını kontrol edin.",
 		})
 		return
 	}
+
+	log.Printf("TrackOrderByNumber - Sipariş bulundu: ID=%d, OrderNumber=%s", order.ID, order.OrderNumber)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -2772,4 +2783,33 @@ func (h *Handler) DeleteOrderByUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Sipariş başarıyla silindi"})
+}
+
+// DebugOrders - Sunucuda siparişleri debug etmek için (sadece geliştirme için)
+func (h *Handler) DebugOrders(c *gin.Context) {
+	orders, err := h.db.GetAllOrders()
+	if err != nil {
+		log.Printf("DebugOrders - Hata: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Siparişler alınamadı",
+		})
+		return
+	}
+
+	log.Printf("DebugOrders - Toplam %d sipariş bulundu", len(orders))
+
+	var orderNumbers []string
+	for _, order := range orders {
+		orderNumbers = append(orderNumbers, order.OrderNumber)
+		log.Printf("DebugOrders - Sipariş: ID=%d, OrderNumber=%s, Status=%s",
+			order.ID, order.OrderNumber, order.Status)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success":       true,
+		"total_orders":  len(orders),
+		"order_numbers": orderNumbers,
+		"orders":        orders,
+	})
 }

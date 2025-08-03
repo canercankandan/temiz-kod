@@ -134,6 +134,7 @@ func main() {
 	r.POST("/track-order", h.TrackOrderByNumber)
 	r.GET("/track-session-orders", h.TrackOrderBySession)
 	r.POST("/cancel-order/:id", h.CustomerCancelOrder)
+	r.GET("/debug/orders", h.DebugOrders) // Debug endpoint'i
 	log.Printf("Order tracking routes registered successfully")
 
 	// Support chat routes (public)

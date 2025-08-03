@@ -41,100 +41,24 @@
     {
       "id": 1,
       "full_name": "Cenap Oktay",
-      "username": "wbcenapoktay@gmail.com",
-      "email": "wbcenapoktay@gmail.com",
-      "password_hash": "$2a$10$6gfOz/FgFmYI.p2t51wJVOKjGv60lJv2dPng9ROmkjo6ZfaduuGMK",
-      "plain_password": "123456",
-      "reset_expiry": "0001-01-01T00:00:00Z",
-      "addresses": [
-        {
-          "id": 1,
-          "user_id": 1,
-          "recipient_name": "cenap",
-          "phone_number": "123456",
-          "title": "ev",
-          "full_address": "cenap",
-          "province": "cenap",
-          "district": "cenap",
-          "neighborhood": "cenap",
-          "postal_code": "444",
-          "is_default": false,
-          "created_at": "2025-07-27T17:52:29.4107482+03:00",
-          "updated_at": "2025-07-27T19:34:28.6826212+03:00"
-        },
-        {
-          "id": 2,
-          "user_id": 1,
-          "recipient_name": "mert",
-          "phone_number": "456789",
-          "title": "iş",
-          "full_address": "mert",
-          "province": "mert",
-          "district": "mert",
-          "neighborhood": "mert",
-          "postal_code": "34142",
-          "is_default": true,
-          "created_at": "2025-07-27T17:53:12.4912688+03:00",
-          "updated_at": "2025-07-27T19:37:30.1681071+03:00"
-        }
-      ],
-      "created_at": "2025-07-27T20:41:30.178387+03:00",
-      "updated_at": "2025-07-27T20:41:30.178387+03:00"
-    },
-    {
-      "id": 2,
-      "full_name": "mert",
       "username": "sen1979ben@gmail.com",
       "email": "sen1979ben@gmail.com",
-      "password_hash": "$2a$10$OHvANvwh8rZH9Q3lsbyxm.bLQDEkUrBcOF9GFt7s5QeA8ES6uGaLG",
-      "plain_password": "123456",
+      "password_hash": "$2a$10$Ur85PUCg9Kym5YeD8KouIO.zhTi.LF51gGU.S/X3JpKOwUeoKjz7m",
       "reset_expiry": "0001-01-01T00:00:00Z",
-      "addresses": [
-        {
-          "id": 3,
-          "user_id": 2,
-          "recipient_name": "cenap",
-          "phone_number": "05448113105",
-          "title": "ev",
-          "full_address": "g\r\ndükkan",
-          "province": "İstanbul",
-          "district": "istanbu",
-          "neighborhood": "ddd",
-          "postal_code": "34142",
-          "is_default": false,
-          "created_at": "2025-07-29T02:36:22.8141345+03:00",
-          "updated_at": "2025-07-29T12:00:17.6537302+03:00"
-        },
-        {
-          "id": 4,
-          "user_id": 2,
-          "recipient_name": "FTIH",
-          "phone_number": "0544212222",
-          "title": "BASKA",
-          "full_address": "VAPAOAOK",
-          "province": "NERSE",
-          "district": "VAN",
-          "neighborhood": "SEFAKÖT",
-          "postal_code": "444",
-          "is_default": true,
-          "created_at": "2025-07-29T12:33:53.1972068+03:00",
-          "updated_at": "2025-07-29T15:43:39.2514342+03:00"
-        }
-      ],
-      "created_at": "2025-07-27T22:17:36.2552053+03:00",
-      "updated_at": "2025-07-27T22:17:36.2552053+03:00"
+      "created_at": "2025-08-03T14:40:35.6275028+03:00",
+      "updated_at": "2025-08-03T14:40:35.6275028+03:00"
     }
   ],
   "orders": [
     {
       "id": 1,
-      "user_id": 0,
-      "session_id": "01b63671-cde1-4409-93c3-fb197c8498ee",
-      "order_number": "ORD-8aaf3607",
-      "customer_name": "Cenap Oktay",
-      "email": "cahitbeyan@hotmail.com",
-      "phone": "0544212222",
-      "address": "gjjj\r, dükkan",
+      "user_id": 1,
+      "session_id": "49a40f4d-0c6a-4002-9b76-791bf9b2e5b6",
+      "order_number": "ORD-20250803-144105",
+      "customer_name": "cenap",
+      "email": "sen1979ben@gmail.com",
+      "phone": "123456",
+      "address": "cenap, 123456, cenap, cenap, cenap",
       "items": [
         {
           "id": 0,
@@ -152,8 +76,37 @@
       "payment_method": "",
       "notes": "",
       "admin_notes": "",
-      "created_at": "2025-08-03T00:19:45.4508391+03:00",
-      "updated_at": "2025-08-03T00:19:45.4508391+03:00"
+      "created_at": "2025-08-03T14:41:05.4770156+03:00",
+      "updated_at": "2025-08-03T14:41:05.4770156+03:00"
+    },
+    {
+      "id": 2,
+      "user_id": 0,
+      "session_id": "5c4f9468-8d8e-46ad-9e68-097a41a1791c",
+      "order_number": "ORD-20250803-144136",
+      "customer_name": "Cenap Oktay",
+      "email": "test@test.com",
+      "phone": "05448113105",
+      "address": "g\r, dükkan",
+      "items": [
+        {
+          "id": 0,
+          "cart_id": 0,
+          "product_id": 1,
+          "name": ".denemet",
+          "price": 555,
+          "image": "/static/uploads/a62890e9-94d5-497e-bbd3-a16ccec2ca27.png",
+          "quantity": 1,
+          "total_price": 555
+        }
+      ],
+      "total_price": 555,
+      "status": "pending",
+      "payment_method": "",
+      "notes": "",
+      "admin_notes": "",
+      "created_at": "2025-08-03T14:41:36.0307668+03:00",
+      "updated_at": "2025-08-03T14:41:36.0307668+03:00"
     }
   ],
   "messages": [
@@ -850,8 +803,30 @@
       "username": "Ziyaretçi",
       "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
       "status": "active",
-      "last_message_at": "2025-08-03T00:16:26.2974821+03:00",
+      "last_message_at": "2025-08-03T14:38:24.1874987+03:00",
       "created_at": "2025-08-02T21:48:48.3820138+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 56,
+      "session_id": "49a40f4d-0c6a-4002-9b76-791bf9b2e5b6",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-03T14:40:48.7832014+03:00",
+      "created_at": "2025-08-03T14:40:48.7832014+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 57,
+      "session_id": "5c4f9468-8d8e-46ad-9e68-097a41a1791c",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-03T14:45:31.1791866+03:00",
+      "created_at": "2025-08-03T14:42:03.3038113+03:00",
       "unread_count": 0
     }
   ],

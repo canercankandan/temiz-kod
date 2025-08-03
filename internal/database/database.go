@@ -648,12 +648,23 @@ func (db *JSONDatabase) GetOrderByNumber(orderNumber string) (*models.Order, err
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 
-	for _, order := range db.data.Orders {
-		if order.OrderNumber == orderNumber {
+	log.Printf("GetOrderByNumber - Aranan sipariş numarası: '%s'", orderNumber)
+	log.Printf("GetOrderByNumber - Toplam sipariş sayısı: %d", len(db.data.Orders))
+
+	// Case-insensitive arama için küçük harfe çevir
+	orderNumberLower := strings.ToLower(strings.TrimSpace(orderNumber))
+
+	for i, order := range db.data.Orders {
+		log.Printf("GetOrderByNumber - Kontrol edilen sipariş %d: OrderNumber='%s'", i+1, order.OrderNumber)
+
+		// Case-insensitive karşılaştırma
+		if strings.ToLower(strings.TrimSpace(order.OrderNumber)) == orderNumberLower {
+			log.Printf("GetOrderByNumber - Sipariş bulundu: ID=%d, OrderNumber=%s", order.ID, order.OrderNumber)
 			return &order, nil
 		}
 	}
 
+	log.Printf("GetOrderByNumber - Sipariş bulunamadı: '%s'", orderNumber)
 	return nil, errors.New("sipariş bulunamadı")
 }
 
