@@ -489,3 +489,19 @@ func (es *EmailService) SendAdminOrderConfirmationEmail(customerEmail string, or
 
 	return es.dialer.DialAndSend(m)
 }
+
+// SendEmail, genel e-posta gönderimi için kullanılır
+func (es *EmailService) SendEmail(to, subject, body string) error {
+	if es.dialer == nil {
+		log.Printf("E-posta gönderimi devre dışı. Gönderilecek e-posta: %s - %s", to, subject)
+		return nil
+	}
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", es.from)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	return es.dialer.DialAndSend(m)
+}

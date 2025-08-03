@@ -1,12 +1,10 @@
 package main
 
 import (
-	"crypto/tls"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"cenap/internal/database"
 	"cenap/internal/handlers"
@@ -37,6 +35,7 @@ func main() {
 	// Middleware'leri manuel olarak ekle
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(h.SecurityMiddleware())
 
 	// Proxy güvenlik ayarları
 	r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
@@ -127,6 +126,7 @@ func main() {
 	r.GET("/products", h.ProductsPage)
 	r.GET("/about", h.AboutPage)
 	r.GET("/contact", h.ContactPage)
+	r.POST("/contact/send", h.HandleContactForm)
 
 	// Order tracking routes (public) - ÖNCELİKLE KAYDET!
 	log.Printf("Registering order tracking routes...")
@@ -233,65 +233,8 @@ func main() {
 		orders.DELETE("/:id/delete", h.DeleteOrderByUser)
 	}
 
-	// Certificate yükle ve HTTPS'i aktif et
-	certPath := os.Getenv("SSL_CERT_PATH")
-	keyPath := os.Getenv("SSL_KEY_PATH")
-	if certPath == "" {
-		certPath = "localhost.crt"
-	}
-	if keyPath == "" {
-		keyPath = "localhost.key"
-	}
-
-	// Sertifika dosyalarının varlığını kontrol et
-	if _, err := os.Stat(certPath); os.IsNotExist(err) {
-		log.Printf("❌ Sertifika dosyası bulunamadı: %s", certPath)
-		log.Printf("HTTPS devre dışı, sadece HTTP kullanılıyor")
-	} else if _, err := os.Stat(keyPath); os.IsNotExist(err) {
-		log.Printf("❌ Anahtar dosyası bulunamadı: %s", keyPath)
-		log.Printf("HTTPS devre dışı, sadece HTTP kullanılıyor")
-	} else {
-		cert, certErr := tls.LoadX509KeyPair(certPath, keyPath)
-		if certErr != nil {
-			log.Printf("❌ Sertifika yüklenemedi: %v", certErr)
-			log.Printf("HTTPS devre dışı, sadece HTTP kullanılıyor")
-		} else {
-			log.Printf("✅ SSL Sertifikası başarıyla yüklendi")
-
-			// TLS yapılandırması - Güvenlik ayarları iyileştirildi
-			tlsConfig := &tls.Config{
-				Certificates: []tls.Certificate{cert},
-				MinVersion:   tls.VersionTLS12,
-				CipherSuites: []uint16{
-					tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-					tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
-					tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-				},
-			}
-
-			// HTTPS sunucusu - Port 443 (production portu)
-			httpsServer := &http.Server{
-				Addr:         "0.0.0.0:443",
-				Handler:      r,
-				TLSConfig:    tlsConfig,
-				ReadTimeout:  15 * time.Second,
-				WriteTimeout: 15 * time.Second,
-				IdleTimeout:  60 * time.Second,
-			}
-
-			// HTTPS sunucusunu arka planda başlat
-			go func() {
-				log.Printf("🔒 HTTPS Server başlatılıyor (port: 443)...")
-				log.Printf("🔐 Yerel HTTPS erişim: https://localhost")
-				log.Printf("🌐 HTTPS erişim için: https://xn--suartmauzman-44bi.com")
-				if err := httpsServer.ListenAndServeTLS("", ""); err != nil {
-					log.Printf("❌ HTTPS Server hatası: %v", err)
-				}
-			}()
-
-			log.Printf("✅ HTTPS sunucusu başarıyla başlatıldı")
-		}
-	}
+	// HTTPS sunucusu devre dışı bırakıldı - Nginx SSL yönetimi kullanılıyor
+	log.Printf("🔒 HTTPS sunucusu devre dışı - Nginx SSL yönetimi kullanılıyor")
 
 	// Render.com için ortam değişkeni kontrolü
 	port := os.Getenv("PORT")
@@ -308,7 +251,7 @@ func main() {
 	}
 
 	// HTTP sunucusu çalıştır
-	httpPort := "8082" // Yerel geliştirme portu
+	httpPort := "8083" // Yerel geliştirme portu
 
 	// HTTP server - r engine'ini kullan (httpEngine yerine)
 	httpServer := &http.Server{
@@ -320,7 +263,7 @@ func main() {
 	log.Printf("🌐 HTTP Server başlatılıyor...")
 	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 	log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
-	log.Printf("✅ HTTP (80) ve HTTPS (443) sunucuları aktif")
+	log.Printf("✅ HTTP sunucusu aktif")
 
 	if err := httpServer.ListenAndServe(); err != nil {
 		log.Fatalf("HTTP Server başlatılamadı: %v", err)

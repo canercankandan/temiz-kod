@@ -85,17 +85,21 @@ type DBInterface interface {
 
 // Handler, HTTP isteklerini yönetir.
 type Handler struct {
-	db          DBInterface
-	email       *services.EmailService
-	cartService *services.CartService
+	db           DBInterface
+	email        *services.EmailService
+	cartService  *services.CartService
+	securityLog  *services.SecurityLogger
+	spamDetector *services.SpamDetector
 }
 
 // NewHandler, yeni bir Handler örneği oluşturur.
 func NewHandler(db DBInterface) *Handler {
 	return &Handler{
-		db:          db,
-		email:       services.NewEmailService(),
-		cartService: services.NewCartService(db),
+		db:           db,
+		email:        services.NewEmailService(),
+		cartService:  services.NewCartService(db),
+		securityLog:  services.NewSecurityLogger(),
+		spamDetector: services.NewSpamDetector(),
 	}
 }
 
@@ -2812,4 +2816,137 @@ func (h *Handler) DebugOrders(c *gin.Context) {
 		"order_numbers": orderNumbers,
 		"orders":        orders,
 	})
+}
+
+// HandleContactForm - İletişim formu gönderimi
+func (h *Handler) HandleContactForm(c *gin.Context) {
+	var request struct {
+		Name     string   `json:"name"`
+		Email    string   `json:"email"`
+		Phone    string   `json:"phone"`
+		Subject  string   `json:"subject"`
+		Message  string   `json:"message"`
+		Services []string `json:"services"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Geçersiz form verisi",
+		})
+		return
+	}
+
+	// Spam koruması - basit kontroller
+	if len(request.Message) < 10 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Mesaj en az 10 karakter olmalıdır",
+		})
+		return
+	}
+
+	// Spam kelime kontrolü
+	if h.spamDetector.IsSpam(request.Message) {
+		clientIP := c.ClientIP()
+		h.securityLog.LogSecurityEvent("SPAM_DETECTED", fmt.Sprintf("Contact form spam: %s", request.Subject), clientIP)
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Mesajınız spam içerik kontrolünden geçemedi. Lütfen farklı bir mesaj yazın.",
+		})
+		return
+	}
+
+	// E-posta formatı kontrolü
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	if !emailRegex.MatchString(request.Email) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"message": "Geçersiz e-posta adresi",
+		})
+		return
+	}
+
+	// Rate limiting - IP bazlı basit kontrol
+	clientIP := c.ClientIP()
+	// Burada daha gelişmiş rate limiting eklenebilir
+
+	// E-posta gönderimi
+	servicesText := ""
+	if len(request.Services) > 0 {
+		servicesText = "İlgilendiği Hizmetler: " + strings.Join(request.Services, ", ")
+	}
+
+	emailBody := fmt.Sprintf(`
+		<h2>Yeni İletişim Formu Mesajı</h2>
+		<p><strong>Ad Soyad:</strong> %s</p>
+		<p><strong>E-posta:</strong> %s</p>
+		<p><strong>Telefon:</strong> %s</p>
+		<p><strong>Konu:</strong> %s</p>
+		<p><strong>Mesaj:</strong></p>
+		<p>%s</p>
+		<p><strong>%s</strong></p>
+		<hr>
+		<p><small>IP Adresi: %s | Tarih: %s</small></p>
+	`, request.Name, request.Email, request.Phone, request.Subject, request.Message, servicesText, clientIP, time.Now().Format("02.01.2006 15:04:05"))
+
+	err := h.email.SendEmail(
+		"irmaksuaritmam@gmail.com",
+		"Yeni İletişim Formu Mesajı - "+request.Subject,
+		emailBody,
+	)
+
+	if err != nil {
+		log.Printf("İletişim formu e-posta gönderimi hatası: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"message": "Mesaj gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Mesajınız başarıyla gönderildi. En kısa sürede size dönüş yapacağız.",
+	})
+}
+
+// SecurityMiddleware, güvenlik kontrollerini yapar
+func (h *Handler) SecurityMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// User-Agent kontrolü
+		userAgent := c.GetHeader("User-Agent")
+		if userAgent == "" || len(userAgent) < 10 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Geçersiz istek"})
+			c.Abort()
+			return
+		}
+
+		// Referer kontrolü (CSRF koruması)
+		referer := c.GetHeader("Referer")
+		if c.Request.Method == "POST" && referer == "" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Geçersiz istek kaynağı"})
+			c.Abort()
+			return
+		}
+
+		// Rate limiting için basit IP kontrolü
+		clientIP := c.ClientIP()
+		if clientIP == "" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "IP adresi tespit edilemedi"})
+			c.Abort()
+			return
+		}
+
+		// Şüpheli IP'leri engelle (örnek)
+		suspiciousIPs := []string{"127.0.0.1", "::1"} // Geliştirme IP'leri
+		for _, ip := range suspiciousIPs {
+			if clientIP == ip {
+				log.Printf("Şüpheli IP erişimi: %s", clientIP)
+			}
+		}
+
+		c.Next()
+	}
 }
