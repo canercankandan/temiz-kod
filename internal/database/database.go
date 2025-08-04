@@ -1,6 +1,7 @@
 package database
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -197,6 +198,11 @@ func (db *JSONDatabase) CreateUser(user *models.User) error {
 	user.ID = maxID + 1
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
+
+	// E-posta doğrulama için gerekli alanları ayarla
+	user.EmailVerified = false
+	user.EmailVerifyToken = generateToken()
+	user.EmailVerifyExpiry = time.Now().Add(24 * time.Hour) // 24 saat geçerli
 
 	db.data.Users = append(db.data.Users, *user)
 	return db.saveData()
@@ -491,6 +497,16 @@ func (db *JSONDatabase) restoreStockFromOrder(order *models.Order) error {
 // generateOrderNumber, benzersiz sipariş numarası oluşturur.
 func generateOrderNumber() string {
 	return fmt.Sprintf("ORD-%s", time.Now().Format("20060102-150405"))
+}
+
+// generateToken, benzersiz bir token oluşturur.
+func generateToken() string {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return fmt.Sprintf("%x", b)
 }
 
 // --- Admin Order Functions ---
@@ -1355,6 +1371,36 @@ func (db *JSONDatabase) FixOldOrderAddresses() error {
 	return db.saveData()
 }
 
+// GetUserByEmailVerifyToken, e-posta doğrulama token'ına göre kullanıcıyı döndürür.
+func (db *JSONDatabase) GetUserByEmailVerifyToken(token string) (*models.User, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
+
+	for _, u := range db.data.Users {
+		if u.EmailVerifyToken == token && time.Now().Before(u.EmailVerifyExpiry) {
+			return &u, nil
+		}
+	}
+	return nil, errors.New("invalid or expired email verification token")
+}
+
+// VerifyUserEmail, kullanıcının e-postasını doğrular.
+func (db *JSONDatabase) VerifyUserEmail(userID int) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for i, u := range db.data.Users {
+		if u.ID == userID {
+			db.data.Users[i].EmailVerified = true
+			db.data.Users[i].EmailVerifyToken = ""
+			db.data.Users[i].EmailVerifyExpiry = time.Time{}
+			db.data.Users[i].UpdatedAt = time.Now()
+			return db.saveData()
+		}
+	}
+	return errors.New("user not found")
+}
+
 // DBInterface, veritabanı işlemlerini tanımlar.
 type DBInterface interface {
 	GetAllProducts() ([]models.Product, error)
@@ -1371,6 +1417,8 @@ type DBInterface interface {
 	CreatePasswordResetToken(email string, token string) error
 	GetUserByResetToken(token string) (*models.User, error)
 	ClearResetToken(userID int) error
+	GetUserByEmailVerifyToken(token string) (*models.User, error)
+	VerifyUserEmail(userID int) error
 	// Order methods
 	CreateOrder(order *models.Order) error
 	GetOrdersByUserID(userID int) ([]models.Order, error)

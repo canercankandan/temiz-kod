@@ -103,21 +103,18 @@ $(document).ready(function() {
         // Ad soyad kontrolü
         if (fullName.trim().length < 2) {
             alert('Ad soyad en az 2 karakter olmalıdır!');
-            e.preventDefault();
             return false;
         }
         
         // Şifre kontrolü
         if (password.length < 6) {
             alert('Şifre en az 6 karakter olmalıdır!');
-            e.preventDefault();
             return false;
         }
         
         // Şifre eşleşme kontrolü
         if (password !== confirmPassword) {
             alert('Şifreler eşleşmiyor!');
-            e.preventDefault();
             return false;
         }
         

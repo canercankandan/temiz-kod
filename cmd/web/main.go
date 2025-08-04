@@ -163,7 +163,7 @@ func main() {
 	r.GET("/login", h.LoginPage)
 	r.POST("/login", h.HandleLogin)
 	r.GET("/register", h.RegisterPage)
-	r.POST("/register", h.HandleRegister)
+	r.POST("/register", h.Register)
 	r.GET("/logout", h.UserLogout)
 
 	// Şifre sıfırlama route'ları

@@ -490,6 +490,41 @@ func (es *EmailService) SendAdminOrderConfirmationEmail(customerEmail string, or
 	return es.dialer.DialAndSend(m)
 }
 
+// SendEmailVerification, e-posta doğrulama linki gönderir
+func (es *EmailService) SendEmailVerification(to, username, token string) error {
+	if es.dialer == nil {
+		log.Printf("E-posta gönderimi devre dışı. E-posta doğrulama: %s - %s", to, token)
+		return nil
+	}
+
+	subject := "E-posta Doğrulama - Cenap Su Arıtma"
+	body := fmt.Sprintf(`
+		<h2>E-posta Adresinizi Doğrulayın</h2>
+		<p>Merhaba <strong>%s</strong>,</p>
+		<p>Cenap Su Arıtma hesabınızı aktifleştirmek için lütfen e-posta adresinizi doğrulayın.</p>
+		<br>
+		<div style="text-align: center; margin: 20px 0;">
+			<a href="https://xn--suartmauzman-44bi.com/verify-email?token=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">✉️ E-postamı Doğrula</a>
+		</div>
+		<br>
+		<p><strong>Alternatif Link:</strong></p>
+		<p><a href="https://xn--suartmauzman-44bi.com/verify-email?token=%s">https://xn--suartmauzman-44bi.com/verify-email?token=%s</a></p>
+		<br>
+		<p>Bu link 24 saat süreyle geçerlidir.</p>
+		<p>Eğer bu hesabı siz oluşturmadıysanız, bu e-postayı görmezden gelebilirsiniz.</p>
+		<br>
+		<p>Saygılarımızla,<br>Cenap Su Arıtma</p>
+	`, username, token, token, token)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", es.from)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	return es.dialer.DialAndSend(m)
+}
+
 // SendEmail, genel e-posta gönderimi için kullanılır
 func (es *EmailService) SendEmail(to, subject, body string) error {
 	if es.dialer == nil {

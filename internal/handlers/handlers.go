@@ -212,6 +212,15 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 		return
 	}
 
+	// E-posta doğrulama kontrolü
+	if !user.EmailVerified {
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
+			"title": "Giriş Yap",
+			"error": "Lütfen önce e-posta adresinizi doğrulayın.",
+		})
+		return
+	}
+
 	// Mevcut session ID'yi al (eğer varsa)
 	oldSessionID, _ := c.Cookie("user_session")
 
@@ -2953,6 +2962,101 @@ func (h *Handler) SecurityMiddleware() gin.HandlerFunc {
 	}
 }
 
+// VerifyEmailPage, e-posta doğrulama sayfasını gösterir
+func (h *Handler) VerifyEmailPage(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		c.HTML(http.StatusBadRequest, "verify_email.html", gin.H{
+			"title": "E-posta Doğrulama",
+			"error": "Geçersiz doğrulama bağlantısı.",
+		})
+		return
+	}
+
+	// Token'ın geçerli olup olmadığını kontrol et
+	user, err := h.db.GetUserByEmailVerifyToken(token)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "verify_email.html", gin.H{
+			"title": "E-posta Doğrulama",
+			"error": "Geçersiz veya süresi dolmuş doğrulama bağlantısı.",
+		})
+		return
+	}
+
+	// E-postayı doğrula
+	if err := h.db.VerifyUserEmail(user.ID); err != nil {
+		c.HTML(http.StatusInternalServerError, "verify_email.html", gin.H{
+			"title": "E-posta Doğrulama",
+			"error": "E-posta doğrulanırken bir hata oluştu.",
+		})
+		return
+	}
+
+	c.HTML(http.StatusOK, "verify_email.html", gin.H{
+		"title":   "E-posta Doğrulama",
+		"success": "E-posta adresiniz başarıyla doğrulandı. Artık giriş yapabilirsiniz.",
+	})
+}
+
+// ResendVerificationEmail, doğrulama e-postasını yeniden gönderir
+func (h *Handler) ResendVerificationEmail(c *gin.Context) {
+	email := c.PostForm("email")
+	if email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "E-posta adresi gerekli",
+		})
+		return
+	}
+
+	// Kullanıcıyı bul
+	user, err := h.db.GetUserByEmail(email)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "Eğer bu e-posta adresi kayıtlıysa, doğrulama bağlantısı gönderilecektir.",
+		})
+		return
+	}
+
+	// Kullanıcı zaten doğrulanmış mı kontrol et
+	if user.EmailVerified {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Bu e-posta adresi zaten doğrulanmış.",
+		})
+		return
+	}
+
+	// Yeni token oluştur
+	token := uuid.New().String()
+	user.EmailVerifyToken = token
+	user.EmailVerifyExpiry = time.Now().Add(24 * time.Hour)
+
+	// Kullanıcıyı güncelle
+	if err := h.db.UpdateUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Doğrulama bağlantısı oluşturulamadı.",
+		})
+		return
+	}
+
+	// Doğrulama e-postasını gönder
+	if err := h.email.SendEmailVerification(user.Email, user.Username, token); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Doğrulama e-postası gönderilemedi.",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Doğrulama bağlantısı e-posta adresinize gönderildi.",
+	})
+}
+
 // Register - Kullanıcı kaydı
 func (h *Handler) Register(c *gin.Context) {
 	if c.Request.Method == "GET" {
@@ -3016,11 +3120,15 @@ func (h *Handler) Register(c *gin.Context) {
 	}
 
 	// Kullanıcı oluşturma
+	token := uuid.New().String()
 	user := models.User{
-		Username:     request.Username,
-		Email:        request.Email,
-		PasswordHash: string(hashedPassword),
-		CreatedAt:    time.Now(),
+		Username:          request.Username,
+		Email:             request.Email,
+		PasswordHash:      string(hashedPassword),
+		EmailVerified:     false,
+		EmailVerifyToken:  token,
+		EmailVerifyExpiry: time.Now().Add(24 * time.Hour),
+		CreatedAt:         time.Now(),
 	}
 
 	if err := h.db.CreateUser(&user); err != nil {
@@ -3035,7 +3143,16 @@ func (h *Handler) Register(c *gin.Context) {
 	// Başarılı kayıt log'u
 	h.securityLog.LogSecurityEvent("SUCCESSFUL_REGISTRATION", fmt.Sprintf("New user registered: %s", request.Email), clientIP)
 
-	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Kayıt başarılı! Giriş yapabilirsiniz."})
+	// Doğrulama e-postası gönder
+	if err := h.email.SendEmailVerification(user.Email, user.Username, token); err != nil {
+		log.Printf("Error sending verification email: %v", err)
+		// E-posta gönderilemese bile kayıt işlemi devam eder
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Kayıt başarılı! Lütfen e-posta adresinize gönderilen doğrulama bağlantısını tıklayın.",
+	})
 }
 
 // isRateLimited, rate limiting kontrolü yapar
