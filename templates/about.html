@@ -1,87 +1,307 @@
 {{template "base.html" .}}
 
 {{define "content"}}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">
-            <i class="fas fa-info-circle me-2"></i>Su Arıtma Uzmanı Hakkında - İstanbul'da 10+ Yıllık Deneyim
-        </h1>
+<!-- Hero Section -->
+<div class="hero-section bg-gradient-primary py-3 mb-3">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="h2 fw-bold mb-2" style="color:#007bff !important;">
+                    <i class="fas fa-water me-2"></i>Su Arıtma Uzmanı
+                </h1>
+                <p class="lead mb-2" style="color:#007bff !important;">İstanbul'da 5+ Yıllık Deneyim ile Türkiye'nin En Güvenilir Su Arıtma Markası</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="stat-item text-center">
+                        <div class="stat-number h3 fw-bold" style="color:#007bff !important;">15,000+</div>
+                        <div class="stat-label small" style="color:#007bff !important;">Mutlu Müşteri</div>
+                    </div>
+                    <div class="stat-item text-center">
+                        <div class="stat-number h3 fw-bold" style="color:#007bff !important;">5+</div>
+                        <div class="stat-label small" style="color:#007bff !important;">Yıl Deneyim</div>
+                    </div>
+                    <div class="stat-item text-center">
+                        <div class="stat-number h3 fw-bold" style="color:#007bff !important;">50+</div>
+                        <div class="stat-label small" style="color:#007bff !important;">Ürün Çeşidi</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <div class="hero-icon">
+                    <i class="fas fa-tint fa-3x text-primary opacity-75"></i>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <h3>Su Arıtma Uzmanı - Türkiye'nin En Güvenilir Su Arıtma Markası</h3>
-                <p class="lead">
-                    Su Arıtma Uzmanı olarak, İstanbul'da su arıtma cihazı satış, kurulum ve servis hizmeti sunuyoruz.
-                </p>
-                <p>
-                    10+ yıllık deneyimimizle, 15,000+ mutlu müşterimize hizmet verdik. Müşteri memnuniyetini ön planda tutarak, 
-                    güvenilir ve kaliteli su arıtma sistemleri sunmaya devam ediyoruz. Deneyimli ekibimiz 
-                    ile İstanbul'da en iyi su arıtma hizmetini vermek için çalışıyoruz.
-                </p>
-                
-                <h4 class="mt-4">Misyonumuz</h4>
-                <p>
-                    Müşterilerimize kaliteli, güvenilir ve uygun fiyatlı ürünler sunarak, 
-                    onların ihtiyaçlarını en iyi şekilde karşılamak.
-                </p>
-                
-                <h4 class="mt-4">Vizyonumuz</h4>
-                <p>
-                    Sektörde lider konuma gelerek, müşteri memnuniyetinde örnek gösterilen 
-                    bir şirket olmak.
-                </p>
+<!-- Main Content -->
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-primary text-white rounded-circle me-3">
+                            <i class="fas fa-building fa-lg"></i>
+                        </div>
+                        <h3 class="mb-0">Şirketimiz Hakkında</h3>
+                    </div>
+                    
+                    <p class="lead text-muted mb-3">
+                        Su Arıtma Uzmanı olarak, İstanbul'da su arıtma cihazı satış, kurulum ve servis hizmeti sunuyoruz.
+                    </p>
+                    
+                    <p class="mb-3">
+                        5+ yıllık deneyimimizle, 15,000+ mutlu müşterimize hizmet verdik. Müşteri memnuniyetini ön planda tutarak, 
+                        güvenilir ve kaliteli su arıtma sistemleri sunmaya devam ediyoruz. Deneyimli ekibimiz 
+                        ile İstanbul'da en iyi su arıtma hizmetini vermek için çalışıyoruz.
+                    </p>
+                    
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <div class="mission-vision-card bg-light p-3 rounded">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-bullseye text-primary fa-lg me-2"></i>
+                                    <h5 class="mb-0" style="color:#007bff !important;">Misyonumuz</h5>
+                                </div>
+                                <p class="mb-0 small" style="color:#007bff !important;">
+                                    Müşterilerimize kaliteli, güvenilir ve uygun fiyatlı ürünler sunarak, onların ihtiyaçlarını en iyi şekilde karşılamak.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mission-vision-card bg-light p-3 rounded">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-eye text-success fa-lg me-2"></i>
+                                    <h5 class="mb-0" style="color:#007bff !important;">Vizyonumuz</h5>
+                                </div>
+                                <p class="mb-0 small" style="color:#007bff !important;">
+                                    Sektörde lider konuma gelerek, müşteri memnuniyetinde örnek gösterilen bir şirket olmak.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Values Card -->
+            <div class="card shadow border-0 mb-3">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-star text-warning fa-lg me-2"></i>
+                        <h5 class="mb-0" style="color:#007bff !important;">Değerlerimiz</h5>
+                    </div>
+                    <div class="values-list">
+                        <div class="value-item d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="value-icon bg-success text-white rounded-circle me-2">
+                                <i class="fas fa-users fa-sm"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 small" style="color:#007bff !important;">Müşteri Odaklılık</h6>
+                                <small class="text-muted" style="color:#007bff !important;">Müşteri memnuniyeti önceliğimiz</small>
+                            </div>
+                        </div>
+                        <div class="value-item d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="value-icon bg-primary text-white rounded-circle me-2">
+                                <i class="fas fa-award fa-sm"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 small" style="color:#007bff !important;">Kalite</h6>
+                                <small class="text-muted" style="color:#007bff !important;">En yüksek kalite standartları</small>
+                            </div>
+                        </div>
+                        <div class="value-item d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="value-icon bg-info text-white rounded-circle me-2">
+                                <i class="fas fa-shield-alt fa-sm"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 small" style="color:#007bff !important;">Güvenilirlik</h6>
+                                <small class="text-muted" style="color:#007bff !important;">Güvenilir hizmet ve ürünler</small>
+                            </div>
+                        </div>
+                        <div class="value-item d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="value-icon bg-warning text-white rounded-circle me-2">
+                                <i class="fas fa-lightbulb fa-sm"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 small" style="color:#007bff !important;">Yenilikçilik</h6>
+                                <small class="text-muted" style="color:#007bff !important;">Sürekli gelişim ve yenilik</small>
+                            </div>
+                        </div>
+                        <div class="value-item d-flex align-items-center mb-2 p-2 bg-light rounded">
+                            <div class="value-icon bg-secondary text-white rounded-circle me-2">
+                                <i class="fas fa-leaf fa-sm"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 small" style="color:#007bff !important;">Sürdürülebilirlik</h6>
+                                <small class="text-muted" style="color:#007bff !important;">Çevre dostu çözümler</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact CTA -->
+            <div class="card shadow border-0 bg-gradient-primary text-white">
+                <div class="card-body p-3 text-center">
+                    <i class="fas fa-phone fa-2x mb-2"></i>
+                    <h6>Hemen İletişime Geçin</h6>
+                    <p class="mb-2 small">Su arıtma ihtiyaçlarınız için uzman ekibimizle görüşün</p>
+                    <a href="/contact" class="btn btn-light btn-sm">
+                        <i class="fas fa-envelope me-1"></i>İletişim
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h4>Değerlerimiz</h4>
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <i class="fas fa-check text-success me-2"></i>
-                        Müşteri Odaklılık
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-check text-success me-2"></i>
-                        Kalite
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-check text-success me-2"></i>
-                        Güvenilirlik
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-check text-success me-2"></i>
-                        Yenilikçilik
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-check text-success me-2"></i>
-                        Sürdürülebilirlik
-                    </li>
-                </ul>
-            </div>
-        </div>
-        
-        <div class="card mt-3">
-            <div class="card-body">
-                <h4>İstatistikler</h4>
-                <div class="row text-center">
-                    <div class="col-6">
-                        <h3 class="text-primary">100+</h3>
-                        <small>Mutlu Müşteri</small>
-                    </div>
-                    <div class="col-6">
-                        <h3 class="text-success">50+</h3>
-                        <small>Ürün Çeşidi</small>
+    <!-- Features Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <h4 class="text-center mb-4">Neden Bizi Tercih Etmelisiniz?</h4>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="feature-card text-center p-3">
+                                <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-2">
+                                    <i class="fas fa-tools fa-lg"></i>
+                                </div>
+                                <h6>Profesyonel Kurulum</h6>
+                                <p class="text-muted small">Uzman ekibimiz tarafından profesyonel kurulum hizmeti</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center p-3">
+                                <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-2">
+                                    <i class="fas fa-headset fa-lg"></i>
+                                </div>
+                                <h6>7/24 Destek</h6>
+                                <p class="text-muted small">Teknik destek ve müşteri hizmetleri</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center p-3">
+                                <div class="feature-icon bg-warning text-white rounded-circle mx-auto mb-2">
+                                    <i class="fas fa-medal fa-lg"></i>
+                                </div>
+                                <h6>Garantili Hizmet</h6>
+                                <p class="text-muted small">Tüm ürünlerimiz garanti kapsamında</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #7ed6df 0%, #b8e2e6 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+}
+
+.stat-item {
+    background: rgba(255,255,255,0.1);
+    padding: 0.5rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.hero-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+.icon-box {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mission-vision-card {
+    transition: transform 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.mission-vision-card:hover {
+    transform: translateY(-3px);
+    border-left-color: var(--bs-primary);
+}
+
+.value-item {
+    transition: all 0.3s ease;
+}
+
+.value-item:hover {
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.value-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-card {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #7ed6df 0%, #b8e2e6 100%);
+}
+.hero-section, .hero-section * {
+    color: #222 !important;
+}
+</style>
 {{end}} 
