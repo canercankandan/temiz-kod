@@ -54,7 +54,7 @@
                         </div>
                         <div class="mb-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="robotCheck" required>
+                                <input class="form-check-input" type="checkbox" id="robotCheck" name="robotCheck" value="true" required>
                                 <label class="form-check-label" for="robotCheck">
                                     <i class="fas fa-robot text-primary"></i> 
                                     <strong>Ben robot değilim</strong> - Bu kutucuğu işaretleyerek insan olduğunuzu doğrulayın
@@ -123,11 +123,11 @@ $(document).ready(function() {
             return false;
         }
         
-        // Robot kontrolü
-        if (!robotCheck) {
-            alert('Lütfen "Ben robot değilim" kutucuğunu işaretleyin!');
-            return false;
-        }
+        // Robot kontrolü - GEÇİCİ DEVRE DIŞI
+        // if (!robotCheck) {
+        //     alert('Lütfen "Ben robot değilim" kutucuğunu işaretleyin!');
+        //     return false;
+        // }
         
         // E-posta format kontrolü
         var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -145,33 +145,12 @@ $(document).ready(function() {
             robotCheck: robotCheck
         };
         
-        // Form gönderiliyor
+        // Form gönderiliyor - normal submit kullan
         $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...');
         $(this).find('button[type="submit"]').prop('disabled', true);
         
-        // AJAX ile gönder
-        $.ajax({
-            url: '/register',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(formData),
-            success: function(response) {
-                if (response.success) {
-                    alert('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.');
-                    window.location.href = '/login';
-                } else {
-                    alert('Hata: ' + response.message);
-                    $('#registerForm').find('button[type="submit"]').html('<i class="fas fa-user-plus"></i> Hesap Oluştur');
-                    $('#registerForm').find('button[type="submit"]').prop('disabled', false);
-                }
-            },
-            error: function(xhr) {
-                var response = JSON.parse(xhr.responseText);
-                alert('Hata: ' + response.message);
-                $('#registerForm').find('button[type="submit"]').html('<i class="fas fa-user-plus"></i> Hesap Oluştur');
-                $('#registerForm').find('button[type="submit"]').prop('disabled', false);
-            }
-        });
+        // Normal form submit (AJAX yerine)
+        this.submit();
     });
     
     // Gerçek zamanlı şifre kontrolü

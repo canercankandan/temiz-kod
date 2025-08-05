@@ -1,0 +1,110 @@
+2025/08/04 20:36:45 📄 Template'ler yükleniyor...
+2025/08/04 20:36:45 📄 Template yükleniyor: checkout.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/checkout.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/checkout.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: checkout.html
+2025/08/04 20:36:45 📄 Template yükleniyor: home.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/home.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/home.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: home.html
+2025/08/04 20:36:45 📄 Template yükleniyor: about.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/about.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/about.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: about.html
+2025/08/04 20:36:45 📄 Template yükleniyor: contact.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/contact.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/contact.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: contact.html
+2025/08/04 20:36:45 📄 Template yükleniyor: login.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/login.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/login.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: login.html
+2025/08/04 20:36:45 📄 Template yükleniyor: register.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/register.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/register.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: register.html
+2025/08/04 20:36:45 📄 Template yükleniyor: reset_password.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/reset_password.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/reset_password.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: reset_password.html
+2025/08/04 20:36:45 📄 Template yükleniyor: cart.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/cart.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/cart.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: cart.html
+2025/08/04 20:36:45 📄 Template yükleniyor: order_success.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/order_success.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/order_success.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: order_success.html
+2025/08/04 20:36:45 📄 Template yükleniyor: admin_support.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/admin_support.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/admin_support.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: admin_support.html
+2025/08/04 20:36:45 📄 Template yükleniyor: admin_login.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/admin_login.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/admin_login.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: admin_login.html
+2025/08/04 20:36:45 📄 Template yükleniyor: profile.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/profile.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/profile.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: profile.html
+2025/08/04 20:36:45 📄 Template yükleniyor: products.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/products.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/products.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: products.html
+2025/08/04 20:36:45 📄 Template yükleniyor: admin.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/admin.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/admin.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: admin.html
+2025/08/04 20:36:45 📄 Template yükleniyor: orders.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/orders.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/orders.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: orders.html
+2025/08/04 20:36:45 📄 Template yükleniyor: forgot_password.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/forgot_password.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/forgot_password.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: forgot_password.html
+2025/08/04 20:36:45 📄 Template yükleniyor: verify_email.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/verify_email.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/verify_email.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: verify_email.html
+2025/08/04 20:36:45 📄 Template yükleniyor: order_tracking.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/order_tracking.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/order_tracking.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: order_tracking.html
+2025/08/04 20:36:45 📄 Template yükleniyor: support_chat.html
+2025/08/04 20:36:45 📁 Dosyalar: [templates/support_chat.html templates/base.html]
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/support_chat.html
+2025/08/04 20:36:45 ✅ Template dosyası mevcut: templates/base.html
+2025/08/04 20:36:45 ✅ Template yüklendi: support_chat.html
+2025/08/04 20:36:45 🎯 Toplam 19 template yüklendi
+2025/08/04 20:36:45 🏠 Ana sayfa route'u tanımlanıyor: /
+2025/08/04 20:36:45 ✅ Ana sayfa route'u tanımlandı
+2025/08/04 20:36:45 Registering order tracking routes...
+2025/08/04 20:36:45 Order tracking routes registered successfully
+2025/08/04 20:36:45 Registering support chat routes...
+2025/08/04 20:36:45 Support chat routes registered successfully
+2025/08/04 20:36:45 🔒 HTTPS sunucusu devre dışı - Nginx SSL yönetimi kullanılıyor
+2025/08/04 20:36:45 🌐 HTTP Server başlatılıyor...
+2025/08/04 20:36:45 📱 HTTP erişim için: http://localhost:8082
+2025/08/04 20:36:45 🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:8082
+2025/08/04 20:36:45 ✅ HTTP sunucusu aktif
+2025/08/04 20:36:45 HTTP Server başlatılamadı: listen tcp 0.0.0.0:8082: bind: address already in use
+exit status 1

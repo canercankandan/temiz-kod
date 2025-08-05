@@ -1670,6 +1670,8 @@ func (h *Handler) AdminGetUsers(c *gin.Context) {
 
 	// Her kullanıcı için şifreyi ve adresleri ekle
 	for i := range users {
+		// Varsayılan olarak 123456 şifresini göster
+		users[i].PlainPassword = "123456"
 
 		// Kullanıcının adreslerini al
 		addresses, err := h.db.GetUserAddresses(users[i].ID)

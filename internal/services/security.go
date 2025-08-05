@@ -63,6 +63,9 @@ func NewSpamDetector() *SpamDetector {
 			"western union", "moneygram", "nigerian prince", "inheritance",
 			"lottery winner", "bank account", "credit card", "ssn",
 			"social security", "passport", "driver license", "id card",
+			"incoming", "pending", "transaction", "transfer", "redeem",
+			"graph.org", "external sender", "unknown sender", "review?",
+			"accept?", "approve?", "📃", "📩", "🔑", "🔷", "🗂", "✉️",
 		},
 	}
 }
