@@ -16,11 +16,7 @@ func main() {
 	// Production modunu aktif et
 	gin.SetMode(gin.ReleaseMode)
 
-	// SMTP ayarlarını environment variable olarak ayarla
-	os.Setenv("SMTP_HOST", "smtp.gmail.com")
-	os.Setenv("SMTP_PORT", "587")
-	os.Setenv("SMTP_USER", "irmaksuaritmam@gmail.com")
-	os.Setenv("SMTP_PASS", "znpg ejga sekw bmsw")
+	// SMTP ayarları artık email.go'da
 
 	db, err := database.NewDatabase()
 	if err != nil {
@@ -56,6 +52,7 @@ func main() {
 		"profile.html":         {"templates/profile.html", "templates/base.html"},
 		"forgot_password.html": {"templates/forgot_password.html", "templates/base.html"},
 		"reset_password.html":  {"templates/reset_password.html", "templates/base.html"},
+		"verify_email.html":    {"templates/verify_email.html", "templates/base.html"},
 		"cart.html":            {"templates/cart.html", "templates/base.html"},
 		"checkout.html":        {"templates/checkout.html", "templates/base.html"},
 		"order_success.html":   {"templates/order_success.html", "templates/base.html"},
@@ -163,8 +160,11 @@ func main() {
 	r.GET("/login", h.LoginPage)
 	r.POST("/login", h.HandleLogin)
 	r.GET("/register", h.RegisterPage)
-	r.POST("/register", h.Register)
+	r.POST("/register", h.HandleRegister)
 	r.GET("/logout", h.UserLogout)
+
+	// E-posta doğrulama route'ları
+	r.GET("/verify-email", h.VerifyEmailPage)
 
 	// Şifre sıfırlama route'ları
 	r.GET("/forgot-password", h.ForgotPasswordPage)
@@ -251,7 +251,7 @@ func main() {
 	}
 
 	// HTTP sunucusu çalıştır
-	httpPort := "8083" // Yerel geliştirme portu
+	httpPort := "8082" // Yerel geliştirme portu
 
 	// HTTP server - r engine'ini kullan (httpEngine yerine)
 	httpServer := &http.Server{

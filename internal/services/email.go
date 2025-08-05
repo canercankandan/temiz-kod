@@ -22,8 +22,10 @@ func NewEmailService() *EmailService {
 	// Gmail SMTP ayarları
 	smtpHost := "smtp.gmail.com"
 	smtpPort := 587
-	smtpUser := "irmaksuaritmam@gmail.com" // Gmail adresiniz
-	smtpPass := "smve btgb zoih rkkd"      // Gmail uygulama şifresi
+	smtpUser := "wbcenapoktay@gmail.com" // Gmail adresiniz
+	smtpPass := "fhvs urjm deec smvf"    // Gmail uygulama şifresi
+
+	log.Printf("📧 SMTP Ayarları: Host=%s, Port=%d, User=%s", smtpHost, smtpPort, smtpUser)
 
 	// Eğer environment variable'lar ayarlanmışsa, onları kullan
 	if envUser := os.Getenv("SMTP_USER"); envUser != "" {
@@ -35,14 +37,32 @@ func NewEmailService() *EmailService {
 
 	// SMTP bilgileri kontrol et
 	if smtpUser == "" || smtpPass == "" {
-		log.Println("SMTP bilgileri ayarlanmamış. E-posta gönderimi devre dışı.")
+		log.Printf("❌ SMTP bilgileri ayarlanmamış. User: '%s', Pass: '%s'. E-posta gönderimi devre dışı.", smtpUser, smtpPass)
 		return &EmailService{
 			dialer: nil,
 			from:   "noreply@cenap.com",
 		}
 	}
 
+	log.Printf("📧 SMTP bağlantısı test ediliyor...")
 	dialer := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
+
+	// SMTP bağlantısını test et
+	testMsg := gomail.NewMessage()
+	testMsg.SetHeader("From", smtpUser)
+	testMsg.SetHeader("To", smtpUser)
+	testMsg.SetHeader("Subject", "SMTP Test")
+	testMsg.SetBody("text/plain", "SMTP test mesajı")
+
+	if err := dialer.DialAndSend(testMsg); err != nil {
+		log.Printf("❌ SMTP bağlantı hatası: %v", err)
+		return &EmailService{
+			dialer: nil,
+			from:   "noreply@cenap.com",
+		}
+	}
+
+	log.Printf("✅ SMTP bağlantısı başarılı! E-posta gönderimi aktif.")
 
 	return &EmailService{
 		dialer: dialer,
@@ -216,9 +236,11 @@ func (es *EmailService) SendSupportChatNotification(adminEmail, visitorName, ses
 
 // SendAdminOrderNotification, yeni sipariş geldiğinde admin'e bildirim gönderir
 func (es *EmailService) SendAdminOrderNotification(adminEmail string, order *models.Order) error {
+	log.Printf("📧 Admin sipariş bildirimi gönderiliyor: %s, Sipariş: %s", adminEmail, order.OrderNumber)
+
 	if es.dialer == nil {
-		log.Printf("E-posta gönderimi devre dışı. Admin sipariş bildirimi: %s", order.OrderNumber)
-		return nil
+		log.Printf("❌ E-posta gönderimi devre dışı. Admin sipariş bildirimi: %s", order.OrderNumber)
+		return fmt.Errorf("SMTP dialer is nil")
 	}
 
 	// Sipariş ürünlerini formatla
@@ -295,9 +317,11 @@ func (es *EmailService) SendAdminOrderNotification(adminEmail string, order *mod
 
 // SendCustomerOrderConfirmation, müşteriye sipariş onay e-postası gönderir
 func (es *EmailService) SendCustomerOrderConfirmation(customerEmail string, order *models.Order) error {
+	log.Printf("📧 Sipariş e-postası gönderiliyor: %s, Sipariş: %s", customerEmail, order.OrderNumber)
+
 	if es.dialer == nil {
-		log.Printf("E-posta gönderimi devre dışı. Müşteri sipariş onayı: %s", order.OrderNumber)
-		return nil
+		log.Printf("❌ E-posta gönderimi devre dışı. Müşteri sipariş onayı: %s", order.OrderNumber)
+		return fmt.Errorf("SMTP dialer is nil")
 	}
 
 	// Sipariş ürünlerini formatla
@@ -355,7 +379,7 @@ func (es *EmailService) SendCustomerOrderConfirmation(customerEmail string, orde
 		<p><strong>Sipariş Takibi:</strong></p>
 		<p>Siparişinizin durumunu takip etmek için aşağıdaki linki kullanabilirsiniz:</p>
 		<div style="text-align: center; margin: 20px 0;">
-			<a href="https://xn--suartmauzman-44bi.com/order-tracking?order_number=%s&email=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">📦 Siparişimi Takip Et</a>
+			<a href="https://xn--suartmauzman-44bi.com/track?order_number=%s&email=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">📦 Siparişimi Takip Et</a>
 		</div>
 		<br>
 		<p><strong>Önemli Bilgiler:</strong></p>
@@ -458,7 +482,7 @@ func (es *EmailService) SendAdminOrderConfirmationEmail(customerEmail string, or
 		<p><strong>Sipariş Takibi:</strong></p>
 		<p>Siparişinizin durumunu takip etmek için aşağıdaki linki kullanabilirsiniz:</p>
 		<div style="text-align: center; margin: 20px 0;">
-			<a href="https://xn--suartmauzman-44bi.com/order-tracking?order_number=%s&email=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">📦 Siparişimi Takip Et</a>
+			<a href="https://xn--suartmauzman-44bi.com/track?order_number=%s&email=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">📦 Siparişimi Takip Et</a>
 		</div>
 		<br>
 		<p><strong>Önemli Bilgiler:</strong></p>
@@ -492,9 +516,11 @@ func (es *EmailService) SendAdminOrderConfirmationEmail(customerEmail string, or
 
 // SendEmailVerification, e-posta doğrulama linki gönderir
 func (es *EmailService) SendEmailVerification(to, username, token string) error {
+	log.Printf("📧 E-posta doğrulama gönderiliyor: %s, Kullanıcı: %s, Token: %s", to, username, token)
+
 	if es.dialer == nil {
-		log.Printf("E-posta gönderimi devre dışı. E-posta doğrulama: %s - %s", to, token)
-		return nil
+		log.Printf("❌ E-posta gönderimi devre dışı. E-posta doğrulama: %s - %s", to, token)
+		return fmt.Errorf("SMTP dialer is nil")
 	}
 
 	subject := "E-posta Doğrulama - Cenap Su Arıtma"

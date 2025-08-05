@@ -199,10 +199,16 @@ func (db *JSONDatabase) CreateUser(user *models.User) error {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	// E-posta doğrulama için gerekli alanları ayarla
-	user.EmailVerified = false
-	user.EmailVerifyToken = generateToken()
-	user.EmailVerifyExpiry = time.Now().Add(24 * time.Hour) // 24 saat geçerli
+	// E-posta doğrulama için gerekli alanları ayarla (eğer zaten ayarlanmamışsa)
+	if user.EmailVerifyToken == "" {
+		user.EmailVerifyToken = generateToken()
+	}
+	if user.EmailVerifyExpiry.IsZero() {
+		user.EmailVerifyExpiry = time.Now().Add(24 * time.Hour) // 24 saat geçerli
+	}
+	if !user.EmailVerified {
+		user.EmailVerified = false
+	}
 
 	db.data.Users = append(db.data.Users, *user)
 	return db.saveData()

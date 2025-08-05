@@ -53,12 +53,17 @@
                             <div class="form-text">Şifrenizi doğrulamak için tekrar girin</div>
                         </div>
                         <div class="mb-3">
-                            <label for="captcha" class="form-label">
-                                <i class="fas fa-shield-alt"></i> Güvenlik Kodu <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control" id="captcha" name="captcha" 
-                                   placeholder="1234" required>
-                            <div class="form-text">Güvenlik kodu: 1234</div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="robotCheck" required>
+                                <label class="form-check-label" for="robotCheck">
+                                    <i class="fas fa-robot text-primary"></i> 
+                                    <strong>Ben robot değilim</strong> - Bu kutucuğu işaretleyerek insan olduğunuzu doğrulayın
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-shield-alt text-success"></i> 
+                                Güvenlik için bu adım zorunludur
+                            </div>
                         </div>
                         <div class="mb-3">
                             <div class="form-check">
@@ -98,7 +103,7 @@ $(document).ready(function() {
         var confirmPassword = $('#confirmPassword').val();
         var email = $('#email').val();
         var fullName = $('#fullName').val();
-        var captcha = $('#captcha').val();
+        var robotCheck = $('#robotCheck').is(':checked');
         
         // Ad soyad kontrolü
         if (fullName.trim().length < 2) {
@@ -118,9 +123,9 @@ $(document).ready(function() {
             return false;
         }
         
-        // Captcha kontrolü
-        if (captcha !== '1234') {
-            alert('Güvenlik kodu hatalı!');
+        // Robot kontrolü
+        if (!robotCheck) {
+            alert('Lütfen "Ben robot değilim" kutucuğunu işaretleyin!');
             return false;
         }
         
@@ -133,10 +138,11 @@ $(document).ready(function() {
         
         // Form verilerini hazırla
         var formData = {
-            username: fullName,
+            fullName: fullName,
             email: email,
             password: password,
-            captcha: captcha
+            confirmPassword: confirmPassword,
+            robotCheck: robotCheck
         };
         
         // Form gönderiliyor

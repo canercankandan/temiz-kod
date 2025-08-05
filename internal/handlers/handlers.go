@@ -37,6 +37,8 @@ type DBInterface interface {
 	CreatePasswordResetToken(email string, token string) error
 	GetUserByResetToken(token string) (*models.User, error)
 	ClearResetToken(userID int) error
+	GetUserByEmailVerifyToken(token string) (*models.User, error)
+	VerifyUserEmail(userID int) error
 	// Order methods
 	CreateOrder(order *models.Order) error
 	GetOrdersByUserID(userID int) ([]models.Order, error)
@@ -172,8 +174,37 @@ func (h *Handler) AuthUserMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		// Oturumun geçerli olup olmadığını kontrol et (örneğin, session ID'yi veritabanında saklayarak)
-		// Bu basit örnekte sadece cookie varlığına bakıyoruz.
+
+		// Username cookie'sini al
+		username, err := c.Cookie("username")
+		if err != nil || username == "" {
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+			return
+		}
+
+		// Kullanıcıyı veritabanından al
+		user, err := h.db.GetUserByUsername(username)
+		if err != nil {
+			log.Printf("AuthUserMiddleware - User not found: %s", username)
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+			return
+		}
+
+		// E-posta doğrulama kontrolü
+		if !user.EmailVerified {
+			log.Printf("AuthUserMiddleware - Email not verified for user: %s", username)
+			c.Redirect(http.StatusSeeOther, "/login")
+			c.Abort()
+			return
+		}
+
+		// Kullanıcı bilgilerini context'e ekle
+		c.Set("user", user)
+		c.Set("userID", user.ID)
+		c.Set("username", user.Username)
+
 		c.Next()
 	}
 }
@@ -213,13 +244,16 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 	}
 
 	// E-posta doğrulama kontrolü
+	log.Printf("DEBUG: Email verification check - User: %s, EmailVerified: %v", username, user.EmailVerified)
 	if !user.EmailVerified {
+		log.Printf("DEBUG: Email not verified - blocking login for user: %s", username)
 		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
 			"title": "Giriş Yap",
 			"error": "Lütfen önce e-posta adresinizi doğrulayın.",
 		})
 		return
 	}
+	log.Printf("DEBUG: Email verified - allowing login for user: %s", username)
 
 	// Mevcut session ID'yi al (eğer varsa)
 	oldSessionID, _ := c.Cookie("user_session")
@@ -257,16 +291,99 @@ func (h *Handler) RegisterPage(c *gin.Context) {
 
 // HandleRegister, kullanıcı kayıt işlemini yönetir.
 func (h *Handler) HandleRegister(c *gin.Context) {
+	// 🛡️ SALDIRI KORUMALARI
+	clientIP := c.ClientIP()
+
+	// Rate limiting: IP başına 1 dakikada maksimum 1 kayıt
+	if lastTime, exists := h.rateLimit[clientIP]; exists {
+		if time.Since(lastTime) < time.Minute {
+			log.Printf("🚨 RATE LIMIT: IP %s blocked - too many registration attempts", clientIP)
+			c.HTML(http.StatusTooManyRequests, "register.html", gin.H{
+				"title": "Kayıt Ol",
+				"error": "Çok fazla kayıt denemesi. Lütfen 1 dakika bekleyin.",
+			})
+			return
+		}
+	}
+	h.rateLimit[clientIP] = time.Now()
+
 	fullName := c.PostForm("fullName")
 	email := c.PostForm("email")
 	password := c.PostForm("password")
 	confirmPassword := c.PostForm("confirmPassword")
+
+	// 🚨 BOT TESPITI - GELİŞTİRİLMİŞ
+	commonPasswords := []string{"123456", "password", "123456789", "qwerty", "abc123"}
+	for _, commonPass := range commonPasswords {
+		if password == commonPass {
+			log.Printf("🚨 BOT DETECTED: IP %s using common password '%s'", clientIP, commonPass)
+			c.HTML(http.StatusBadRequest, "register.html", gin.H{
+				"title": "Kayıt Ol",
+				"error": "Bu şifre güvenli değil. Lütfen daha güçlü bir şifre seçin.",
+			})
+			return
+		}
+	}
+
+	// 🚨 SÜPER SPAM TESPİTİ - GELİŞTİRİLMİŞ
+	spamKeywords := []string{
+		"btc", "bitcoin", "transfer", "deposit", "incoming", "pending",
+		"transaction", "approve", "review", "sender", "redeem", "new",
+		"external", "unknown", "graph.org", "0.25", "1.0", "1.8",
+		"✉", "📩", "incoming transaction", "new transfer", "redeem btc",
+		"mvomf", "7l0i", "graph.org/redeem", "unknown sender", "review?",
+		"approve?", "transaction:", "transfer:", "deposit:", "incoming:",
+	}
+
+	fullNameLower := strings.ToLower(fullName)
+	emailLower := strings.ToLower(email)
+
+	for _, keyword := range spamKeywords {
+		if strings.Contains(fullNameLower, keyword) || strings.Contains(emailLower, keyword) {
+			log.Printf("🚨 ADVANCED SPAM DETECTED: IP %s, Keyword: %s, Name: %s, Email: %s",
+				clientIP, keyword, fullName, email)
+			c.HTML(http.StatusBadRequest, "register.html", gin.H{
+				"title": "Kayıt Ol",
+				"error": "Sistem güvenlik ihlali tespit etti. Kayıt engellenmiştir.",
+			})
+			return
+		}
+	}
+
+	// 🚨 E-POSTA DOMAIN BLACKLIST
+	suspiciousDomains := []string{
+		"abv.bg", "10minutemail", "tempmail", "guerrillamail", "mailinator",
+		"gulshan.lohar", "gulshan.lohar.55", "gulshan.lohar.55@gmail.com",
+		"temp-mail", "disposable", "throwaway", "fake", "spam",
+	}
+
+	for _, domain := range suspiciousDomains {
+		if strings.Contains(emailLower, domain) {
+			log.Printf("🚨 SUSPICIOUS DOMAIN DETECTED: IP %s, Email: %s", clientIP, email)
+			c.HTML(http.StatusBadRequest, "register.html", gin.H{
+				"title": "Kayıt Ol",
+				"error": "Bu e-posta sağlayıcısı desteklenmiyor.",
+			})
+			return
+		}
+	}
 
 	// Validasyon
 	if fullName == "" || email == "" || password == "" {
 		c.HTML(http.StatusBadRequest, "register.html", gin.H{
 			"title": "Kayıt Ol",
 			"error": "Tüm alanları doldurun.",
+		})
+		return
+	}
+
+	// 🚨 ROBOT KONTROLÜ
+	robotCheck := c.PostForm("robotCheck")
+	if robotCheck != "true" {
+		log.Printf("🚨 ROBOT CHECK FAILED: IP %s - Robot checkbox not checked", clientIP)
+		c.HTML(http.StatusBadRequest, "register.html", gin.H{
+			"title": "Kayıt Ol",
+			"error": "Lütfen 'Ben robot değilim' kutucuğunu işaretleyin.",
 		})
 		return
 	}
@@ -300,12 +417,17 @@ func (h *Handler) HandleRegister(c *gin.Context) {
 		return
 	}
 
+	// E-posta doğrulama token'ı oluştur
+	verifyToken := uuid.New().String()
+
 	// Kullanıcıyı oluştur (e-posta adresini kullanıcı adı olarak kullan)
 	user := &models.User{
-		FullName:     fullName,
-		Username:     email, // E-posta adresini kullanıcı adı olarak kullan
-		Email:        email,
-		PasswordHash: string(hashedPassword),
+		FullName:         fullName,
+		Username:         email, // E-posta adresini kullanıcı adı olarak kullan
+		Email:            email,
+		PasswordHash:     string(hashedPassword),
+		EmailVerified:    false, // E-posta doğrulanmamış
+		EmailVerifyToken: verifyToken,
 	}
 
 	if err := h.db.CreateUser(user); err != nil {
@@ -317,13 +439,17 @@ func (h *Handler) HandleRegister(c *gin.Context) {
 		return
 	}
 
-	// Hoş geldin e-postası gönder
-	if err := h.email.SendWelcomeEmail(email, fullName); err != nil {
-		log.Printf("Error sending welcome email: %v", err)
+	// E-posta doğrulama e-postası gönder
+	log.Printf("📧 E-posta gönderiliyor: %s, Token: %s", email, verifyToken)
+	if err := h.email.SendEmailVerification(email, fullName, verifyToken); err != nil {
+		log.Printf("❌ Error sending verification email: %v", err)
 		// E-posta gönderilemese bile kayıt işlemi devam eder
+	} else {
+		log.Printf("✅ E-posta başarıyla gönderildi: %s", email)
 	}
 
-	c.Redirect(http.StatusSeeOther, "/login")
+	// E-posta doğrulama sayfasına yönlendir
+	c.Redirect(http.StatusSeeOther, "/verify-email?email="+email)
 }
 
 // UserLogout, kullanıcı oturumunu kapatır.
@@ -2998,13 +3124,37 @@ func (h *Handler) VerifyEmailPage(c *gin.Context) {
 	})
 }
 
+// TestEmail, test e-posta gönderimi için kullanılır
+func (h *Handler) TestEmail(c *gin.Context) {
+	testEmail := "test@example.com"
+	testName := "Test User"
+	testToken := "test-token-123"
+
+	log.Printf("🧪 Test e-posta gönderiliyor: %s", testEmail)
+
+	if err := h.email.SendEmailVerification(testEmail, testName, testToken); err != nil {
+		log.Printf("❌ Test e-posta gönderimi başarısız: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("E-posta gönderimi başarısız: %v", err),
+		})
+		return
+	}
+
+	log.Printf("✅ Test e-posta başarıyla gönderildi: %s", testEmail)
+	c.JSON(http.StatusOK, gin.H{
+		"success": "Test e-posta başarıyla gönderildi",
+		"email":   testEmail,
+	})
+}
+
 // ResendVerificationEmail, doğrulama e-postasını yeniden gönderir
 func (h *Handler) ResendVerificationEmail(c *gin.Context) {
 	email := c.PostForm("email")
 	if email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   "E-posta adresi gerekli",
+		c.HTML(http.StatusBadRequest, "verify_email.html", gin.H{
+			"title": "E-posta Doğrulama",
+			"email": email,
+			"error": "E-posta adresi gerekli",
 		})
 		return
 	}
@@ -3012,18 +3162,20 @@ func (h *Handler) ResendVerificationEmail(c *gin.Context) {
 	// Kullanıcıyı bul
 	user, err := h.db.GetUserByEmail(email)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": "Eğer bu e-posta adresi kayıtlıysa, doğrulama bağlantısı gönderilecektir.",
+		c.HTML(http.StatusOK, "verify_email.html", gin.H{
+			"title":   "E-posta Doğrulama",
+			"email":   email,
+			"success": "Eğer bu e-posta adresi kayıtlıysa, doğrulama bağlantısı gönderilecektir.",
 		})
 		return
 	}
 
 	// Kullanıcı zaten doğrulanmış mı kontrol et
 	if user.EmailVerified {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   "Bu e-posta adresi zaten doğrulanmış.",
+		c.HTML(http.StatusBadRequest, "verify_email.html", gin.H{
+			"title": "E-posta Doğrulama",
+			"email": email,
+			"error": "Bu e-posta adresi zaten doğrulanmış.",
 		})
 		return
 	}
@@ -3035,25 +3187,28 @@ func (h *Handler) ResendVerificationEmail(c *gin.Context) {
 
 	// Kullanıcıyı güncelle
 	if err := h.db.UpdateUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   "Doğrulama bağlantısı oluşturulamadı.",
+		c.HTML(http.StatusInternalServerError, "verify_email.html", gin.H{
+			"title": "E-posta Doğrulama",
+			"email": email,
+			"error": "Doğrulama bağlantısı oluşturulamadı.",
 		})
 		return
 	}
 
 	// Doğrulama e-postasını gönder
 	if err := h.email.SendEmailVerification(user.Email, user.Username, token); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   "Doğrulama e-postası gönderilemedi.",
+		c.HTML(http.StatusInternalServerError, "verify_email.html", gin.H{
+			"title": "E-posta Doğrulama",
+			"email": email,
+			"error": "Doğrulama e-postası gönderilemedi.",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Doğrulama bağlantısı e-posta adresinize gönderildi.",
+	c.HTML(http.StatusOK, "verify_email.html", gin.H{
+		"title":   "E-posta Doğrulama",
+		"email":   email,
+		"success": "Doğrulama bağlantısı e-posta adresinize gönderildi.",
 	})
 }
 
