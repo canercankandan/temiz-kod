@@ -8,30 +8,45 @@ import (
 
 	"cenap/internal/database"
 	"cenap/internal/handlers"
+	"cenap/internal/services"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Production modunu aktif et
-	gin.SetMode(gin.ReleaseMode)
+	// Debug modunu aktif et (geçici)
+	gin.SetMode(gin.DebugMode)
 
-	// SMTP ayarları artık email.go'da
+	// SMTP ayarlarını environment variable olarak ayarla
+	// os.Setenv("SMTP_HOST", "smtp.gmail.com")
+	// os.Setenv("SMTP_PORT", "587")
+	// os.Setenv("SMTP_USER", "irmaksuaritmam@gmail.com")
+	// os.Setenv("SMTP_PASS", "znpgejgasekwbmsw")
 
 	db, err := database.NewDatabase()
 	if err != nil {
 		log.Fatalf("Veritabanı başlatılamadı: %v", err)
 	}
 
-	h := handlers.NewHandler(db)
+	// Email servisini başlat
+	emailService := services.NewEmailService()
+    _ = emailService
+	log.Printf("📧 Email servisi başlatıldı: %s", os.Getenv("SMTP_USER"))
 
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
+    h := handlers.NewHandler(db)
 	r := gin.New()
 
 	// Middleware'leri manuel olarak ekle
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
-	r.Use(h.SecurityMiddleware())
+	// r.Use(gin.Logger()) // GEÇICI KAPALI
+	// r.Use(gin.Recovery()) // GEÇICI KAPALI
+	// r.Use(h.SecurityMiddleware()) // TAMAMEN KALDIRILDI - GÜVENLİK KAPALI
+
+	// TEST: Basit bir test route ekleyelim
+	r.POST("/test-register", func(c *gin.Context) {
+		log.Printf("🎯 TEST ROUTE ÇAĞRILDI!")
+		c.JSON(200, gin.H{"message": "Test başarılı", "success": true})
+	})
 
 	// Proxy güvenlik ayarları
 	r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
@@ -45,6 +60,7 @@ func main() {
 		"products.html":        {"templates/products.html", "templates/base.html"},
 		"about.html":           {"templates/about.html", "templates/base.html"},
 		"contact.html":         {"templates/contact.html", "templates/base.html"},
+		"teknik_servis.html":   {"templates/teknik_servis.html", "templates/base.html"},
 		"admin.html":           {"templates/admin.html", "templates/base.html"},
 		"admin_login.html":     {"templates/admin_login.html", "templates/base.html"},
 		"login.html":           {"templates/login.html", "templates/base.html"},
@@ -59,7 +75,11 @@ func main() {
 		"orders.html":          {"templates/orders.html", "templates/base.html"},
 		"order_tracking.html":  {"templates/order_tracking.html", "templates/base.html"},
 		"support_chat.html":    {"templates/support_chat.html", "templates/base.html"},
-		"admin_support.html":   {"templates/admin_support.html", "templates/base.html"},
+		"admin_support.html":      {"templates/admin_support.html", "templates/base.html"},
+		"product_detail.html":     {"templates/product_detail.html", "templates/base.html"},
+		"spare_part_detail.html":  {"templates/spare_part_detail.html", "templates/base.html"},
+		"guest_checkout.html":     {"templates/guest_checkout.html", "templates/base.html"},
+		"404.html":                {"templates/404.html", "templates/base.html"},
 	}
 
 	for name, files := range templateFiles {
@@ -76,12 +96,14 @@ func main() {
 		}
 
 		tmpl, err := template.New(name).Funcs(handlers.TemplateFuncs).ParseFiles(files...)
+                templates[name] = tmpl
 		if err != nil {
-			log.Printf("❌ Template yüklenemedi %s: %v", name, err)
-			log.Fatalf("Template yüklenemedi %s: %v", name, err)
-		}
-		templates[name] = tmpl
-		log.Printf("✅ Template yüklendi: %s", name)
+		log.Fatalf("Veritabanı başlatılamadı: %v", err)
+	}
+
+	// Email servisini başlat
+	emailService := services.NewEmailService()
+    _ = emailService
 	}
 
 	log.Printf("🎯 Toplam %d template yüklendi", len(templates))
@@ -121,9 +143,13 @@ func main() {
 
 	// Diğer ana sayfa rotaları
 	r.GET("/products", h.ProductsPage)
+	r.GET("/product/:id", h.ProductDetailPage) // ✅ Tekil ürün sayfası
+	r.GET("/spare-part/:id", h.SparePartDetailPage) // ✅ Yedek parça sayfası
 	r.GET("/about", h.AboutPage)
 	r.GET("/contact", h.ContactPage)
 	r.POST("/contact/send", h.HandleContactForm)
+	r.GET("/teknik-servis", h.TeknikServisPage)
+	r.GET("/chat", h.SupportChatPage) // ✅ Chat sayfası (/support ile aynı)
 
 	// Order tracking routes (public) - ÖNCELİKLE KAYDET!
 	log.Printf("Registering order tracking routes...")
@@ -153,6 +179,7 @@ func main() {
 	r.POST("/cart/remove", h.RemoveFromCart) // ✅ Doğru tanımlanmış
 	r.GET("/cart/count", h.GetCartCount)
 	r.GET("/checkout", h.CheckoutPage)
+	r.GET("/guest-checkout", h.GuestCheckoutPage) // ✅ Misafir ödeme sayfası
 	r.POST("/checkout", h.HandleCheckout)
 	r.GET("/order-success", h.OrderSuccessPage)
 
@@ -163,14 +190,15 @@ func main() {
 	r.POST("/register", h.HandleRegister)
 	r.GET("/logout", h.UserLogout)
 
-	// E-posta doğrulama route'ları
-	r.GET("/verify-email", h.VerifyEmailPage)
-
 	// Şifre sıfırlama route'ları
 	r.GET("/forgot-password", h.ForgotPasswordPage)
 	r.POST("/forgot-password", h.HandleForgotPassword)
 	r.GET("/reset-password", h.ResetPasswordPage)
 	r.POST("/reset-password", h.HandleResetPassword)
+
+	// E-posta doğrulama route'ları
+	r.GET("/verify-email", h.VerifyEmailPage)
+	r.POST("/resend-verification", h.ResendVerificationEmail)
 
 	// Admin authentication rotaları (korumasız)
 	r.GET("/admin/login", h.AdminLoginPage)
@@ -193,6 +221,7 @@ func main() {
 
 		// Admin kullanıcı yönetimi
 		admin.GET("/users", h.AdminGetUsers)
+		admin.DELETE("/users/bulk-delete", h.AdminBulkDeleteUsers)
 		admin.DELETE("/users/:id", h.AdminDeleteUser)
 
 		// Admin support routes
@@ -251,7 +280,7 @@ func main() {
 	}
 
 	// HTTP sunucusu çalıştır
-	httpPort := "8082" // Yerel geliştirme portu
+	httpPort := "8080" // Yerel geliştirme portu
 
 	// HTTP server - r engine'ini kullan (httpEngine yerine)
 	httpServer := &http.Server{

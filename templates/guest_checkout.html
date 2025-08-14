@@ -1,0 +1,290 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                    <li class="breadcrumb-item"><a href="/cart">Sepet</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Misafir Ödeme</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-user-check"></i> Misafir Ödeme</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Misafir olarak alışveriş yapıyorsunuz.</strong> 
+                        Sipariş takibi için size bir takip numarası verilecektir.
+                        <a href="/register" class="alert-link">Üye olmak</a> istiyorsanız kayıt olabilirsiniz.
+                    </div>
+
+                    <form id="guestCheckoutForm" method="POST" action="/checkout">
+                        <input type="hidden" name="checkout_type" value="guest">
+                        
+                        <!-- Personal Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4 class="mb-3">Kişisel Bilgiler</h4>
+                                
+                                <div class="form-group">
+                                    <label for="fullName">Ad Soyad *</label>
+                                    <input type="text" class="form-control" id="fullName" name="full_name" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">E-posta *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                    <small class="form-text text-muted">Sipariş bilgileri bu e-posta adresine gönderilecektir.</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">Telefon *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h4 class="mb-3">Teslimat Adresi</h4>
+                                
+                                <div class="form-group">
+                                    <label for="address">Adres *</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3" required placeholder="Mahalle, sokak, bina no, daire no"></textarea>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="city">İl *</label>
+                                        <select class="form-control" id="city" name="city" required>
+                                            <option value="">İl Seçin</option>
+                                            <option value="İstanbul">İstanbul</option>
+                                            <option value="Ankara">Ankara</option>
+                                            <option value="İzmir">İzmir</option>
+                                            <option value="Bursa">Bursa</option>
+                                            <option value="Antalya">Antalya</option>
+                                            <option value="Adana">Adana</option>
+                                            <option value="Konya">Konya</option>
+                                            <option value="Gaziantep">Gaziantep</option>
+                                            <option value="Kayseri">Kayseri</option>
+                                            <option value="Mersin">Mersin</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group col-md-6">
+                                        <label for="district">İlçe *</label>
+                                        <input type="text" class="form-control" id="district" name="district" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="postalCode">Posta Kodu</label>
+                                    <input type="text" class="form-control" id="postalCode" name="postal_code">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Notes -->
+                        <div class="form-group">
+                            <label for="orderNotes">Sipariş Notları</label>
+                            <textarea class="form-control" id="orderNotes" name="order_notes" rows="3" 
+                                      placeholder="Varsa özel taleplerinizi yazın (teslimat saati, montaj tercihi vb.)"></textarea>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="termsAccepted" name="terms_accepted" required>
+                            <label class="form-check-label" for="termsAccepted">
+                                <a href="#" data-toggle="modal" data-target="#termsModal">Kullanım Şartları</a> ve 
+                                <a href="#" data-toggle="modal" data-target="#privacyModal">Gizlilik Politikası</a>'nı okudum ve kabul ediyorum. *
+                            </label>
+                        </div>
+
+                        <!-- Marketing Consent -->
+                        <div class="form-check mb-4">
+                            <input type="checkbox" class="form-check-input" id="marketingConsent" name="marketing_consent">
+                            <label class="form-check-label" for="marketingConsent">
+                                Kampanya ve fırsat duyurularını e-posta ile almak istiyorum.
+                            </label>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-credit-card"></i> Siparişi Tamamla
+                            </button>
+                            <a href="/cart" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-arrow-left"></i> Sepete Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Order Summary -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h4><i class="fas fa-shopping-cart"></i> Sipariş Özeti</h4>
+                </div>
+                <div class="card-body">
+                    <div id="orderSummary">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="sr-only">Yükleniyor...</span>
+                            </div>
+                            <p class="mt-2">Sepet bilgileri yükleniyor...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="card mt-3">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-shield-alt"></i> Güvenli Ödeme</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                        </div>
+                        <div class="col-4">
+                            <i class="fab fa-cc-mastercard fa-2x text-warning"></i>
+                        </div>
+                        <div class="col-4">
+                            <i class="fas fa-university fa-2x text-success"></i>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2 mb-0">
+                        <small>Tüm ödemeler 256-bit SSL ile korunmaktadır.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kullanım Şartları</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bu kullanım şartları, Su Arıtma Uzmanı web sitesi ve hizmetlerinin kullanımını düzenler...</p>
+                <!-- Add full terms content here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Gizlilik Politikası</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bu gizlilik politikası, kişisel verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklar...</p>
+                <!-- Add full privacy policy content here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load order summary
+document.addEventListener('DOMContentLoaded', function() {
+    loadOrderSummary();
+});
+
+function loadOrderSummary() {
+    fetch('/cart/summary')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayOrderSummary(data.cart);
+            } else {
+                document.getElementById('orderSummary').innerHTML = 
+                    '<div class="alert alert-warning">Sepet boş</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading cart:', error);
+            document.getElementById('orderSummary').innerHTML = 
+                '<div class="alert alert-danger">Sepet yüklenemedi</div>';
+        });
+}
+
+function displayOrderSummary(cart) {
+    let html = '';
+    let total = 0;
+    
+    if (cart.items && cart.items.length > 0) {
+        cart.items.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+            
+            html += `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <small>${item.name}</small><br>
+                        <small class="text-muted">${item.quantity} x ${item.price} TL</small>
+                    </div>
+                    <strong>${itemTotal} TL</strong>
+                </div>
+            `;
+        });
+        
+        html += `
+            <hr>
+            <div class="d-flex justify-content-between">
+                <strong>Toplam:</strong>
+                <strong class="text-success">${total} TL</strong>
+            </div>
+        `;
+    } else {
+        html = '<div class="alert alert-warning">Sepet boş</div>';
+    }
+    
+    document.getElementById('orderSummary').innerHTML = html;
+}
+
+// Form validation
+document.getElementById('guestCheckoutForm').addEventListener('submit', function(e) {
+    const phone = document.getElementById('phone').value;
+    const phoneRegex = /^[0-9]{10,11}$/;
+    
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+        e.preventDefault();
+        alert('Lütfen geçerli bir telefon numarası girin (10-11 haneli)');
+        return false;
+    }
+    
+    return true;
+});
+</script>
+{{end}}

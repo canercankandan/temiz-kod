@@ -1,0 +1,222 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-image">
+                {{if .product.Image}}
+                    <img src="/static/{{.product.Image}}" alt="{{.product.Name}}" class="img-fluid rounded shadow">
+                {{else}}
+                    <div class="no-image-placeholder">
+                        <i class="fas fa-cog fa-3x text-muted"></i>
+                        <p class="text-muted mt-2">Yedek Parça Görseli</p>
+                    </div>
+                {{end}}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="product-details">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item"><a href="/products?category=Yedek Parça">Yedek Parçalar</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{.product.Name}}</li>
+                    </ol>
+                </nav>
+
+                <h1 class="product-title">
+                    <i class="fas fa-cog text-warning"></i> {{.product.Name}}
+                </h1>
+                <p class="product-category text-muted">
+                    <i class="fas fa-wrench"></i> Yedek Parça
+                </p>
+
+                <div class="product-price mb-3">
+                    <span class="price-current">{{.product.Price}} TL</span>
+                </div>
+
+                <div class="product-stock mb-3">
+                    {{if gt .product.Stock 0}}
+                        <span class="badge badge-success">
+                            <i class="fas fa-check"></i> Stokta ({{.product.Stock}} adet)
+                        </span>
+                    {{else}}
+                        <span class="badge badge-danger">
+                            <i class="fas fa-times"></i> Stokta Yok
+                        </span>
+                    {{end}}
+                </div>
+
+                <div class="spare-part-info mb-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Yedek Parça Bilgisi:</strong> Bu ürün su arıtma cihazlarınızın bakımı ve onarımı için kullanılan orijinal yedek parçadır.
+                    </div>
+                </div>
+
+                <div class="product-description mb-4">
+                    <h3>Parça Açıklaması</h3>
+                    <p>{{.product.Description}}</p>
+                </div>
+
+                {{if .product.Features}}
+                    <div class="product-features mb-4">
+                        <h3>Teknik Özellikler</h3>
+                        <div class="features-list">
+                            <!-- Features will be parsed from JSON -->
+                        </div>
+                    </div>
+                {{end}}
+
+                <div class="compatibility-info mb-4">
+                    <h3>Uyumluluk</h3>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Önemli:</strong> Yedek parça siparişi vermeden önce cihazınızın model bilgisini kontrol edin. 
+                        Uyumluluğundan emin değilseniz <a href="/contact" class="alert-link">bizimle iletişime geçin</a>.
+                    </div>
+                </div>
+
+                <div class="product-actions">
+                    {{if gt .product.Stock 0}}
+                        <button class="btn btn-primary btn-lg" onclick="addToCart({{.product.ID}})">
+                            <i class="fas fa-shopping-cart"></i> Sepete Ekle
+                        </button>
+                    {{else}}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            <i class="fas fa-times"></i> Stokta Yok
+                        </button>
+                    {{end}}
+                    
+                    <a href="/contact" class="btn btn-outline-info ml-2">
+                        <i class="fas fa-phone"></i> Teknik Destek
+                    </a>
+                    
+                    <a href="/teknik-servis" class="btn btn-outline-success ml-2">
+                        <i class="fas fa-tools"></i> Montaj Hizmeti
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Installation Guide -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-tools"></i> Montaj Rehberi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-phone-alt fa-3x text-primary mb-3"></i>
+                                <h5>1. İletişime Geçin</h5>
+                                <p>Profesyonel montaj için teknik ekibimizle iletişime geçin.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                                <h5>2. Randevu Alın</h5>
+                                <p>Size uygun tarih ve saatte montaj randevusu planlayın.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <i class="fas fa-thumbs-up fa-3x text-warning mb-3"></i>
+                                <h5>3. Profesyonel Montaj</h5>
+                                <p>Uzman teknisyenlerimiz parçanızı güvenle monte eder.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Spare Parts -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Diğer Yedek Parçalar</h3>
+            <div class="alert alert-info">
+                <i class="fas fa-cogs"></i> 
+                Diğer yedek parçaları görmek için <a href="/products?category=Yedek Parça">Yedek Parçalar</a> kategorisine göz atın.
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.no-image-placeholder {
+    background: #fff3cd;
+    border: 2px dashed #ffeaa7;
+    border-radius: 8px;
+    padding: 60px;
+    text-align: center;
+}
+
+.product-title {
+    color: #2c3e50;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.product-category {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.price-current {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.product-actions {
+    margin-top: 2rem;
+}
+
+.features-list {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.spare-part-info .alert {
+    border-left: 4px solid #17a2b8;
+}
+</style>
+
+<script>
+function addToCart(productId) {
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `product_id=${productId}&quantity=1`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Yedek parça sepete eklendi!');
+            // Update cart count if exists
+            if (typeof updateCartCount === 'function') {
+                updateCartCount();
+            }
+        } else {
+            alert('Hata: ' + (data.error || 'Yedek parça sepete eklenemedi'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu');
+    });
+}
+</script>
+{{end}}

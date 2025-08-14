@@ -1078,10 +1078,24 @@ class AdminPanel {
         }
 
         let html = `
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <input type="checkbox" id="selectAllUsers" onchange="adminPanel.toggleAllUsers(this)">
+                        <label for="selectAllUsers" class="ms-2">Tümünü Seç</label>
+                    </div>
+                    <button class="btn btn-danger" id="bulkDeleteBtn" onclick="adminPanel.bulkDeleteUsers()" style="display: none;">
+                        <i class="fas fa-trash me-1"></i>Seçilenleri Sil (<span id="selectedCount">0</span>)
+                    </button>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table modern-table">
                     <thead>
                         <tr>
+                            <th>
+                                <input type="checkbox" id="selectAllUsersHeader" onchange="adminPanel.toggleAllUsers(this)">
+                            </th>
                             <th>ID</th>
                             <th>Kullanıcı Bilgileri</th>
                             <th>E-posta</th>
@@ -1118,6 +1132,9 @@ class AdminPanel {
 
             html += `
                 <tr>
+                    <td>
+                        <input type="checkbox" class="user-checkbox" value="${user.id}" data-username="${user.username}" onchange="adminPanel.updateSelectedCount()">
+                    </td>
                     <td><strong>#${user.id}</strong></td>
                     <td>
                         <div>
@@ -1179,6 +1196,94 @@ class AdminPanel {
         } catch (error) {
             console.error('Error deleting user:', error);
             alert('Kullanıcı silinirken hata oluştu.');
+        }
+    }
+
+    // Topluca seçim fonksiyonları
+    toggleAllUsers(checkbox) {
+        const userCheckboxes = document.querySelectorAll('.user-checkbox');
+        const selectAllMain = document.getElementById('selectAllUsers');
+        const selectAllHeader = document.getElementById('selectAllUsersHeader');
+        
+        userCheckboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+        });
+        
+        // Diğer "tümünü seç" checkbox'ını senkronize et
+        if (checkbox.id === 'selectAllUsers') {
+            selectAllHeader.checked = checkbox.checked;
+        } else {
+            selectAllMain.checked = checkbox.checked;
+        }
+        
+        this.updateSelectedCount();
+    }
+
+    updateSelectedCount() {
+        const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+        const count = selectedCheckboxes.length;
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        
+        if (selectedCountSpan) {
+            selectedCountSpan.textContent = count;
+        }
+        
+        if (bulkDeleteBtn) {
+            bulkDeleteBtn.style.display = count > 0 ? 'block' : 'none';
+        }
+        
+        // Tümünü seç checkbox'larının durumunu güncelle
+        const allCheckboxes = document.querySelectorAll('.user-checkbox');
+        const selectAllMain = document.getElementById('selectAllUsers');
+        const selectAllHeader = document.getElementById('selectAllUsersHeader');
+        
+        if (allCheckboxes.length > 0) {
+            const allSelected = count === allCheckboxes.length;
+            if (selectAllMain) selectAllMain.checked = allSelected;
+            if (selectAllHeader) selectAllHeader.checked = allSelected;
+        }
+    }
+
+    async bulkDeleteUsers() {
+        const selectedCheckboxes = document.querySelectorAll('.user-checkbox:checked');
+        const selectedUsers = Array.from(selectedCheckboxes).map(cb => ({
+            id: parseInt(cb.value),
+            username: cb.dataset.username
+        }));
+        
+        if (selectedUsers.length === 0) {
+            alert('Lütfen silmek istediğiniz kullanıcıları seçin.');
+            return;
+        }
+        
+        const usernames = selectedUsers.map(u => u.username).join(', ');
+        if (!confirm(`${selectedUsers.length} kullanıcıyı silmek istediğinizden emin misiniz?\n\nSilinecek kullanıcılar: ${usernames}`)) {
+            return;
+        }
+        
+        const userIds = selectedUsers.map(u => u.id);
+        
+        try {
+            const response = await fetch('/admin/users/bulk-delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_ids: userIds })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`${data.deleted_count} kullanıcı başarıyla silindi!`);
+                this.loadUsers();
+            } else {
+                alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+            }
+        } catch (error) {
+            console.error('Error bulk deleting users:', error);
+            alert('Kullanıcılar silinirken hata oluştu.');
         }
     }
 

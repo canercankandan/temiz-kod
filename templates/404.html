@@ -1,0 +1,214 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-page">
+                <div class="error-code mb-4">
+                    <h1 class="display-1 text-muted">404</h1>
+                </div>
+                
+                <div class="error-message mb-4">
+                    <h2 class="mb-3">Sayfa Bulunamadı</h2>
+                    <p class="lead text-muted">
+                        {{if .error}}
+                            {{.error}}
+                        {{else}}
+                            Aradığınız sayfa mevcut değil veya taşınmış olabilir.
+                        {{end}}
+                    </p>
+                </div>
+
+                <div class="error-actions mb-5">
+                    <a href="/" class="btn btn-primary btn-lg mr-3">
+                        <i class="fas fa-home"></i> Ana Sayfaya Dön
+                    </a>
+                    <a href="/products" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-shopping-bag"></i> Ürünleri Gör
+                    </a>
+                </div>
+
+                <div class="helpful-links">
+                    <h4 class="mb-3">Size Yardımcı Olabilecek Linkler:</h4>
+                    <div class="row">
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="/products" class="text-decoration-none">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-filter fa-2x text-primary mb-2"></i>
+                                        <h6>Su Arıtma Ürünleri</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="/products?category=Yedek Parça" class="text-decoration-none">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-cog fa-2x text-warning mb-2"></i>
+                                        <h6>Yedek Parçalar</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="/teknik-servis" class="text-decoration-none">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-tools fa-2x text-success mb-2"></i>
+                                        <h6>Teknik Servis</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 col-6 mb-3">
+                            <a href="/contact" class="text-decoration-none">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-phone fa-2x text-info mb-2"></i>
+                                        <h6>İletişim</h6>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-section mt-5">
+                    <h5 class="mb-3">Aradığınızı Bulamadınız mı?</h5>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <form action="/products" method="GET" class="input-group">
+                                <input type="text" name="search" class="form-control form-control-lg" 
+                                       placeholder="Ürün ara..." required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary btn-lg" type="submit">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-info mt-5 p-4 bg-light rounded">
+                    <h5 class="mb-3">Yardıma mı İhtiyacınız Var?</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="contact-item">
+                                <i class="fas fa-phone text-primary"></i>
+                                <strong>Telefon:</strong><br>
+                                <a href="tel:+905551234567">0555 123 45 67</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <strong>E-posta:</strong><br>
+                                <a href="mailto:info@irmaksuaritma.com">info@irmaksuaritma.com</a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="contact-item">
+                                <i class="fas fa-comments text-primary"></i>
+                                <strong>Canlı Destek:</strong><br>
+                                <a href="/support">Hemen Başla</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    padding: 2rem 0;
+}
+
+.error-code h1 {
+    font-size: 8rem;
+    font-weight: 800;
+    color: #6c757d;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.error-message h2 {
+    color: #495057;
+    font-weight: 600;
+}
+
+.helpful-links .card {
+    transition: transform 0.2s ease-in-out;
+    border: none;
+}
+
+.helpful-links .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.contact-item {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.contact-item i {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.contact-item a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.contact-item a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .error-code h1 {
+        font-size: 4rem;
+    }
+    
+    .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .helpful-links .col-6 {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<script>
+// Track 404 errors for analytics
+if (typeof gtag !== 'undefined') {
+    gtag('event', 'page_view', {
+        'page_title': '404 - Sayfa Bulunamadı',
+        'page_location': window.location.href,
+        'custom_map': {
+            'error_type': '404_not_found'
+        }
+    });
+}
+
+// Auto-focus search input on mobile
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.innerWidth > 768) {
+        const searchInput = document.querySelector('input[name="search"]');
+        if (searchInput) {
+            searchInput.focus();
+        }
+    }
+});
+</script>
+{{end}}

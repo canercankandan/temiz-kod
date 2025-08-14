@@ -1,0 +1,160 @@
+{{template "base.html" .}}
+
+{{define "content"}}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-image">
+                {{if .product.Image}}
+                    <img src="/static/{{.product.Image}}" alt="{{.product.Name}}" class="img-fluid rounded shadow">
+                {{else}}
+                    <div class="no-image-placeholder">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                        <p class="text-muted mt-2">Görsel Yok</p>
+                    </div>
+                {{end}}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="product-details">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Ana Sayfa</a></li>
+                        <li class="breadcrumb-item"><a href="/products">Ürünler</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{.product.Name}}</li>
+                    </ol>
+                </nav>
+
+                <h1 class="product-title">{{.product.Name}}</h1>
+                <p class="product-category text-muted">
+                    <i class="fas fa-tag"></i> {{.product.Category}}
+                </p>
+
+                <div class="product-price mb-3">
+                    <span class="price-current">{{.product.Price}} TL</span>
+                </div>
+
+                <div class="product-stock mb-3">
+                    {{if gt .product.Stock 0}}
+                        <span class="badge badge-success">
+                            <i class="fas fa-check"></i> Stokta ({{.product.Stock}} adet)
+                        </span>
+                    {{else}}
+                        <span class="badge badge-danger">
+                            <i class="fas fa-times"></i> Stokta Yok
+                        </span>
+                    {{end}}
+                </div>
+
+                <div class="product-description mb-4">
+                    <h3>Ürün Açıklaması</h3>
+                    <p>{{.product.Description}}</p>
+                </div>
+
+                {{if .product.Features}}
+                    <div class="product-features mb-4">
+                        <h3>Özellikler</h3>
+                        <div class="features-list">
+                            <!-- Features will be parsed from JSON -->
+                        </div>
+                    </div>
+                {{end}}
+
+                <div class="product-actions">
+                    {{if gt .product.Stock 0}}
+                        <button class="btn btn-primary btn-lg" onclick="addToCart({{.product.ID}})">
+                            <i class="fas fa-shopping-cart"></i> Sepete Ekle
+                        </button>
+                    {{else}}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            <i class="fas fa-times"></i> Stokta Yok
+                        </button>
+                    {{end}}
+                    
+                    <a href="/contact" class="btn btn-outline-info ml-2">
+                        <i class="fas fa-phone"></i> İletişime Geç
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Benzer Ürünler</h3>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                Benzer ürünleri görmek için <a href="/products?category={{.product.Category}}">{{.product.Category}}</a> kategorisine göz atın.
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.no-image-placeholder {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 60px;
+    text-align: center;
+}
+
+.product-title {
+    color: #2c3e50;
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.product-category {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.price-current {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.product-actions {
+    margin-top: 2rem;
+}
+
+.features-list {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+</style>
+
+<script>
+function addToCart(productId) {
+    fetch('/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `product_id=${productId}&quantity=1`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Ürün sepete eklendi!');
+            // Update cart count if exists
+            if (typeof updateCartCount === 'function') {
+                updateCartCount();
+            }
+        } else {
+            alert('Hata: ' + (data.error || 'Ürün sepete eklenemedi'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu');
+    });
+}
+</script>
+{{end}}

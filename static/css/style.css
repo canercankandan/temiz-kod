@@ -30,6 +30,52 @@ body {
     color: #ffffff;
 }
 
+/* Kullanıcı dropdown için özel stil */
+.navbar .dropdown-toggle {
+    max-width: 300px !important;
+    overflow: visible;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+/* Navbar container genişliği artır */
+.navbar .container {
+    max-width: 100% !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Navbar menü öğeleri arasında boşluk azalt */
+.navbar-nav .nav-item {
+    margin-left: 0.3rem;
+    margin-right: 0.3rem;
+}
+
+.navbar-nav .nav-link {
+    padding-left: 0.7rem !important;
+    padding-right: 0.7rem !important;
+    font-size: 0.9rem;
+}
+
+/* Mobil cihazlarda daha geniş alan */
+@media (max-width: 768px) {
+    .navbar .dropdown-toggle {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Navbar sağ kısmına daha fazla alan */
+.navbar-nav:last-child {
+    margin-left: auto;
+}
+
+/* Dropdown menüsü için stil */
+.navbar .dropdown-menu {
+    min-width: 250px;
+}
+
 .bg-dark {
     background-color: #1e40af !important; /* Blue for Navbar/Footer */
 }

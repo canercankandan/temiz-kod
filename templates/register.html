@@ -19,7 +19,7 @@
                         <i class="fas fa-check-circle"></i> {{.success}}
                     </div>
                     {{end}}
-                    <form action="/register" method="POST" id="registerForm">
+                    <form action="" method="POST" id="registerForm" onsubmit="return validateForm()">
                         <div class="mb-3">
                             <label for="fullName" class="form-label">
                                 <i class="fas fa-user"></i> Ad Soyad <span class="text-danger">*</span>
@@ -53,17 +53,12 @@
                             <div class="form-text">Şifrenizi doğrulamak için tekrar girin</div>
                         </div>
                         <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="robotCheck" name="robotCheck" value="true" required>
-                                <label class="form-check-label" for="robotCheck">
-                                    <i class="fas fa-robot text-primary"></i> 
-                                    <strong>Ben robot değilim</strong> - Bu kutucuğu işaretleyerek insan olduğunuzu doğrulayın
-                                </label>
-                            </div>
-                            <div class="form-text">
-                                <i class="fas fa-shield-alt text-success"></i> 
-                                Güvenlik için bu adım zorunludur
-                            </div>
+                            <label for="captcha" class="form-label">
+                                <i class="fas fa-shield-alt"></i> Güvenlik Kodu <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="captcha" name="captcha" 
+                                   placeholder="1234" required>
+                            <div class="form-text">Güvenlik kodu: 1234</div>
                         </div>
                         <div class="mb-3">
                             <div class="form-check">
@@ -94,109 +89,101 @@
 </div>
 
 <script>
-$(document).ready(function() {
-    // Form validasyonu
-    $('#registerForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        var password = $('#password').val();
-        var confirmPassword = $('#confirmPassword').val();
-        var email = $('#email').val();
-        var fullName = $('#fullName').val();
-        var robotCheck = $('#robotCheck').is(':checked');
-        
-        // Ad soyad kontrolü
-        if (fullName.trim().length < 2) {
-            alert('Ad soyad en az 2 karakter olmalıdır!');
-            return false;
+function validateForm() {
+    var password = document.getElementById("password").value;
+    var confirmPassword = document.getElementById("confirmPassword").value;
+    var email = document.getElementById("email").value;
+    var fullName = document.getElementById("fullName").value;
+    var captcha = document.getElementById("captcha").value;
+
+    if (fullName.trim().length < 2) {
+        alert("Ad soyad en az 2 karakter olmalıdır!");
+        return false;
+    }
+    if (password.length < 6) {
+        alert("Şifre en az 6 karakter olmalıdır!");
+        return false;
+    }
+    if (password !== confirmPassword) {
+        alert("Şifreler eşleşmiyor!");
+        return false;
+    }
+    if (captcha !== "1234") {
+        alert("Güvenlik kodu hatalı!");
+        return false;
+    }
+
+    // AJAX ile gönder
+    fetch("/register", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: "fullName=" + encodeURIComponent(fullName) + "&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password) + "&confirmPassword=" + encodeURIComponent(confirmPassword) + "&captcha=" + encodeURIComponent(captcha)
+    }).then(response => response.json()).then(data => {
+        if (data.success) {
+            alert("✅ Kayıt başarılı! Lütfen e-postanızı kontrol edin ve doğrulama kodunu onaylayın.");
+            window.location.href = "/login";
+        } else {
+            alert("❌ " + data.message);
         }
-        
-        // Şifre kontrolü
-        if (password.length < 6) {
-            alert('Şifre en az 6 karakter olmalıdır!');
-            return false;
-        }
-        
-        // Şifre eşleşme kontrolü
-        if (password !== confirmPassword) {
-            alert('Şifreler eşleşmiyor!');
-            return false;
-        }
-        
-        // Robot kontrolü - GEÇİCİ DEVRE DIŞI
-        // if (!robotCheck) {
-        //     alert('Lütfen "Ben robot değilim" kutucuğunu işaretleyin!');
-        //     return false;
-        // }
-        
-        // E-posta format kontrolü
-        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            alert('Geçerli bir e-posta adresi girin!');
-            return false;
-        }
-        
-        // Form verilerini hazırla
-        var formData = {
-            fullName: fullName,
-            email: email,
-            password: password,
-            confirmPassword: confirmPassword,
-            robotCheck: robotCheck
-        };
-        
-        // Form gönderiliyor - normal submit kullan
-        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...');
-        $(this).find('button[type="submit"]').prop('disabled', true);
-        
-        // Normal form submit (AJAX yerine)
-        this.submit();
+    }).catch(error => {
+        alert("❌ Bir hata oluştu: " + error);
     });
+    return false;
+}
+}
+
+document.addEventListener('DOMContentLoaded', function() {
     
     // Gerçek zamanlı şifre kontrolü
-    $('#confirmPassword').on('input', function() {
-        var password = $('#password').val();
-        var confirmPassword = $(this).val();
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        var password = document.getElementById('password').value;
+        var confirmPassword = this.value;
         
         if (confirmPassword.length > 0) {
             if (password === confirmPassword) {
-                $(this).removeClass('is-invalid').addClass('is-valid');
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
             } else {
-                $(this).removeClass('is-valid').addClass('is-invalid');
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
             }
         } else {
-            $(this).removeClass('is-valid is-invalid');
+            this.classList.remove('is-valid', 'is-invalid');
         }
     });
     
     // E-posta format kontrolü
-    $('#email').on('input', function() {
-        var email = $(this).val();
+    document.getElementById('email').addEventListener('input', function() {
+        var email = this.value;
         var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         
         if (email.length > 0) {
             if (emailRegex.test(email)) {
-                $(this).removeClass('is-invalid').addClass('is-valid');
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
             } else {
-                $(this).removeClass('is-valid').addClass('is-invalid');
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
             }
         } else {
-            $(this).removeClass('is-valid is-invalid');
+            this.classList.remove('is-valid', 'is-invalid');
         }
     });
     
     // Ad soyad kontrolü
-    $('#fullName').on('input', function() {
-        var fullName = $(this).val().trim();
+    document.getElementById('fullName').addEventListener('input', function() {
+        var fullName = this.value.trim();
         
         if (fullName.length > 0) {
             if (fullName.length >= 2) {
-                $(this).removeClass('is-invalid').addClass('is-valid');
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
             } else {
-                $(this).removeClass('is-valid').addClass('is-invalid');
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
             }
         } else {
-            $(this).removeClass('is-valid is-invalid');
+            this.classList.remove('is-valid', 'is-invalid');
         }
     });
 });

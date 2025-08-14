@@ -22,10 +22,8 @@ func NewEmailService() *EmailService {
 	// Gmail SMTP ayarları
 	smtpHost := "smtp.gmail.com"
 	smtpPort := 587
-	smtpUser := "wbcenapoktay@gmail.com" // Gmail adresiniz
-	smtpPass := "fhvs urjm deec smvf"    // Gmail uygulama şifresi
-
-	log.Printf("📧 SMTP Ayarları: Host=%s, Port=%d, User=%s", smtpHost, smtpPort, smtpUser)
+	smtpUser := "irmaksuaritmam@gmail.com" // Gmail adresiniz
+	smtpPass := "smve btgb zoih rkkd"      // Gmail uygulama şifresi
 
 	// Eğer environment variable'lar ayarlanmışsa, onları kullan
 	if envUser := os.Getenv("SMTP_USER"); envUser != "" {
@@ -37,32 +35,14 @@ func NewEmailService() *EmailService {
 
 	// SMTP bilgileri kontrol et
 	if smtpUser == "" || smtpPass == "" {
-		log.Printf("❌ SMTP bilgileri ayarlanmamış. User: '%s', Pass: '%s'. E-posta gönderimi devre dışı.", smtpUser, smtpPass)
+		log.Println("SMTP bilgileri ayarlanmamış. E-posta gönderimi devre dışı.")
 		return &EmailService{
 			dialer: nil,
 			from:   "noreply@cenap.com",
 		}
 	}
 
-	log.Printf("📧 SMTP bağlantısı test ediliyor...")
 	dialer := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
-
-	// SMTP bağlantısını test et
-	testMsg := gomail.NewMessage()
-	testMsg.SetHeader("From", smtpUser)
-	testMsg.SetHeader("To", smtpUser)
-	testMsg.SetHeader("Subject", "SMTP Test")
-	testMsg.SetBody("text/plain", "SMTP test mesajı")
-
-	if err := dialer.DialAndSend(testMsg); err != nil {
-		log.Printf("❌ SMTP bağlantı hatası: %v", err)
-		return &EmailService{
-			dialer: nil,
-			from:   "noreply@cenap.com",
-		}
-	}
-
-	log.Printf("✅ SMTP bağlantısı başarılı! E-posta gönderimi aktif.")
 
 	return &EmailService{
 		dialer: dialer,
@@ -236,11 +216,9 @@ func (es *EmailService) SendSupportChatNotification(adminEmail, visitorName, ses
 
 // SendAdminOrderNotification, yeni sipariş geldiğinde admin'e bildirim gönderir
 func (es *EmailService) SendAdminOrderNotification(adminEmail string, order *models.Order) error {
-	log.Printf("📧 Admin sipariş bildirimi gönderiliyor: %s, Sipariş: %s", adminEmail, order.OrderNumber)
-
 	if es.dialer == nil {
-		log.Printf("❌ E-posta gönderimi devre dışı. Admin sipariş bildirimi: %s", order.OrderNumber)
-		return fmt.Errorf("SMTP dialer is nil")
+		log.Printf("E-posta gönderimi devre dışı. Admin sipariş bildirimi: %s", order.OrderNumber)
+		return nil
 	}
 
 	// Sipariş ürünlerini formatla
@@ -317,11 +295,9 @@ func (es *EmailService) SendAdminOrderNotification(adminEmail string, order *mod
 
 // SendCustomerOrderConfirmation, müşteriye sipariş onay e-postası gönderir
 func (es *EmailService) SendCustomerOrderConfirmation(customerEmail string, order *models.Order) error {
-	log.Printf("📧 Sipariş e-postası gönderiliyor: %s, Sipariş: %s", customerEmail, order.OrderNumber)
-
 	if es.dialer == nil {
-		log.Printf("❌ E-posta gönderimi devre dışı. Müşteri sipariş onayı: %s", order.OrderNumber)
-		return fmt.Errorf("SMTP dialer is nil")
+		log.Printf("E-posta gönderimi devre dışı. Müşteri sipariş onayı: %s", order.OrderNumber)
+		return nil
 	}
 
 	// Sipariş ürünlerini formatla
@@ -516,31 +492,36 @@ func (es *EmailService) SendAdminOrderConfirmationEmail(customerEmail string, or
 
 // SendEmailVerification, e-posta doğrulama linki gönderir
 func (es *EmailService) SendEmailVerification(to, username, token string) error {
-	log.Printf("📧 E-posta doğrulama gönderiliyor: %s, Kullanıcı: %s, Token: %s", to, username, token)
-
 	if es.dialer == nil {
-		log.Printf("❌ E-posta gönderimi devre dışı. E-posta doğrulama: %s - %s", to, token)
-		return fmt.Errorf("SMTP dialer is nil")
+		log.Printf("E-posta gönderimi devre dışı. E-posta doğrulama: %s - %s", to, token)
+		return nil
 	}
 
 	subject := "E-posta Doğrulama - Cenap Su Arıtma"
+
+	// Base URL'i ortam değişkeninden oku; yoksa irmaksuaritma.com'u kullan
+	baseURL := os.Getenv("PUBLIC_BASE_URL")
+	if baseURL == "" {
+		baseURL = "https://irmaksuaritma.com"
+	}
+
 	body := fmt.Sprintf(`
 		<h2>E-posta Adresinizi Doğrulayın</h2>
 		<p>Merhaba <strong>%s</strong>,</p>
 		<p>Cenap Su Arıtma hesabınızı aktifleştirmek için lütfen e-posta adresinizi doğrulayın.</p>
 		<br>
 		<div style="text-align: center; margin: 20px 0;">
-			<a href="https://xn--suartmauzman-44bi.com/verify-email?token=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">✉️ E-postamı Doğrula</a>
+            <a href="%s/verify-email?token=%s" style="display: inline-block; background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 10px;">✉️ E-postamı Doğrula</a>
 		</div>
 		<br>
 		<p><strong>Alternatif Link:</strong></p>
-		<p><a href="https://xn--suartmauzman-44bi.com/verify-email?token=%s">https://xn--suartmauzman-44bi.com/verify-email?token=%s</a></p>
+        <p><a href="%s/verify-email?token=%s">%s/verify-email?token=%s</a></p>
 		<br>
 		<p>Bu link 24 saat süreyle geçerlidir.</p>
 		<p>Eğer bu hesabı siz oluşturmadıysanız, bu e-postayı görmezden gelebilirsiniz.</p>
 		<br>
 		<p>Saygılarımızla,<br>Cenap Su Arıtma</p>
-	`, username, token, token, token)
+    `, username, baseURL, token, baseURL, token, baseURL, token)
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", es.from)

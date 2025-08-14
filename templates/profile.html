@@ -24,7 +24,7 @@
                             {{.success}}
                         </div>
                         {{end}}
-                        <form id="changePasswordForm">
+                        <form action="/profile/change-password" method="POST">
                             <div class="mb-3">
                                 <label for="currentPassword" class="form-label">Mevcut Şifre</label>
                                 <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
@@ -257,44 +257,3 @@ function makeDefaultAddress(addressId) {
 }
 </script>
 {{end}} 
-<script>
-// Şifre değiştirme formu
-document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    // Şifre eşleşme kontrolü
-    if (newPassword !== confirmPassword) {
-        alert('Yeni şifreler eşleşmiyor!');
-        return;
-    }
-    
-    // JSON olarak gönder
-    fetch('/profile/change-password', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            current_password: currentPassword,
-            new_password: newPassword
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Şifre başarıyla değiştirildi!');
-            document.getElementById('changePasswordForm').reset();
-        } else {
-            alert('Hata: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Hata:', error);
-        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
-    });
-});
-</script>

@@ -1470,3 +1470,18 @@ type DBInterface interface {
 	// Utility methods
 	FixOldOrderAddresses() error
 }
+
+// UpdateUserVerificationToken updates user verification token
+func (db *JSONDatabase) UpdateUserVerificationToken(userID int, token string) error {
+db.mu.Lock()
+defer db.mu.Unlock()
+for i, u := range db.data.Users {
+if u.ID == userID {
+db.data.Users[i].EmailVerifyToken = token
+db.data.Users[i].EmailVerifyExpiry = time.Now().Add(24 * time.Hour)
+db.data.Users[i].UpdatedAt = time.Now()
+return db.saveData()
+}
+}
+return errors.New("user not found")
+}

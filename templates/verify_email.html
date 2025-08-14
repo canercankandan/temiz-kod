@@ -1,103 +1,69 @@
 {{template "base.html" .}}
 
-{{define "content"}}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-envelope-open-text text-primary" style="font-size: 3rem;"></i>
-                        <h2 class="mt-3 mb-2">E-posta Doğrulama</h2>
-                        <p class="text-muted">Hesabınızı doğrulamak için aşağıdaki bilgileri kontrol edin</p>
-                    </div>
-
-                    {{if .error}}
-                    <div class="alert alert-danger" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        {{.error}}
-                    </div>
-                    {{end}}
-
-                    {{if .success}}
-                    <div class="alert alert-success" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        {{.success}}
-                    </div>
-                    <div class="text-center mt-4">
-                        <a href="/login" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
-                        </a>
-                    </div>
-                    {{else}}
-                    <div class="text-center">
-                        <div class="alert alert-success" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            <strong>✅ Doğrulama e-postası gönderildi!</strong><br>
-                            E-posta adresinize gönderilen doğrulama bağlantısını tıklayarak hesabınızı doğrulayın.
-                        </div>
-                        
-                        <div class="alert alert-info" role="alert">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>💡 E-posta almadınız mı?</strong><br>
-                            Spam/Gereksiz klasörünüzü kontrol edin. E-posta birkaç dakika içinde gelecektir.
-                        </div>
-
-                        <div class="mt-4">
-                            <a href="/login" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Sayfasına Dön
-                            </a>
-                        </div>
-                    </div>
-                    {{end}}
-                </div>
+{{ define "content" }}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="h3 mb-4">E-posta Doğrulama</h1>
+          {{ if .error }}
+            <div class="alert alert-danger" role="alert">
+              <strong>Hata:</strong> {{ .error }}
             </div>
+            <div class="alert alert-info" role="alert">
+              <strong>Yardım:</strong>
+              <ul class="mb-0 mt-2">
+                <li>E-postanızı kontrol edin ve doğrulama linkine tıklayın</li>
+                <li>Link süresi dolmuş olabilir - yeni kayıt yapın</li>
+                <li>Doğrulama linkini doğru kopyaladığınızdan emin olun</li>
+              </ul>
+            </div>
+            <div class="mt-3">
+              <a href="/register" class="btn btn-primary">Yeni Kayıt</a>
+              <a href="/login" class="btn btn-secondary ms-2">Giriş Yap</a>
+              <a href="/" class="btn btn-success ms-2">Ana Sayfa</a>
+            </div>
+          {{ end }}
+          {{ if .info }}
+            <div class="alert alert-info" role="alert">
+              <i class="fas fa-info-circle"></i> <strong>Bilgi:</strong> {{ .info }}
+            </div>
+            <div class="alert alert-light border" role="alert">
+              <strong>E-posta doğrulaması nasıl yapılır:</strong>
+              <ol class="mb-0 mt-2">
+                <li>Kayıt olduktan sonra e-postanızı kontrol edin</li>
+                <li>Gelen doğrulama linkine tıklayın</li>
+                <li>Hesabınız otomatik olarak aktif olacak</li>
+              </ol>
+            </div>
+            <div class="mt-3">
+              <a href="/register" class="btn btn-primary">Kayıt Ol</a>
+              <a href="/login" class="btn btn-secondary ms-2">Giriş Yap</a>
+              <a href="/" class="btn btn-success ms-2">Ana Sayfa</a>
+            </div>
+          {{ end }}
+          {{ if .success }}
+            <div class="alert alert-success" role="alert">
+              <strong>Başarılı!</strong> {{ .success }}
+            </div>
+            <p class="mb-3">Hesabınız başarıyla doğrulandı. Artık giriş yapabilirsiniz.</p>
+            <a href="/login" class="btn btn-primary mt-3">Giriş Yap</a>
+            <a href="/" class="btn btn-success mt-3 ms-2">Ana Sayfa</a>
+          {{ end }}
+          {{ if not .error and not .success and not .info }}
+            <div class="alert alert-warning" role="alert">
+              <strong>Bekliyor:</strong> Doğrulama işlemi devam ediyor...
+            </div>
+            <p>Lütfen e-postanızdaki doğrulama linkine tıklayın.</p>
+            <div class="mt-3">
+              <a href="/register" class="btn btn-primary">Yeni Kayıt</a>
+              <a href="/" class="btn btn-success ms-2">Ana Sayfa</a>
+            </div>
+          {{ end }}
         </div>
+      </div>
     </div>
+  </div>
 </div>
-
-<style>
-.card {
-    border: none;
-    border-radius: 15px;
-}
-
-.card-body {
-    border-radius: 15px;
-}
-
-.btn {
-    border-radius: 25px;
-    padding: 10px 25px;
-    font-weight: 500;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border: none;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #764ba2, #667eea);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-}
-
-.alert {
-    border: none;
-    border-radius: 15px;
-    padding: 1rem 1.5rem;
-}
-
-.form-control {
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
-    padding: 12px 15px;
-}
-
-.form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
-</style>
-{{end}} 
+{{ end }}
