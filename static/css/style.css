@@ -263,6 +263,24 @@ body {
     flex: 1;
 }
 
+/* Sadece belirli yazıları beyaz yap */
+.login-links a,
+.login-links p,
+.register-page a[href="#"],
+.forgot-password h3 {
+    color: #ffffff !important;
+}
+
+/* Register sayfasındaki "Zaten hesabınız var mı?" yazısı */
+.register-page .text-center p {
+    color: #ffffff !important;
+}
+
+/* Kullanım şartları ve gizlilik politikası yazısı */
+.register-page .form-check-label {
+    color: #ffffff !important;
+}
+
 .home-page .product-card .card-text {
     color: #2563eb !important; /* Ana sayfa ürün açıklamaları mavi */
     font-size: 0.9rem;
@@ -1020,3 +1038,203 @@ footer h5 {
     background-color: #dbeafe;
     color: #1e40af;
 }
+
+/* "Kullanım şartlarını ve gizlilik politikasını kabul ediyorum" yazısını beyaz yap */
+.register-page .form-check-label,
+.register-page .form-check input[type="checkbox"] + label,
+.form-check-label,
+.form-check-label a {
+    color: #ffffff !important;
+}
+
+/* "Zaten hesabınız var mı? Giriş Yapın" yazısını beyaz yap */
+.register-page .text-center p,
+.register-page .text-center a,
+.text-center p,
+.text-center a {
+    color: #ffffff !important;
+}
+
+/* Tüm linkleri beyaz yap */
+a {
+    color: #ffffff !important;
+}
+
+/* Form check label'ları beyaz yap */
+.form-check-label {
+    color: #ffffff !important;
+}
+
+/* Navbar dropdown menüsündeki "Çıkış Yap" ve "Profilim" linklerini mavi yap */
+.navbar .dropdown-menu a,
+.navbar .dropdown-menu .dropdown-item {
+    color: #3b82f6 !important;
+}
+
+.navbar .dropdown-menu a:hover,
+.navbar .dropdown-menu .dropdown-item:hover {
+    color: #2563eb !important;
+    background-color: #f8f9fa;
+}
+
+/* Profil sayfasındaki adres bilgilerini beyaz yap */
+.profile-page .card-body,
+.profile-page .card-body p,
+.profile-page .card-body h5,
+.profile-page .card-body h6,
+.profile-page .card-body .text-muted,
+.profile-page .card-body .badge {
+    color: #ffffff !important;
+}
+
+/* Adres kartlarındaki tüm yazıları beyaz yap */
+.profile-page .address-card,
+.profile-page .address-card *,
+.profile-page .address-card p,
+.profile-page .address-card h5,
+.profile-page .address-card h6,
+.profile-page .address-card .text-muted,
+.profile-page .address-card .badge {
+    color: #ffffff !important;
+}
+
+/* Adres kartlarındaki sarı yazıları beyaz yap */
+.card.bg-dark .text-warning,
+.card.bg-dark .text-warning.fw-bold,
+.card.bg-dark strong.text-warning,
+.card.bg-dark .card-title.text-warning,
+.card.bg-dark .card-text strong.text-warning {
+    color: #ffffff !important;
+}
+
+/* Sadece adres kartlarındaki etiketleri (Telefon:, Başlık:, Adres: vs.) beyaz yap */
+.card.bg-dark strong.text-warning {
+    color: #ffffff !important;
+}
+
+/* Doldurulmuş bilgileri (123456, cenap, mert vs.) mor yap */
+.card.bg-dark .text-warning:not(strong),
+.card.bg-dark .card-title.text-warning,
+.card.bg-dark .card-text.text-warning {
+    color: #fbbf24 !important;
+}
+
+/* Mavi olan yerleri mor yap */
+.bg-primary,
+.card-header.bg-primary,
+.btn-primary,
+.navbar .bg-dark {
+    background-color: #8b5cf6 !important;
+}
+
+/* Mavi border'ları mor yap */
+.border-primary {
+    border-color: #8b5cf6 !important;
+}
+
+/* Mavi yazıları sarı yap */
+.text-primary,
+.btn-primary,
+.navbar-dark .navbar-brand,
+.navbar-dark .nav-link,
+.navbar-dark .dropdown-toggle {
+    color: #fbbf24 !important;
+}
+
+/* Adres bilgilerindeki mavi yazıları sarı yap */
+.btn-outline-primary,
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    color: #fbbf24 !important;
+    border-color: #fbbf24 !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: #fbbf24 !important;
+    color: #000000 !important;
+}
+
+/* Hover durumunda daha koyu sarı */
+.btn-primary:hover,
+.navbar-dark .nav-link:hover,
+.navbar-dark .dropdown-toggle:hover {
+    color: #f59e0b !important;
+}
+
+/* Adres bilgilerindeki TÜM yazıları sarı yap */
+.card.bg-dark .card-body *,
+.card.bg-dark .card-body p,
+.card.bg-dark .card-body h6,
+.card.bg-dark .card-body .card-title,
+.card.bg-dark .card-body .card-text,
+.card.bg-dark .card-body strong,
+.card.bg-dark .card-body span {
+    color: #fbbf24 !important;
+}
+
+/* Sadece etiketleri (Telefon:, Başlık:, Adres: vs.) beyaz bırak */
+.card.bg-dark .card-body strong.text-warning {
+    color: #ffffff !important;
+}
+
+/* Form alanlarındaki text-warning sınıflarını sarı bırak */
+.form-label.text-warning,
+.form-control.text-warning {
+    color: #fbbf24 !important;
+}
+
+/* Navbar linkleri için sırayla aşağı düşme animasyonu */
+@keyframes slideDownNav {
+    0% {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Her navbar linki için farklı gecikme ile animasyon */
+.navbar-nav .nav-item:nth-child(1) {
+    animation: slideDownNav 0.6s ease-out 0.1s both;
+}
+
+.navbar-nav .nav-item:nth-child(2) {
+    animation: slideDownNav 0.6s ease-out 0.2s both;
+}
+
+.navbar-nav .nav-item:nth-child(3) {
+    animation: slideDownNav 0.6s ease-out 0.3s both;
+}
+
+.navbar-nav .nav-item:nth-child(4) {
+    animation: slideDownNav 0.6s ease-out 0.4s both;
+}
+
+.navbar-nav .nav-item:nth-child(5) {
+    animation: slideDownNav 0.6s ease-out 0.5s both;
+}
+
+.navbar-nav .nav-item:nth-child(6) {
+    animation: slideDownNav 0.6s ease-out 0.6s both;
+}
+
+.navbar-nav .nav-item:nth-child(7) {
+    animation: slideDownNav 0.6s ease-out 0.7s both;
+}
+
+.navbar-nav .nav-item:nth-child(8) {
+    animation: slideDownNav 0.6s ease-out 0.8s both;
+}
+
+.navbar-nav .nav-item:nth-child(9) {
+    animation: slideDownNav 0.6s ease-out 0.9s both;
+}
+
+/* Sağ taraftaki kullanıcı menüsü için de animasyon */
+.navbar-nav:last-child .nav-item {
+    animation: slideDownNav 0.6s ease-out 1.0s both;
+}
+
+
