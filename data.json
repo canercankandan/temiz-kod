@@ -140,7 +140,7 @@
       "username": "sen1979ben@gmail.com",
       "email": "sen1979ben@gmail.com",
       "password_hash": "",
-      "plain_password": "111111",
+      "plain_password": "000000",
       "reset_expiry": "0001-01-01T00:00:00Z",
       "email_verified": true,
       "email_verify_expiry": "0001-01-01T00:00:00Z",
@@ -176,8 +176,8 @@
           "updated_at": "2025-07-27T19:37:30.1681071+03:00"
         }
       ],
-      "created_at": "2025-08-12T22:50:37.513207818Z",
-      "updated_at": "2025-08-12T23:04:12.213722429Z"
+      "created_at": "2025-08-15T00:18:20.0567989+03:00",
+      "updated_at": "2025-08-15T00:20:09.984708+03:00"
     }
   ],
   "orders": [
@@ -186,10 +186,10 @@
       "user_id": 1,
       "session_id": "aecbe6aa-5101-4571-b1b1-187159205e63",
       "order_number": "ORD-20250812-232934",
-      "customer_name": "mert",
+      "customer_name": "cenap",
       "email": "sen1979ben@gmail.com",
-      "phone": "456789",
-      "address": "mert, 456789, mert, mert, mert",
+      "phone": "123456",
+      "address": "cenap\n123456\ncenap, cenap\ncenap",
       "items": [
         {
           "id": 0,
@@ -208,7 +208,7 @@
       "notes": "",
       "admin_notes": "",
       "created_at": "2025-08-12T23:29:34.864040173Z",
-      "updated_at": "2025-08-12T23:29:34.864043659Z"
+      "updated_at": "2025-08-15T20:27:39.1452105+03:00"
     }
   ],
   "messages": [
@@ -1899,6 +1899,138 @@
       "status": "active",
       "last_message_at": "2025-08-13T00:10:27.296745511Z",
       "created_at": "2025-08-13T00:04:22.314301114Z",
+      "unread_count": 0
+    },
+    {
+      "id": 138,
+      "session_id": "6d516602-5c64-4145-9a17-5a5167cc67e8",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T00:13:33.8030594+03:00",
+      "created_at": "2025-08-15T00:12:53.6426167+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 139,
+      "session_id": "f725b9fe-fd9d-4d44-9505-ffed1cfc2d65",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T00:17:38.7643543+03:00",
+      "created_at": "2025-08-15T00:17:38.7598783+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 140,
+      "session_id": "643878a5-3b26-4fa0-955a-5d3af6175216",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T00:34:11.1774857+03:00",
+      "created_at": "2025-08-15T00:20:17.7884184+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 141,
+      "session_id": "35c944c5-dd9a-456c-823e-8edefdfcd748",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T12:35:55.1332045+03:00",
+      "created_at": "2025-08-15T12:35:55.1332045+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 142,
+      "session_id": "34e9fd27-ec7c-42b5-8e81-2dda60807fa3",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T16:36:05.5012242+03:00",
+      "created_at": "2025-08-15T16:05:32.2483954+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 143,
+      "session_id": "c8790ba6-0f74-450d-9c08-2ff27d520c12",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T19:44:24.5060386+03:00",
+      "created_at": "2025-08-15T16:39:46.5143176+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 144,
+      "session_id": "66d602fb-8a59-4520-85c9-dd436fa0919f",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T20:01:48.0632605+03:00",
+      "created_at": "2025-08-15T20:01:48.0632605+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 145,
+      "session_id": "6563c2c4-bf58-426e-b3ce-94c03a32bb73",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T20:03:29.5061886+03:00",
+      "created_at": "2025-08-15T20:02:28.5172785+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 146,
+      "session_id": "000f9ab9-638d-41b2-be61-4294adffe900",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T20:18:18.2681875+03:00",
+      "created_at": "2025-08-15T20:18:18.2596389+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 147,
+      "session_id": "f3024d65-d353-4dcb-a269-c400bea2edd6",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T20:21:14.5024348+03:00",
+      "created_at": "2025-08-15T20:19:02.3032554+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 148,
+      "session_id": "c4b58a9d-1d1c-4de7-8592-d8f761e57dc8",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-15T21:06:52.2894942+03:00",
+      "created_at": "2025-08-15T20:22:37.4946709+03:00",
+      "unread_count": 0
+    },
+    {
+      "id": 149,
+      "session_id": "cdb7e9ff-dd80-483b-80d8-cee70b58484f",
+      "user_id": 1,
+      "username": "sen1979ben@gmail.com",
+      "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1",
+      "status": "active",
+      "last_message_at": "2025-08-15T21:20:25.4770092+03:00",
+      "created_at": "2025-08-15T21:19:18.2945918+03:00",
       "unread_count": 0
     }
   ],
@@ -4548,9 +4680,9 @@
       "district": "cenap",
       "neighborhood": "cenap",
       "postal_code": "444",
-      "is_default": false,
+      "is_default": true,
       "created_at": "2025-07-27T17:52:29.4107482+03:00",
-      "updated_at": "2025-07-27T19:34:28.6826212+03:00"
+      "updated_at": "2025-08-15T20:27:39.1407197+03:00"
     },
     {
       "id": 2,
@@ -4563,7 +4695,7 @@
       "district": "mert",
       "neighborhood": "mert",
       "postal_code": "34142",
-      "is_default": true,
+      "is_default": false,
       "created_at": "2025-07-27T17:53:12.4912688+03:00",
       "updated_at": "2025-07-27T19:37:30.1681071+03:00"
     },
