@@ -2175,6 +2175,25 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 		return
 	}
 
+	// MAIL GÖNDERİMİ EKLE
+	if h.email != nil {
+		subject := "Yeni Destek Mesajı - " + displayName
+		body := fmt.Sprintf(`
+			<h3>Yeni Destek Mesajı</h3>
+			<p><strong>Kullanıcı:</strong> %s</p>
+			<p><strong>Mesaj:</strong> %s</p>
+			<p><strong>Tarih:</strong> %s</p>
+			<br>
+			<p>Destek panelinden yanıtlayabilirsiniz.</p>
+		`, displayName, request.Message, time.Now().Format("2006-01-02 15:04:05"))
+
+		err = h.email.SendEmail("admin@cenap.com", subject, body)
+		if err != nil {
+			log.Printf("SendSupportMessage - Mail gönderim hatası: %v", err)
+			// Mail hatası olsa bile mesaj başarılı sayılsın
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": message,
