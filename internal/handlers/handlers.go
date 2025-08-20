@@ -2103,6 +2103,25 @@ func (h *Handler) SupportChatPage(c *gin.Context) {
 		c.SetCookie("user_session", sessionID, 3600*24*30, "/", "", false, false)
 	}
 
+	// MAIL GÖNDERİMİ EKLE - Destek sayfasına giriş
+	if h.email != nil {
+		subject := "Destek Sayfasına Giriş - " + username
+		body := fmt.Sprintf(`
+			<h3>Destek Sayfasına Giriş</h3>
+			<p><strong>Kullanıcı:</strong> %s</p>
+			<p><strong>Session ID:</strong> %s</p>
+			<p><strong>Tarih:</strong> %s</p>
+			<br>
+			<p>Kullanıcı destek sayfasına giriş yaptı.</p>
+		`, username, sessionID, time.Now().Format("2006-01-02 15:04:05"))
+
+		err := h.email.SendEmail("admin@cenap.com", subject, body)
+		if err != nil {
+			log.Printf("SupportChatPage - Mail gönderim hatası: %v", err)
+			// Mail hatası olsa bile sayfa açılsın
+		}
+	}
+
 	c.HTML(http.StatusOK, "support_chat.html", gin.H{
 		"title":      "Canlı Destek",
 		"isLoggedIn": isLoggedIn,
