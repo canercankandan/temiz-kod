@@ -789,6 +789,61 @@ func (h *Handler) TeknikServisPage(c *gin.Context) {
 	})
 }
 
+// HandleTeknikServisForm - Teknik servis formu gönderimi
+func (h *Handler) HandleTeknikServisForm(c *gin.Context) {
+	var request struct {
+		Name        string `json:"name"`
+		Phone       string `json:"phone"`
+		Email       string `json:"email"`
+		Address     string `json:"address"`
+		DeviceType  string `json:"device_type"`
+		Problem     string `json:"problem"`
+		Description string `json:"description"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Geçersiz form verisi"})
+		return
+	}
+
+	// Form verilerini kontrol et
+	if strings.TrimSpace(request.Name) == "" || strings.TrimSpace(request.Phone) == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Ad ve telefon alanları zorunludur"})
+		return
+	}
+
+	// MAIL GÖNDERİMİ EKLE
+	if h.email != nil {
+		subject := "Yeni Teknik Servis Talebi - " + request.Name
+		body := fmt.Sprintf(`
+			<h3>Yeni Teknik Servis Talebi</h3>
+			<p><strong>Ad Soyad:</strong> %s</p>
+			<p><strong>Telefon:</strong> %s</p>
+			<p><strong>E-posta:</strong> %s</p>
+			<p><strong>Adres:</strong> %s</p>
+			<p><strong>Cihaz Türü:</strong> %s</p>
+			<p><strong>Problem:</strong> %s</p>
+			<p><strong>Açıklama:</strong> %s</p>
+			<br>
+			<p><strong>Tarih:</strong> %s</p>
+			<br>
+			<p><strong>Admin Panel:</strong> <a href="http://91.99.25.149:8080/admin">http://91.99.25.149:8080/admin</a></p>
+		`, request.Name, request.Phone, request.Email, request.Address, request.DeviceType, request.Problem, request.Description, time.Now().Format("2006-01-02 15:04:05"))
+
+		err := h.email.SendEmail("wbcenapoktay@gmail.com", subject, body)
+		if err != nil {
+			log.Printf("HandleTeknikServisForm - Mail gönderim hatası: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Form gönderilemedi"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Teknik servis talebiniz başarıyla gönderildi. En kısa sürede size ulaşacağız.",
+	})
+}
+
 // --- Product Detail Handlers ---
 
 // ProductDetailPage, tekil ürün detay sayfasını gösterir
@@ -2107,12 +2162,15 @@ func (h *Handler) SupportChatPage(c *gin.Context) {
 	if h.email != nil {
 		subject := "Destek Sayfasına Giriş - " + username
 		body := fmt.Sprintf(`
-			<h3>Destek Sayfasına Giriş</h3>
+			<h3>Yeni Destek Sayfası Girişi</h3>
 			<p><strong>Kullanıcı:</strong> %s</p>
 			<p><strong>Session ID:</strong> %s</p>
 			<p><strong>Tarih:</strong> %s</p>
 			<br>
 			<p>Kullanıcı destek sayfasına giriş yaptı.</p>
+			<br>
+			<p><strong>Admin Panel:</strong> <a href="http://91.99.25.149:8080/admin">http://91.99.25.149:8080/admin</a></p>
+			<p><strong>Destek Yönetimi:</strong> <a href="http://91.99.25.149:8080/admin/support">http://91.99.25.149:8080/admin/support</a></p>
 		`, username, sessionID, time.Now().Format("2006-01-02 15:04:05"))
 
 		err := h.email.SendEmail("wbcenapoktay@gmail.com", subject, body)

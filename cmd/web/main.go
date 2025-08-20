@@ -165,6 +165,7 @@ func main() {
 	r.GET("/contact", h.ContactPage)
 	r.POST("/contact/send", h.HandleContactForm)
 	r.GET("/teknik-servis", h.TeknikServisPage)
+	r.POST("/teknik-servis/send", h.HandleTeknikServisForm)
 	r.GET("/chat", h.SupportChatPage) // ✅ Chat sayfası (/support ile aynı)
 
 	// Order tracking routes (public) - ÖNCELİKLE KAYDET!
