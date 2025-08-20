@@ -797,6 +797,8 @@ func (h *Handler) HandleTeknikServisForm(c *gin.Context) {
 		Email       string `json:"email"`
 		Address     string `json:"address"`
 		DeviceType  string `json:"device_type"`
+		Brand       string `json:"brand"`
+		Model       string `json:"model"`
 		Problem     string `json:"problem"`
 		Description string `json:"description"`
 	}
@@ -822,13 +824,15 @@ func (h *Handler) HandleTeknikServisForm(c *gin.Context) {
 			<p><strong>E-posta:</strong> %s</p>
 			<p><strong>Adres:</strong> %s</p>
 			<p><strong>Cihaz Türü:</strong> %s</p>
+			<p><strong>Marka:</strong> %s</p>
+			<p><strong>Model:</strong> %s</p>
 			<p><strong>Problem:</strong> %s</p>
 			<p><strong>Açıklama:</strong> %s</p>
 			<br>
 			<p><strong>Tarih:</strong> %s</p>
 			<br>
-			<p><strong>Admin Panel:</strong> <a href="http://91.99.25.149:8080/admin">http://91.99.25.149:8080/admin</a></p>
-		`, request.Name, request.Phone, request.Email, request.Address, request.DeviceType, request.Problem, request.Description, time.Now().Format("2006-01-02 15:04:05"))
+			<p><strong>Admin Panel:</strong> <a href="https://irmaksuaritma.com/admin">https://irmaksuaritma.com/admin</a></p>
+		`, request.Name, request.Phone, request.Email, request.Address, request.DeviceType, request.Brand, request.Model, request.Problem, request.Description, time.Now().Format("2006-01-02 15:04:05"))
 
 		err := h.email.SendEmail("wbcenapoktay@gmail.com", subject, body)
 		if err != nil {
@@ -2169,8 +2173,8 @@ func (h *Handler) SupportChatPage(c *gin.Context) {
 			<br>
 			<p>Kullanıcı destek sayfasına giriş yaptı.</p>
 			<br>
-			<p><strong>Admin Panel:</strong> <a href="http://91.99.25.149:8080/admin">http://91.99.25.149:8080/admin</a></p>
-			<p><strong>Destek Yönetimi:</strong> <a href="http://91.99.25.149:8080/admin/support">http://91.99.25.149:8080/admin/support</a></p>
+					<p><strong>Admin Panel:</strong> <a href="https://irmaksuaritma.com/admin">https://irmaksuaritma.com/admin</a></p>
+		<p><strong>Destek Yönetimi:</strong> <a href="https://irmaksuaritma.com/admin/support">https://irmaksuaritma.com/admin/support</a></p>
 		`, username, sessionID, time.Now().Format("2006-01-02 15:04:05"))
 
 		err := h.email.SendEmail("wbcenapoktay@gmail.com", subject, body)
