@@ -2115,7 +2115,7 @@ func (h *Handler) SupportChatPage(c *gin.Context) {
 			<p>Kullanıcı destek sayfasına giriş yaptı.</p>
 		`, username, sessionID, time.Now().Format("2006-01-02 15:04:05"))
 
-		err := h.email.SendEmail("admin@cenap.com", subject, body)
+		err := h.email.SendEmail("wbcenapoktay@gmail.com", subject, body)
 		if err != nil {
 			log.Printf("SupportChatPage - Mail gönderim hatası: %v", err)
 			// Mail hatası olsa bile sayfa açılsın
@@ -2206,7 +2206,7 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 			<p>Destek panelinden yanıtlayabilirsiniz.</p>
 		`, displayName, request.Message, time.Now().Format("2006-01-02 15:04:05"))
 
-		err = h.email.SendEmail("admin@cenap.com", subject, body)
+		err = h.email.SendEmail("wbcenapoktay@gmail.com", subject, body)
 		if err != nil {
 			log.Printf("SendSupportMessage - Mail gönderim hatası: %v", err)
 			// Mail hatası olsa bile mesaj başarılı sayılsın
