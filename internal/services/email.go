@@ -22,8 +22,8 @@ func NewEmailService() *EmailService {
 	// Gmail SMTP ayarları
 	smtpHost := "smtp.gmail.com"
 	smtpPort := 587
-	smtpUser := "irmaksuaritmam@gmail.com" // Gmail adresiniz
-	smtpPass := "smve btgb zoih rkkd"      // Gmail uygulama şifresi
+	smtpUser := "wbcenapoktay@gmail.com" // Gmail adresiniz
+	smtpPass := "ltpw igvm rsui nfss"    // Gmail uygulama şifresi
 
 	// Eğer environment variable'lar ayarlanmışsa, onları kullan
 	if envUser := os.Getenv("SMTP_USER"); envUser != "" {
@@ -546,4 +546,38 @@ func (es *EmailService) SendEmail(to, subject, body string) error {
 	m.SetBody("text/html", body)
 
 	return es.dialer.DialAndSend(m)
+}
+
+// TestEmail, test e-postası gönderir
+func (es *EmailService) TestEmail(to string) error {
+	if es.dialer == nil {
+		log.Printf("E-posta gönderimi devre dışı. Test e-postası: %s", to)
+		return nil
+	}
+
+	subject := "Test E-postası - Cenap Su Arıtma"
+	body := `
+		<h2>Test E-postası</h2>
+		<p>Bu bir test e-postasıdır.</p>
+		<p>Mail servisi çalışıyor!</p>
+		<br>
+		<p>Saygılarımızla,<br>Cenap Su Arıtma</p>
+	`
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", es.from)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", body)
+
+	log.Printf("Test mail gönderiliyor: %s -> %s", es.from, to)
+
+	err := es.dialer.DialAndSend(m)
+	if err != nil {
+		log.Printf("Test mail hatası: %v", err)
+		return err
+	}
+
+	log.Printf("Test mail başarıyla gönderildi!")
+	return nil
 }

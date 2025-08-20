@@ -2032,6 +2032,17 @@
       "last_message_at": "2025-08-15T21:20:25.4770092+03:00",
       "created_at": "2025-08-15T21:19:18.2945918+03:00",
       "unread_count": 0
+    },
+    {
+      "id": 150,
+      "session_id": "94c3e8f4-7fb4-49b3-a6fc-767de8341e5d",
+      "user_id": null,
+      "username": "Ziyaretçi",
+      "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+      "status": "active",
+      "last_message_at": "2025-08-20T17:20:32.2918263+03:00",
+      "created_at": "2025-08-20T16:37:10.4179163+03:00",
+      "unread_count": 0
     }
   ],
   "video_call_requests": [

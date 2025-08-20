@@ -5,6 +5,124 @@ body {
     color: #222222; /* Dark text for contrast */
 }
 
+/* Teknik servis metni için mavi renk */
+.teknik-servis-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+/* Daha güçlü override için */
+p.teknik-servis-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+.lead.teknik-servis-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+/* Contact sayfası metni için mavi renk */
+.contact-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+p.contact-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+.lead.contact-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+/* Contact sayfası başlığı için mavi renk */
+.contact-title {
+    color: #0066CC !important;
+    font-weight: bold;
+}
+
+h1.contact-title {
+    color: #0066CC !important;
+    font-weight: bold;
+}
+
+.display-4.contact-title {
+    color: #0066CC !important;
+    font-weight: bold;
+}
+
+/* Home sayfası metni için mavi renk */
+.home-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+p.home-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+.lead.home-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+/* Müşteri yorumları metni için mavi renk */
+.reviews-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+p.reviews-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+.lead.reviews-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+/* Cihaz türleri ve SSS metinleri için mavi renk */
+.device-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+h6.device-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+.sss-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+h5.sss-text {
+    color: #0066CC !important;
+    font-weight: 500;
+}
+
+/* Teknik servis başlığı için mavi renk */
+.teknik-title {
+    color: #0066CC !important;
+    font-weight: bold;
+}
+
+h1.teknik-title {
+    color: #0066CC !important;
+    font-weight: bold;
+}
+
+.display-4.teknik-title {
+    color: #0066CC !important;
+    font-weight: bold;
+}
+
 .hero-section {
     background: transparent !important;
 }
@@ -1296,6 +1414,6 @@ a {
         background-color: #c0c0c0 !important;
         color: #000000 !important;
     }
-}
+} 
 
 

@@ -30,11 +30,11 @@ func main() {
 
 	// Email servisini başlat
 	emailService := services.NewEmailService()
-    _ = emailService
+	_ = emailService
 	log.Printf("📧 Email servisi başlatıldı: %s", os.Getenv("SMTP_USER"))
 
 	// Engine'i manuel olarak oluştur (middleware'leri kontrol etmek için)
-    h := handlers.NewHandler(db)
+	h := handlers.NewHandler(db)
 	r := gin.New()
 
 	// Middleware'leri manuel olarak ekle
@@ -48,6 +48,22 @@ func main() {
 		c.JSON(200, gin.H{"message": "Test başarılı", "success": true})
 	})
 
+	// TEST: Mail test route'u ekleyelim
+	r.POST("/test-mail", func(c *gin.Context) {
+		log.Printf("📧 MAIL TEST ROUTE ÇAĞRILDI!")
+
+		// Test mail gönder
+		err := emailService.TestEmail("test@example.com")
+		if err != nil {
+			log.Printf("❌ Mail test hatası: %v", err)
+			c.JSON(500, gin.H{"message": "Mail hatası", "error": err.Error()})
+			return
+		}
+
+		log.Printf("✅ Mail test başarılı!")
+		c.JSON(200, gin.H{"message": "Mail test başarılı", "success": true})
+	})
+
 	// Proxy güvenlik ayarları
 	r.SetTrustedProxies([]string{"127.0.0.1", "::1"})
 
@@ -56,30 +72,30 @@ func main() {
 	templates := map[string]*template.Template{}
 
 	templateFiles := map[string][]string{
-		"home.html":            {"templates/home.html", "templates/base.html"},
-		"products.html":        {"templates/products.html", "templates/base.html"},
-		"about.html":           {"templates/about.html", "templates/base.html"},
-		"contact.html":         {"templates/contact.html", "templates/base.html"},
-		"teknik_servis.html":   {"templates/teknik_servis.html", "templates/base.html"},
-		"admin.html":           {"templates/admin.html", "templates/base.html"},
-		"admin_login.html":     {"templates/admin_login.html", "templates/base.html"},
-		"login.html":           {"templates/login.html", "templates/base.html"},
-		"register.html":        {"templates/register.html", "templates/base.html"},
-		"profile.html":         {"templates/profile.html", "templates/base.html"},
-		"forgot_password.html": {"templates/forgot_password.html", "templates/base.html"},
-		"reset_password.html":  {"templates/reset_password.html", "templates/base.html"},
-		"verify_email.html":    {"templates/verify_email.html", "templates/base.html"},
-		"cart.html":            {"templates/cart.html", "templates/base.html"},
-		"checkout.html":        {"templates/checkout.html", "templates/base.html"},
-		"order_success.html":   {"templates/order_success.html", "templates/base.html"},
-		"orders.html":          {"templates/orders.html", "templates/base.html"},
-		"order_tracking.html":  {"templates/order_tracking.html", "templates/base.html"},
-		"support_chat.html":    {"templates/support_chat.html", "templates/base.html"},
-		"admin_support.html":      {"templates/admin_support.html", "templates/base.html"},
-		"product_detail.html":     {"templates/product_detail.html", "templates/base.html"},
-		"spare_part_detail.html":  {"templates/spare_part_detail.html", "templates/base.html"},
-		"guest_checkout.html":     {"templates/guest_checkout.html", "templates/base.html"},
-		"404.html":                {"templates/404.html", "templates/base.html"},
+		"home.html":              {"templates/home.html", "templates/base.html"},
+		"products.html":          {"templates/products.html", "templates/base.html"},
+		"about.html":             {"templates/about.html", "templates/base.html"},
+		"contact.html":           {"templates/contact.html", "templates/base.html"},
+		"teknik_servis.html":     {"templates/teknik_servis.html", "templates/base.html"},
+		"admin.html":             {"templates/admin.html", "templates/base.html"},
+		"admin_login.html":       {"templates/admin_login.html", "templates/base.html"},
+		"login.html":             {"templates/login.html", "templates/base.html"},
+		"register.html":          {"templates/register.html", "templates/base.html"},
+		"profile.html":           {"templates/profile.html", "templates/base.html"},
+		"forgot_password.html":   {"templates/forgot_password.html", "templates/base.html"},
+		"reset_password.html":    {"templates/reset_password.html", "templates/base.html"},
+		"verify_email.html":      {"templates/verify_email.html", "templates/base.html"},
+		"cart.html":              {"templates/cart.html", "templates/base.html"},
+		"checkout.html":          {"templates/checkout.html", "templates/base.html"},
+		"order_success.html":     {"templates/order_success.html", "templates/base.html"},
+		"orders.html":            {"templates/orders.html", "templates/base.html"},
+		"order_tracking.html":    {"templates/order_tracking.html", "templates/base.html"},
+		"support_chat.html":      {"templates/support_chat.html", "templates/base.html"},
+		"admin_support.html":     {"templates/admin_support.html", "templates/base.html"},
+		"product_detail.html":    {"templates/product_detail.html", "templates/base.html"},
+		"spare_part_detail.html": {"templates/spare_part_detail.html", "templates/base.html"},
+		"guest_checkout.html":    {"templates/guest_checkout.html", "templates/base.html"},
+		"404.html":               {"templates/404.html", "templates/base.html"},
 	}
 
 	for name, files := range templateFiles {
@@ -96,14 +112,14 @@ func main() {
 		}
 
 		tmpl, err := template.New(name).Funcs(handlers.TemplateFuncs).ParseFiles(files...)
-                templates[name] = tmpl
+		templates[name] = tmpl
 		if err != nil {
-		log.Fatalf("Veritabanı başlatılamadı: %v", err)
-	}
+			log.Fatalf("Veritabanı başlatılamadı: %v", err)
+		}
 
-	// Email servisini başlat
-	emailService := services.NewEmailService()
-    _ = emailService
+		// Email servisini başlat
+		emailService := services.NewEmailService()
+		_ = emailService
 	}
 
 	log.Printf("🎯 Toplam %d template yüklendi", len(templates))
@@ -143,7 +159,7 @@ func main() {
 
 	// Diğer ana sayfa rotaları
 	r.GET("/products", h.ProductsPage)
-	r.GET("/product/:id", h.ProductDetailPage) // ✅ Tekil ürün sayfası
+	r.GET("/product/:id", h.ProductDetailPage)      // ✅ Tekil ürün sayfası
 	r.GET("/spare-part/:id", h.SparePartDetailPage) // ✅ Yedek parça sayfası
 	r.GET("/about", h.AboutPage)
 	r.GET("/contact", h.ContactPage)
