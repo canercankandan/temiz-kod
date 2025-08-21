@@ -81,7 +81,7 @@
     <link href="/static/css/style.css" rel="stylesheet">
     
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5RDJT65L0Y"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VRLNL12TW7"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
@@ -90,7 +90,7 @@
         // Localhost kontrolü ekle
         if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             try {
-                gtag('config', 'G-5RDJT65L0Y', {
+                gtag('config', 'G-VRLNL12TW7', {
                     'anonymize_ip': true,
                     'allow_google_signals': false,
                     'allow_ad_personalization_signals': false,
@@ -100,7 +100,7 @@
                 
                 // E-ticaret olayları
                 gtag('event', 'page_view', {
-                    'send_to': 'G-5RDJT65L0Y'
+                    'send_to': 'G-VRLNL12TW7'
                 });
             } catch(e) {
                 console.log('Analytics yüklenemedi');
@@ -782,7 +782,7 @@
                         </p>
                         <p class="mb-2">
                             <i class="fas fa-phone me-2 text-warning"></i>
-                            <a href="tel:+902125928591" class="footer-link">0212 592 85 91</a>
+                            <a href="tel:+902125928591" class="footer-link" onclick="if(typeof gtag !== 'undefined') gtag('event', 'phone_click', {'event_category': 'contact', 'event_label': 'footer_phone'});">0212 592 85 91</a>
                         </p>
                         <p class="mb-2">
                             <i class="fas fa-envelope me-2 text-warning"></i>
@@ -815,7 +815,7 @@
     </footer>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/905448113105" class="floating-whatsapp" target="_blank">
+    <a href="https://wa.me/905448113105" class="floating-whatsapp" target="_blank" onclick="if(typeof gtag !== 'undefined') gtag('event', 'whatsapp_click', {'event_category': 'contact', 'event_label': 'floating_whatsapp'});">
         <i class="fab fa-whatsapp me-2"></i>WhatsApp
     </a>
 

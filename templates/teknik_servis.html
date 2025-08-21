@@ -610,6 +610,15 @@ document.getElementById('teknikServisForm').addEventListener('submit', function(
             // Show success message
             showToast('success', 'Su arıtma teknik servis talebiniz başarıyla gönderildi! En kısa sürede size dönüş yapacağız.');
             
+            // GA4 Dönüşüm Olayı - Teknik Servis Formu
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'teknik_servis_submit', {
+                    'event_category': 'form_submission',
+                    'event_label': 'teknik_servis_form',
+                    'value': 1
+                });
+            }
+            
             // Reset form
             document.getElementById('teknikServisForm').reset();
         } else {
