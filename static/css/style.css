@@ -1,3 +1,26 @@
+/* Navbar yazılarını zorla beyaz yap - Inline CSS'yi override et */
+.navbar .nav-link,
+.navbar .navbar-nav .nav-link,
+.navbar a,
+.navbar-brand,
+.navbar .navbar-toggler {
+    color: #ffffff !important;
+}
+
+.navbar .nav-link:hover,
+.navbar .navbar-nav .nav-link:hover,
+.navbar a:hover {
+    color: #ffd700 !important;
+}
+
+/* Tüm navbar ve menü linklerini beyaz yap */
+nav, .navbar, .navigation, .menu, .nav-link, nav a, .navbar a, .navigation a, .menu a, .nav-link a {
+    color: #fff !important;
+}
+/* Navbar yazılarını beyaz yap */
+.navbar, .navbar a, .navbar .nav-link {
+    color: #fff !important;
+}
 /* Custom Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
