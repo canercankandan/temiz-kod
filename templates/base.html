@@ -81,16 +81,16 @@
     <link href="/static/css/style.css" rel="stylesheet">
     
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GGWG7XD3RJ"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VRLNL12TW7"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag(){dataLayer.push(arguments);} 
         gtag('js', new Date());
         
         // Localhost kontrolü ekle
         if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             try {
-                gtag('config', 'G-GGWG7XD3RJ', {
+                gtag('config', 'G-VRLNL12TW7', {
                     'anonymize_ip': true,
                     'allow_google_signals': false,
                     'allow_ad_personalization_signals': false,
@@ -100,7 +100,7 @@
                 
                 // E-ticaret olayları
                 gtag('event', 'page_view', {
-                    'send_to': 'G-GGWG7XD3RJ'
+                    'send_to': 'G-VRLNL12TW7'
                 });
             } catch(e) {
                 console.log('Analytics yüklenemedi');
