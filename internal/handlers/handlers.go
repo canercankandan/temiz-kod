@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"bytes"
+	"io"
+	"strings"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -2208,6 +2211,14 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 		return
 	}
 
+        // Spam kontrolü
+        if h.spamDetector.IsSpam(request.Message) {
+                clientIP := c.ClientIP()
+                h.securityLog.LogSecurityEvent("SPAM_DETECTED", fmt.Sprintf("Support chat spam: %s", request.Message), clientIP)
+                c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Mesajınız spam içerik kontrolünden geçemedi. Lütfen farklı bir mesaj yazın."})
+                return
+        }
+
 	username, _ := c.Cookie("username")
 	sessionID, _ := c.Cookie("user_session")
 
@@ -3269,12 +3280,66 @@ func (h *Handler) HandleContactForm(c *gin.Context) {
 	})
 }
 
-// SecurityMiddleware, güvenlik kontrollerini yapar (GEÇİCİ OLARAK DEVRE DIŞI)
+// SecurityMiddleware, güvenlik kontrollerini yapar
 func (h *Handler) SecurityMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("🔒 SecurityMiddleware - DEVRE DIŞI - Path: %s, Method: %s", c.Request.URL.Path, c.Request.Method)
-		// Tüm güvenlik kontrolleri geçici olarak kapatıldı
+		path := c.Request.URL.Path
+		method := c.Request.Method
 
+		// Public rotalar için güvenlik kontrollerini bypass et
+		publicPaths := []string{
+			"/login",
+			"/register",
+			"/forgot-password",
+			"/reset-password",
+			"/verify-email",
+			"/about",
+			"/contact",
+			"/",
+		}
+
+		// Public path kontrolü
+		for _, pp := range publicPaths {
+			if strings.HasPrefix(path, pp) {
+				log.Printf("� SecurityMiddleware - Public Path: %s", path)
+				c.Next()
+				return
+			}
+		}
+
+		// Oturum kontrolü
+		session, err := c.Cookie("user_session")
+		if err != nil || session == "" {
+			log.Printf("🚫 SecurityMiddleware - Unauthorized access attempt to: %s", path)
+			if method == "GET" {
+				c.Redirect(http.StatusSeeOther, "/login")
+			} else {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			}
+			c.Abort()
+			return
+		}
+
+		// IP adresi ve User-Agent loglama
+		ip := c.ClientIP()
+		userAgent := c.GetHeader("User-Agent")
+		h.securityLog.LogSecurityEvent("ACCESS", fmt.Sprintf("Path: %s, Method: %s", path, method), ip)
+
+		// Spam kontrolü (POST istekleri için)
+		if method == "POST" {
+			body, _ := ioutil.ReadAll(c.Request.Body)
+			c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+			
+			if h.spamDetector.IsSpam(string(body)) {
+				log.Printf("🚫 SecurityMiddleware - Spam detected from IP: %s", ip)
+				h.securityLog.LogSecurityEvent("SPAM", "Spam content detected", ip)
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Spam content detected"})
+				c.Abort()
+				return
+			}
+		}
+
+		log.Printf("✅ SecurityMiddleware - Authorized access: %s %s", method, path)
 		c.Next()
 	}
 }
