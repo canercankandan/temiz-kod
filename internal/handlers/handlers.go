@@ -2,9 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"io"
-	"strings"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -3320,17 +3317,16 @@ func (h *Handler) SecurityMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// IP adresi ve User-Agent loglama
+		// IP adresi loglama
 		ip := c.ClientIP()
-		userAgent := c.GetHeader("User-Agent")
 		h.securityLog.LogSecurityEvent("ACCESS", fmt.Sprintf("Path: %s, Method: %s", path, method), ip)
 
 		// Spam kontrolü (POST istekleri için)
 		if method == "POST" {
-			body, _ := ioutil.ReadAll(c.Request.Body)
-			c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+			rawData, _ := c.GetRawData()
+			c.Request.Body = io.NopCloser(bytes.NewBuffer(rawData))
 			
-			if h.spamDetector.IsSpam(string(body)) {
+			if h.spamDetector.IsSpam(string(rawData)) {
 				log.Printf("🚫 SecurityMiddleware - Spam detected from IP: %s", ip)
 				h.securityLog.LogSecurityEvent("SPAM", "Spam content detected", ip)
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Spam content detected"})
