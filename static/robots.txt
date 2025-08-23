@@ -4,6 +4,18 @@ Allow: /
 # Sitemap
 Sitemap: https://suarıtmauzmanı.com/sitemap.xml
 
+# Crawl-delay for better server performance
+Crawl-delay: 5
+
+# Allow social media crawlers
+User-agent: Twitterbot
+Allow: /
+Allow: /static/uploads/
+
+User-agent: facebookexternalhit
+Allow: /
+Allow: /static/uploads/
+
 # Disallow admin and private areas
 Disallow: /admin/
 Disallow: /api/

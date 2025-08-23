@@ -1,5 +1,35 @@
 {{template "base.html" .}}
 
+{{define "head"}}
+    <!-- Sayfa özel meta etiketleri -->
+    <title>{{.product.Name}} - Su Arıtma Uzmanı</title>
+    <meta name="description" content="{{.product.Name}} - {{.product.Description}} | En uygun fiyat garantisi, ücretsiz kurulum ve 5 yıl garanti.">
+    <meta name="keywords" content="{{.product.Name}}, {{.product.Category}}, su arıtma, su arıtma cihazı">
+    <link rel="canonical" href="https://suarıtmauzmanı.com/product/{{.product.ID}}">
+    
+    <!-- Ürün için yapısal veri -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": "{{.product.Name}}",
+        "description": "{{.product.Description}}",
+        "image": "https://suarıtmauzmanı.com/static/{{.product.Image}}",
+        "brand": {
+            "@type": "Brand",
+            "name": "Su Arıtma Uzmanı"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": "https://suarıtmauzmanı.com/product/{{.product.ID}}",
+            "priceCurrency": "TRY",
+            "price": "{{.product.Price}}",
+            "availability": "https://schema.org/InStock"
+        }
+    }
+    </script>
+{{end}}
+
 {{define "content"}}
 <div class="container mt-4">
     <div class="row">
