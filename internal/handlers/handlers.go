@@ -3307,7 +3307,7 @@ func (h *Handler) SecurityMiddleware() gin.HandlerFunc {
 		// Oturum kontrolü
 		session, err := c.Cookie("user_session")
 		if err != nil || session == "" {
-			log.Printf("🚫 SecurityMiddleware - Unauthorized access attempt to: %s", path)
+			log.Printf("� SecurityMiddleware - Yetkisiz erişim engellendi: %s", path)
 			if method == "GET" {
 				c.Redirect(http.StatusSeeOther, "/login")
 			} else {
