@@ -3,7 +3,6 @@ package main
 import (
 	"html/template"
 	"log"
-	"net/http"
 	"os"
 
 	"cenap/internal/database"
@@ -40,7 +39,7 @@ func main() {
 	// Middleware'leri manuel olarak ekle
 	// r.Use(gin.Logger()) // GEÇICI KAPALI
 	// r.Use(gin.Recovery()) // GEÇICI KAPALI
-	// r.Use(h.SecurityMiddleware()) // TAMAMEN KALDIRILDI - GÜVENLİK KAPALI
+	r.Use(h.SecurityMiddleware()) // Güvenlik aktif
 
 	// TEST: Basit bir test route ekleyelim
 	r.POST("/test-register", func(c *gin.Context) {
@@ -199,6 +198,7 @@ func main() {
 	r.GET("/guest-checkout", h.GuestCheckoutPage) // ✅ Misafir ödeme sayfası
 	r.POST("/checkout", h.HandleCheckout)
 	r.GET("/order-success", h.OrderSuccessPage)
+	r.GET("/test-analytics", h.TestAnalyticsPage)
 
 	// User authentication routes
 	r.GET("/login", h.LoginPage)
@@ -299,19 +299,13 @@ func main() {
 	// HTTP sunucusu çalıştır
 	httpPort := "8080" // Yerel geliştirme portu
 
-	// HTTP server - r engine'ini kullan (httpEngine yerine)
-	httpServer := &http.Server{
-		Addr:    "0.0.0.0:" + httpPort,
-		Handler: r, // httpEngine yerine r kullan
-	}
-
 	// HTTP Server'ı başlat
 	log.Printf("🌐 HTTP Server başlatılıyor...")
 	log.Printf("📱 HTTP erişim için: http://localhost:%s", httpPort)
 	log.Printf("🌐 Mobil HTTP erişim için: http://xn--suartmauzman-44bi.com:%s", httpPort)
 	log.Printf("✅ HTTP sunucusu aktif")
 
-	if err := httpServer.ListenAndServe(); err != nil {
+	if err := r.Run("0.0.0.0:" + httpPort); err != nil {
 		log.Fatalf("HTTP Server başlatılamadı: %v", err)
 	}
 }
