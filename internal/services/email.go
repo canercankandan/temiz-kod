@@ -1,6 +1,7 @@
 package services
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"os"
@@ -45,8 +46,20 @@ func NewEmailService() *EmailService {
 	}
 
 	dialer := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
-	dialer.SSL = false
-	dialer.TLSConfig = nil  // TLS ayarlarını otomatik yapılandır
+
+	// TLS güvenlik ayarları
+	dialer.TLSConfig = &tls.Config{
+		InsecureSkipVerify: false,
+		ServerName:         "smtp.gmail.com",
+	}
+
+	// Test bağlantısı
+	if d, err := dialer.Dial(); err != nil {
+		log.Printf("SMTP bağlantı hatası: %v", err)
+	} else {
+		d.Close()
+		log.Println("SMTP bağlantısı başarılı")
+	}
 
 	return &EmailService{
 		dialer: dialer,
