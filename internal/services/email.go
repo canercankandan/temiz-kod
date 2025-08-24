@@ -22,8 +22,8 @@ func NewEmailService() *EmailService {
 	// Gmail SMTP ayarları
 	smtpHost := "smtp.gmail.com"
 	smtpPort := 587
-	smtpUser := "wbcenapoktay@gmail.com"
-	smtpPass := "ltpw igvm rsui nfss"  // App Password
+	smtpUser := "irmaksuaritmam@gmail.com"
+	smtpPass := "opmo faai pxds svsb"  // App Password
 
 	// Log SMTP configuration
 	log.Printf("📧 SMTP Yapılandırması:")
