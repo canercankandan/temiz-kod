@@ -1646,11 +1646,53 @@ func (h *Handler) OrderSuccessPage(c *gin.Context) {
 	isLoggedIn := username != ""
 	log.Printf("OrderSuccessPage - username: %s, isLoggedIn: %t", username, isLoggedIn)
 
+	// Sipariş detaylarını getir (Analytics için)
+	var orderTotal float64
+	var productID, productName string
+	var productPrice float64
+	var productQuantity int
+
+	if orderID != "" {
+		orderIDInt, err := strconv.Atoi(orderID)
+		if err == nil {
+			order, err := h.db.GetOrderByID(orderIDInt)
+			if err == nil && order != nil {
+				orderTotal = order.TotalPrice
+
+				// Siparişteki ilk ürün bilgilerini al
+				cart, err := h.db.GetCartBySessionID(order.SessionID)
+				if err == nil && cart != nil {
+					cartItems, err := h.db.GetCartItemsByCartID(cart.ID)
+					if err == nil && len(cartItems) > 0 {
+						item := cartItems[0]
+						productID = strconv.Itoa(item.ProductID)
+						productName = item.Name
+						productPrice = item.Price
+						productQuantity = item.Quantity
+					}
+				}
+			}
+		}
+	}
+
 	c.HTML(http.StatusOK, "order_success.html", gin.H{
-		"title":        "Sipariş Başarılı",
-		"order_id":     orderID,
-		"order_number": orderNumber,
-		"isLoggedIn":   isLoggedIn,
+		"title":           "Sipariş Başarılı",
+		"order_id":        orderID,
+		"order_number":    orderNumber,
+		"isLoggedIn":      isLoggedIn,
+		"OrderID":         orderID,
+		"OrderTotal":      orderTotal,
+		"ProductID":       productID,
+		"ProductName":     productName,
+		"ProductPrice":    productPrice,
+		"ProductQuantity": productQuantity,
+	})
+}
+
+// TestAnalyticsPage - Analytics tracking test sayfası
+func (h *Handler) TestAnalyticsPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "test_analytics.html", gin.H{
+		"title": "Analytics Test",
 	})
 }
 
@@ -2208,13 +2250,13 @@ func (h *Handler) SendSupportMessage(c *gin.Context) {
 		return
 	}
 
-        // Spam kontrolü
-        if h.spamDetector.IsSpam(request.Message) {
-                clientIP := c.ClientIP()
-                h.securityLog.LogSecurityEvent("SPAM_DETECTED", fmt.Sprintf("Support chat spam: %s", request.Message), clientIP)
-                c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Mesajınız spam içerik kontrolünden geçemedi. Lütfen farklı bir mesaj yazın."})
-                return
-        }
+	// Spam kontrolü
+	if h.spamDetector.IsSpam(request.Message) {
+		clientIP := c.ClientIP()
+		h.securityLog.LogSecurityEvent("SPAM_DETECTED", fmt.Sprintf("Support chat spam: %s", request.Message), clientIP)
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Mesajınız spam içerik kontrolünden geçemedi. Lütfen farklı bir mesaj yazın."})
+		return
+	}
 
 	username, _ := c.Cookie("username")
 	sessionID, _ := c.Cookie("user_session")
@@ -3186,15 +3228,16 @@ func (h *Handler) DebugOrders(c *gin.Context) {
 // HandleContactForm - İletişim formu gönderimi
 func (h *Handler) HandleContactForm(c *gin.Context) {
 	var request struct {
-		Name     string   `json:"name"`
-		Email    string   `json:"email"`
-		Phone    string   `json:"phone"`
-		Subject  string   `json:"subject"`
-		Message  string   `json:"message"`
+		Name     string   `json:"name" binding:"required"`
+		Email    string   `json:"email" binding:"required,email"`
+		Phone    string   `json:"phone" binding:"required"`
+		Subject  string   `json:"subject" binding:"required"`
+		Message  string   `json:"message" binding:"required,min=10"`
 		Services []string `json:"services"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Printf("Form verisi hatası: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
 			"message": "Geçersiz form verisi",
@@ -3325,7 +3368,7 @@ func (h *Handler) SecurityMiddleware() gin.HandlerFunc {
 		if method == "POST" {
 			rawData, _ := c.GetRawData()
 			c.Request.Body = io.NopCloser(bytes.NewBuffer(rawData))
-			
+
 			if h.spamDetector.IsSpam(string(rawData)) {
 				log.Printf("🚫 SecurityMiddleware - Spam detected from IP: %s", ip)
 				h.securityLog.LogSecurityEvent("SPAM", "Spam content detected", ip)
