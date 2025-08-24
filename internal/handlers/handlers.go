@@ -18,6 +18,8 @@ import (
 	"cenap/internal/models"
 	"cenap/internal/services"
 
+	"github.com/gin-gonic/gin/binding"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -3227,6 +3229,9 @@ func (h *Handler) DebugOrders(c *gin.Context) {
 
 // HandleContactForm - İletişim formu gönderimi
 func (h *Handler) HandleContactForm(c *gin.Context) {
+	// Log request details
+	log.Printf("İletişim formu isteği alındı. Method: %s, ContentType: %s", c.Request.Method, c.ContentType())
+	
 	var request struct {
 		Name     string   `json:"name" binding:"required"`
 		Email    string   `json:"email" binding:"required,email"`
@@ -3236,7 +3241,11 @@ func (h *Handler) HandleContactForm(c *gin.Context) {
 		Services []string `json:"services"`
 	}
 
-	if err := c.ShouldBindJSON(&request); err != nil {
+	// Raw body'yi logla
+	body, _ := c.GetRawData()
+	log.Printf("Raw request body: %s", string(body))
+	
+	if err := c.ShouldBindWith(&request, binding.JSON); err != nil {
 		log.Printf("Form verisi hatası: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"success": false,
