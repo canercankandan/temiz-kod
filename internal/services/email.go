@@ -53,12 +53,14 @@ func NewEmailService() *EmailService {
 		ServerName:         "smtp.gmail.com",
 	}
 
-	// Test bağlantısı
+	// Test bağlantısı ve detaylı loglama
 	if d, err := dialer.Dial(); err != nil {
-		log.Printf("SMTP bağlantı hatası: %v", err)
+		log.Printf("❌ SMTP bağlantı hatası: %v", err)
+		log.Printf("🔍 SMTP Ayarları: Host=%s, Port=%d, User=%s, TLS=%v",
+			smtpHost, smtpPort, smtpUser, dialer.TLSConfig != nil)
 	} else {
 		d.Close()
-		log.Println("SMTP bağlantısı başarılı")
+		log.Println("✅ SMTP bağlantısı başarılı")
 	}
 
 	return &EmailService{
