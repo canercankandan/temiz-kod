@@ -45,6 +45,8 @@ func NewEmailService() *EmailService {
 	}
 
 	dialer := gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
+	dialer.SSL = false
+	dialer.TLSConfig = nil  // TLS ayarlarını otomatik yapılandır
 
 	return &EmailService{
 		dialer: dialer,
