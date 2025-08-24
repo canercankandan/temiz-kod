@@ -1,9 +1,30 @@
 // Main JavaScript file for Cenap website
 
-// Form validation
+// Google Analytics Event Tracking
+function trackEvent(category, action, label) {
+    if (typeof gtag !== 'undefined') {
+        gtag('event', action, {
+            'event_category': category,
+            'event_label': label
+        });
+    }
+}
+
+// Enhanced form validation and tracking
 function validateForm(formId) {
     const form = document.getElementById(formId);
     if (!form) return true;
+    
+    // Track form start if not already tracked
+    if (!form.dataset.startTracked) {
+        if (typeof dataLayer !== 'undefined') {
+            dataLayer.push({
+                'event': 'form_start',
+                'form_id': formId
+            });
+        }
+        form.dataset.startTracked = 'true';
+    }
     
     const inputs = form.querySelectorAll('input[required], textarea[required], select[required]');
     let isValid = true;
@@ -35,8 +56,32 @@ function previewImage(input) {
     }
 }
 
-// Smooth scrolling for anchor links
+// Enhanced scroll tracking
 document.addEventListener('DOMContentLoaded', function() {
+    // Track scroll depth
+    let scrollDepths = [25, 50, 75, 100];
+    let reachedDepths = new Set();
+    
+    window.addEventListener('scroll', function() {
+        const winHeight = window.innerHeight;
+        const docHeight = document.documentElement.scrollHeight - winHeight;
+        const scrolled = window.scrollY;
+        const scrollPercentage = (scrolled / docHeight) * 100;
+        
+        scrollDepths.forEach(depth => {
+            if (scrollPercentage >= depth && !reachedDepths.has(depth)) {
+                reachedDepths.add(depth);
+                if (typeof dataLayer !== 'undefined') {
+                    dataLayer.push({
+                        'event': 'scroll_depth',
+                        'scroll_percent': depth
+                    });
+                }
+            }
+        });
+    });
+
+    // Smooth scrolling for anchor links
     const links = document.querySelectorAll('a[href^="#"]');
     links.forEach(link => {
         link.addEventListener('click', function(e) {

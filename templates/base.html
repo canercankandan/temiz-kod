@@ -15,9 +15,13 @@
     })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
     
     <!-- SEO Meta Tags -->
-    <title>{{.title}} - Teknik Servis | Türkiye'nin En Güvenilir Teknik Servis Markası</title>
-    <meta name="description" content="Su Arıtma Uzmanı - Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları, filtreler ve yedek parçalar. Ücretsiz kurulum, 5 yıl garanti, 24/7 teknik destek. İstanbul'da su arıtma cihazı satış ve servis. En uygun su arıtma cihazı fiyatları.">
-    <meta name="keywords" content="su arıtma cihazı, su arıtma sistemleri, su filtresi, reverse osmosis, su arıtma cihazı fiyatları, su arıtma cihazı kurulum, su arıtma filtreleri, temiz su, sağlıklı su, İstanbul su arıtma, Küçükçekmece su arıtma, su arıtma servisi, su arıtma uzmanı">
+    <title>{{.title}} - Su Arıtma Uzmanı | Türkiye'nin Güvenilir Su Arıtma Servisi</title>
+    <meta name="description" content="{{if .description}}{{.description}}{{else}}Su Arıtma Uzmanı - Türkiye'nin en güvenilir su arıtma uzmanı. Su arıtma cihazları, filtreler ve bakım servisi. ✓Ücretsiz keşif ✓5 yıl garanti ✓24/7 teknik destek. En uygun fiyat garantisi.{{end}}">
+    <meta name="keywords" content="su arıtma cihazı, su arıtma sistemleri, su filtresi, reverse osmosis, su arıtma bakım, su arıtma montaj, su arıtma servisi, temiz su, sağlıklı su, İstanbul su arıtma, su arıtma uzmanı">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{.title}} - Su Arıtma Uzmanı">
+    <meta property="og:description" content="{{if .description}}{{.description}}{{else}}Su Arıtma Uzmanı - Türkiye'nin en güvenilir su arıtma uzmanı{{end}}">
+    <meta property="og:url" content="https://www.suarıtmauzmanı.com{{.currentPath}}"
     <meta name="author" content="Su Arıtma Uzmanı">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <meta name="language" content="Turkish">
@@ -101,6 +105,13 @@
                 // E-ticaret olayları
                 gtag('event', 'page_view', {
                     'send_to': 'G-VRLNL12TW7'
+                });
+                
+                // E-ticaret tracking'i etkinleştir
+                gtag('config', 'G-VRLNL12TW7', {
+                    'ecommerce': {
+                        'enhanced_conversions': true
+                    }
                 });
             } catch(e) {
                 console.log('Analytics yüklenemedi');
