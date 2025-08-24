@@ -22,16 +22,18 @@ func NewEmailService() *EmailService {
 	// Gmail SMTP ayarları
 	smtpHost := "smtp.gmail.com"
 	smtpPort := 587
-	smtpUser := "wbcenapoktay@gmail.com" // Gmail adresiniz
-	smtpPass := "ltpw igvm rsui nfss"    // Gmail uygulama şifresi
+	smtpUser := "wbcenapoktay@gmail.com"
+	smtpPass := "ltpw igvm rsui nfss"  // App Password
 
-	// Eğer environment variable'lar ayarlanmışsa, onları kullan
-	if envUser := os.Getenv("SMTP_USER"); envUser != "" {
-		smtpUser = envUser
-	}
-	if envPass := os.Getenv("SMTP_PASS"); envPass != "" {
-		smtpPass = envPass
-	}
+	// Log SMTP configuration
+	log.Printf("📧 SMTP Yapılandırması:")
+	log.Printf("📧 Host: %s", smtpHost)
+	log.Printf("📧 Port: %d", smtpPort)
+	log.Printf("📧 User: %s", smtpUser)
+	log.Printf("📧 Pass: ***************")
+	
+	// Log SMTP configuration (without password)
+	log.Printf("SMTP Configuration - Host: %s, Port: %d, User: %s", smtpHost, smtpPort, smtpUser)
 
 	// SMTP bilgileri kontrol et
 	if smtpUser == "" || smtpPass == "" {
